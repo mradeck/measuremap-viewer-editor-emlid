@@ -1,4 +1,4 @@
-import {useRef,useState} from 'react';
+import {useLayoutEffect,useRef,useState} from 'react';
 import {ChevronLeft,ChevronRight,ChevronDown,ChevronUp,Maximize2} from 'lucide-react';
 import type {Photo} from './model';
 import {photoTime} from './chronology';
@@ -12,7 +12,12 @@ export default function PhotoDock({photos,selected,previewId,onSelect,onOpen,col
   // Freeze the five slots while scrubbing: replacing them under the pointer
   // would otherwise cascade through the collection without a deliberate move.
   const [anchor,setAnchor]=useState<string|null>(null),[pointer,setPointer]=useState<number|null>(null);
-  const strip=useRef<HTMLDivElement>(null);
+  const strip=useRef<HTMLDivElement>(null),hoverSelection=useRef<string|null>(null);
+  useLayoutEffect(()=>{
+    if(hoverSelection.current===selected){hoverSelection.current=null;return;}
+    // Navigation outside mouse scrubbing always advances the five-photo window.
+    setAnchor(null);setPointer(null);
+  },[selected]);
   if(!photos.length)return null;
   const anchored=photos.findIndex(p=>p.id===anchor),center=anchored<0?browsing:anchored;
   const current=photos[browsing],stamp=photoTime(current);
@@ -25,7 +30,12 @@ export default function PhotoDock({photos,selected,previewId,onSelect,onOpen,col
       <button className="dock-arrow" aria-label={t('Vorheriges Foto')} title={t('Vorheriges Foto')} aria-disabled={index===0} onClick={()=>move(-1)}><ChevronLeft size={20}/></button>
       {collapsed?<span className="dock-mini-count">{index+1} / {photos.length}</span>:<div className="dock-strip" ref={strip} onPointerEnter={e=>{if(e.pointerType==='mouse'){setAnchor(current.id);}}} onPointerMove={e=>{
         if(e.pointerType!=='mouse')return;
-        const bounds=strip.current!.getBoundingClientRect();setPointer((e.clientX-bounds.left)/bounds.width*5-.5);
+        const bounds=strip.current!.getBoundingClientRect(),position=(e.clientX-bounds.left)/bounds.width*5-.5;
+        setPointer(position);
+        const slot=Math.max(0,Math.min(4,Math.round(position))),photo=photos[center+slot-2];
+        // Only a real pointer move selects during hover. Replacing images under
+        // a stationary pointer after keyboard/wheel input must not select again.
+        if(photo&&photo.id!==selected){hoverSelection.current=photo.id;onSelect(photo.id);}
       }} onPointerLeave={()=>{setAnchor(null);setPointer(null);}}>
         {[-2,-1,0,1,2].map((offset,slot)=>{
           const photo=photos[center+offset];
@@ -33,7 +43,6 @@ export default function PhotoDock({photos,selected,previewId,onSelect,onOpen,col
           return <div className="dock-slot" key={slot} style={{zIndex:Math.round(20-distance*5)}}>{photo&&<button
             className={`dock-photo ${photo.id===selected?'active':''}`} style={{transform:`scale(${scale}) translateY(${-Math.max(0,1-distance/2.5)*12}px)`}}
             aria-label={photo.file.name} aria-pressed={photo.id===selected} title={photo.file.name}
-            onPointerEnter={e=>{if(e.pointerType==='mouse')onSelect(photo.id);}}
             onFocus={()=>{setAnchor(photos[center]?.id??null);}}
             onClick={()=>onSelect(photo.id)} onDoubleClick={()=>onOpen(photo.id)}>
             <img src={photo.url} alt="" draggable={false}/><span>{center+offset+1}</span>
