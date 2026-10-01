@@ -109,4 +109,4 @@ Doppelklick auf Thumbnail, Kartenmarker oder Bildvorschau öffnet das Foto anste
 
 Die Fotogalerie unter der Karte scrollt horizontal mit der Auswahl und hält das aktive Foto mittig, soweit die Ränder der Galerie dies erlauben. Das gilt auch nach Filterwechsel und bei geänderter Fensterbreite.
 
-Maximale Zoomstufe: 26. OSM-Kacheln werden oberhalb von Stufe 19, ALKIS-Kacheln oberhalb von Stufe 22 vergrößert; die zusätzlichen Zoomstufen erzeugen keine neuen Details der Hintergrundkarten. DXF und Messpunkte bleiben georeferenziert. Der Auge-Button blendet Fotomarker und schwebende Fotoleiste vorübergehend aus; die Galerie unter der Karte bleibt nutzbar.
+Maximale Zoomstufe: 26. OSM-Kacheln werden oberhalb von Stufe 19, ALKIS-Kacheln oberhalb von Stufe 22 vergrößert; die zusätzlichen Zoomstufen erzeugen keine neuen Details der Hintergrundkarten. DXF und Messpunkte bleiben georeferenziert. Der Auge-Button entfernt ausschließlich die vollständigen Fotomarker (Bild, Rahmen, Hintergrund und Beschriftung) vorübergehend von der Karte. Schwebende Fotoleiste und Galerie unter der Karte bleiben nutzbar.
