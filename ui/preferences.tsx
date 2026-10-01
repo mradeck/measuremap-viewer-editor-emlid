@@ -1,6 +1,6 @@
 import {VERSION} from '../survey/model';
 import React,{createContext,useContext,useState,useEffect} from 'react';
-import {Sun,Moon,Languages} from 'lucide-react';
+import {Sun,Moon} from 'lucide-react';
 import {setActiveLanguage,translate as t,type Language} from './translations';
 export type Theme='dark'|'light';
 const storageKey='measuremap.preferences';
@@ -19,5 +19,5 @@ export function PreferencesProvider({children}:{children:React.ReactNode}){
 export const usePreferences=()=>useContext(Context);
 export function AppearanceControls(){
   const {theme,language,toggleTheme,toggleLanguage}=usePreferences();
-  return <div className="appearance-controls"><button type="button" className="appearance-button" aria-label={theme==='dark'?t('Helles Interface aktivieren'):t('Dunkles Interface aktivieren')} title={theme==='dark'?t('Helles Interface aktivieren'):t('Dunkles Interface aktivieren')} onClick={toggleTheme}>{theme==='dark'?<Sun size={17}/>:<Moon size={17}/>}</button><button type="button" className="appearance-button language-button" aria-label={t('Sprache wechseln')} title={language==='de'?'Switch to English':'Auf Deutsch wechseln'} onClick={toggleLanguage}><Languages size={16}/><span>{language.toUpperCase()}</span></button></div>;
+  return <div className="appearance-controls"><button type="button" className="appearance-button" aria-label={theme==='dark'?t('Helles Interface aktivieren'):t('Dunkles Interface aktivieren')} title={theme==='dark'?t('Helles Interface aktivieren'):t('Dunkles Interface aktivieren')} onClick={toggleTheme}>{theme==='dark'?<Sun size={17}/>:<Moon size={17}/>}</button><button type="button" className="appearance-button language-button" aria-label={t('Sprache wechseln')} title={language==='de'?'Switch to English':'Auf Deutsch wechseln'} onClick={toggleLanguage}><span aria-hidden="true" className={`language-option ${language==='de'?'active':''}`}>DE</span><span aria-hidden="true" className="language-separator">/</span><span aria-hidden="true" className={`language-option ${language==='en'?'active':''}`}>EN</span></button></div>;
 }
