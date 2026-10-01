@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.11
+# MeasureMap · v2026.10.1.12
 
 Eigenständige React/TypeScript-SPA zur lokalen Georeferenzierung von Emlid-Fotos. Repository und Netlify-Projekt: `measuremap-viewer-editor-emlid`. Die vorhandene MetaLens-Metadatenansicht bleibt unter „Metadaten-Inspektor“ erreichbar. Beim Wechsel bleibt das geladene Vermessungsprojekt erhalten.
 
@@ -113,4 +113,4 @@ Maximale Zoomstufe: 26. OSM-Kacheln werden oberhalb von Stufe 19, ALKIS-Kacheln 
 
 Große Fotoansicht: Strg + Mausrad zoomt um die Zeigerposition bis 16×; Ziehen mit der linken Maustaste verschiebt den vergrößerten Ausschnitt. Plus/Minus und Einpassen stehen zusätzlich als Buttons zur Verfügung. Ein Foto-Wechsel setzt den Ausschnitt zurück; Bildränder begrenzen das Verschieben.
 
-Optionale Emlid-Versatzkorrektur: „Emlid: einen Messpunkt zurück“ verschiebt automatisch zugeordnete Fotos auf die unmittelbar vorherige CSV-Zeile. Die CSV-Reihenfolge gilt auch bei nicht numerischen Punktnamen; ungültige Vorgänger und erste Zeilen erhalten keine Ersatzposition. Manuelle Zuordnungen und GPS-Fotos bleiben unverändert. Die Option ist standardmäßig aus, bei neuer CSV wieder aus und ohne Datenänderung umschaltbar. Anzeige und Export verwenden dieselbe Auflösung; positions.json/positions.csv protokollieren die ursprüngliche Zuordnung und den verwendeten Versatz.
+Optionale Emlid-Versatzkorrektur: „Emlid: einen Messpunkt zurück“ verschiebt automatisch zugeordnete Fotos auf die unmittelbar vorherige CSV-Zeile. Die CSV-Reihenfolge gilt auch bei nicht numerischen Punktnamen; ungültige Vorgänger und erste Zeilen erhalten keine Ersatzposition. Manuelle Zuordnungen und GPS-Fotos bleiben unverändert. Die Option ist standardmäßig aktiv, bei neuer CSV wieder aktiv und ohne Datenänderung umschaltbar. Anzeige und Export verwenden dieselbe Auflösung; positions.json/positions.csv protokollieren die ursprüngliche Zuordnung und den verwendeten Versatz.
