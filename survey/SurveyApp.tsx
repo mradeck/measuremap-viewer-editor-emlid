@@ -56,7 +56,7 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
   useEffect(()=>{setPlacing(false);setManualLat(pos?String(pos.lat):'');setManualLon(pos?String(pos.lon):'');setManualAlt(pos?.altitude!=null?String(pos.altitude):'');},[selected,points,photos]);
   async function importFiles(input:File[]) {
     setBusy(t("Dateien einlesen …"));setError('');setNotice('');
-    const messages:string[]=[],errors:string[]=[],incoming:Photo[]=[];
+    const warnings:string[]=[],errors:string[]=[],incoming:Photo[]=[];
     try {
       const expanded:File[]=[];
       for(const f of input) {
@@ -69,10 +69,10 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
       }
       const csvs=expanded.filter(f=>/\.csv$/i.test(f.name));
       if(csvs.length>1)throw new Error(t("Bitte nur eine Vermessungs-CSV pro Import auswählen."));
-      if(csvs[0]) {const parsed=parseSurveyCsv(await csvs[0].text());setPoints(parsed.points);setCsvName(csvs[0].name);setPhotos(old=>old.map(p=>({...p,pointId:undefined})));messages.push(t('{count} Messpunkte',{count:parsed.points.length})+(parsed.skipped?', '+t('{count} ungültige Zeilen übersprungen',{count:parsed.skipped}):''));}
+      if(csvs[0]) {const parsed=parseSurveyCsv(await csvs[0].text());setPoints(parsed.points);setCsvName(csvs[0].name);setPhotos(old=>old.map(p=>({...p,pointId:undefined})));if(parsed.skipped)warnings.push(t('{count} ungültige Zeilen übersprungen',{count:parsed.skipped}));}
       const dxfs=expanded.filter(f=>/\.dxf$/i.test(f.name));
       if(dxfs.length>1)throw new Error(t("Bitte nur eine DXF pro Import auswählen."));
-      if(dxfs[0]) {const source={text:await dxfs[0].text(),name:dxfs[0].name};const d=parseDrawing(source.text,source.name,crs);setDrawing(d);setDxfSource(source);setHiddenLayers([]);messages.push(t('DXF: {count} Elemente',{count:d.features.length})+(d.unsupported.length?'; '+t('nicht dargestellt: {types}',{types:d.unsupported.join(', ')}):''));}
+      if(dxfs[0]) {const source={text:await dxfs[0].text(),name:dxfs[0].name};const d=parseDrawing(source.text,source.name,crs);setDrawing(d);setDxfSource(source);setHiddenLayers([]);}
       const images=expanded.filter(f=>/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name));
       const seen=new Set(photos.map(p=>`${p.file.name}:${p.file.size}:${p.file.lastModified}`));
       for(let i=0;i<images.length;i++) {
@@ -81,9 +81,9 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
         if(seen.has(key))continue;seen.add(key);
         try {incoming.push(await readPhoto(file));}catch(e){errors.push(`${file.name}: ${String(e)}`);}
       }
-      if(incoming.length){setPhotos(old=>[...old,...incoming]);if(!selected)setSelected(chronologicalPhotos(incoming)[0].id);messages.push(t('{count} Fotos geladen',{count:incoming.length}));}
-      if(!messages.length)messages.push(t("Keine neuen unterstützten Dateien gefunden."));
-      setNotice(messages.join(' · '));if(errors.length)setError(errors.join('\n'));setFit(n=>n+1);
+      if(incoming.length){setPhotos(old=>[...old,...incoming]);if(!selected)setSelected(chronologicalPhotos(incoming)[0].id);}
+      if(!incoming.length&&!csvs.length&&!dxfs.length&&!errors.length)warnings.push(t("Keine neuen unterstützten Dateien gefunden."));
+      setNotice(warnings.join(' · '));if(errors.length)setError(errors.join('\n'));setFit(n=>n+1);
     }catch(e){setError(e instanceof Error?e.message:String(e));}finally{setBusy('');}
   }
   function updatePhoto(change:Partial<Photo>) {if(current)setPhotos(old=>old.map(p=>p.id===current.id?{...p,...change}:p));}
