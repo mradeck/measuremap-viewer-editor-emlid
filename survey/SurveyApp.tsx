@@ -13,12 +13,13 @@ import './survey.css';
 import {AppearanceControls,usePreferences} from '../ui/preferences';
 import Footer from '../ui/Footer';
 
-const methodLabel={csv:t("CSV-Dateiname"),name:t("Emlid-Punktname"),manual:t("Manuelle Zuordnung"),ambiguous:t("Mehrdeutige Zuordnung"),none:t("Keine CSV-Zuordnung")};
+const methodLabel={csv:t("CSV-Dateiname"),name:t("Emlid-Punktname"),manual:t("Manuelle Zuordnung"),ambiguous:t("Mehrdeutige Zuordnung"),none:t("Keine CSV-Zuordnung"),shifted:t("Emlid: vorherige CSV-Zeile"),'offset-missing':t("Kein vorheriger Messpunkt")};
 function save(blob:Blob,name:string){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);}
 export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
   const {language}=usePreferences();
   const fmt=(n:number|null|undefined,d=3)=>n===null||n===undefined?'—':n.toLocaleString(language==='de'?'de-DE':'en-GB',{minimumFractionDigits:d,maximumFractionDigits:d});
   const [photos,setPhotos]=useState<Photo[]>([]),[points,setPoints]=useState<SurveyPoint[]>([]),[selected,setSelected]=useState<string|null>(null);
+  const [previousPoint,setPreviousPoint]=useState(false),[emlidFixInfo,setEmlidFixInfo]=useState(false);
   const [imageView,setImageView]=useState(false),[showPhotos,setShowPhotos]=useState(true);
   function openPhoto(id:string){selectPhoto(id);setImageView(true);}
   const [dockPreview,setDockPreview]=useState<string|null>(null);
@@ -32,12 +33,12 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
   const gallery=useRef<HTMLDivElement>(null);
   const filesInput=useRef<HTMLInputElement>(null),folderInput=useRef<HTMLInputElement>(null),allPhotos=useRef<Photo[]>([]);allPhotos.current=photos;
   useEffect(()=>()=>{allPhotos.current.forEach(p=>URL.revokeObjectURL(p.url));},[]);
-  const current=photos.find(p=>p.id===selected),match=current?matchPhoto(current,points):null,pos=current?effectivePosition(current,points):null;
-  const exportable=photos.filter(p=>!p.excluded&&effectivePosition(p,points)&&/\.jpe?g$/i.test(p.file.name));
-  const assigned=photos.filter(p=>matchPhoto(p,points).point&&p.override===undefined).length;
-  const without=photos.filter(p=>!effectivePosition(p,points)).length;
+  const current=photos.find(p=>p.id===selected),match=current?matchPhoto(current,points,previousPoint):null,pos=current?effectivePosition(current,points,previousPoint):null;
+  const exportable=photos.filter(p=>!p.excluded&&effectivePosition(p,points,previousPoint)&&/\.jpe?g$/i.test(p.file.name));
+  const assigned=photos.filter(p=>matchPhoto(p,points,previousPoint).point&&p.override===undefined).length;
+  const without=photos.filter(p=>!effectivePosition(p,points,previousPoint)).length;
   const orderedPhotos=useMemo(()=>chronologicalPhotos(photos),[photos]);
-  const visible=orderedPhotos.filter(p=>(filter!=='missing'||!effectivePosition(p,points))&&(filter!=='rtk'||matchPhoto(p,points).point)&&(p.file.name.toLowerCase().includes(search.toLowerCase())));
+  const visible=orderedPhotos.filter(p=>(filter!=='missing'||!effectivePosition(p,points,previousPoint))&&(filter!=='rtk'||matchPhoto(p,points,previousPoint).point)&&(p.file.name.toLowerCase().includes(search.toLowerCase())));
   useEffect(()=>{
     const strip=gallery.current;if(!strip)return;
     function centerSelected(){
@@ -51,9 +52,9 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
     centerSelected();
     const observer=new ResizeObserver(centerSelected);observer.observe(strip);
     return()=>observer.disconnect();
-  },[selected,photos,points,filter,search]);
+  },[selected,photos,points,filter,search,previousPoint]);
   const layerNames=useMemo(()=>[...new Set(drawing?.features.map(f=>f.layer)||[])],[drawing]);
-  useEffect(()=>{setPlacing(false);setManualLat(pos?String(pos.lat):'');setManualLon(pos?String(pos.lon):'');setManualAlt(pos?.altitude!=null?String(pos.altitude):'');},[selected,points,photos]);
+  useEffect(()=>{setPlacing(false);setManualLat(pos?String(pos.lat):'');setManualLon(pos?String(pos.lon):'');setManualAlt(pos?.altitude!=null?String(pos.altitude):'');},[selected,points,photos,previousPoint]);
   async function importFiles(input:File[]) {
     setBusy(t("Dateien einlesen …"));setError('');setNotice('');
     const warnings:string[]=[],errors:string[]=[],incoming:Photo[]=[];
@@ -69,7 +70,7 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
       }
       const csvs=expanded.filter(f=>/\.csv$/i.test(f.name));
       if(csvs.length>1)throw new Error(t("Bitte nur eine Vermessungs-CSV pro Import auswählen."));
-      if(csvs[0]) {const parsed=parseSurveyCsv(await csvs[0].text());setPoints(parsed.points);setCsvName(csvs[0].name);setPhotos(old=>old.map(p=>({...p,pointId:undefined})));if(parsed.skipped)warnings.push(t('{count} ungültige Zeilen übersprungen',{count:parsed.skipped}));}
+      if(csvs[0]) {const parsed=parseSurveyCsv(await csvs[0].text());setPoints(parsed.points);setPreviousPoint(false);setCsvName(csvs[0].name);setPhotos(old=>old.map(p=>({...p,pointId:undefined})));if(parsed.skipped)warnings.push(t('{count} ungültige Zeilen übersprungen',{count:parsed.skipped}));}
       const dxfs=expanded.filter(f=>/\.dxf$/i.test(f.name));
       if(dxfs.length>1)throw new Error(t("Bitte nur eine DXF pro Import auswählen."));
       if(dxfs[0]) {const source={text:await dxfs[0].text(),name:dxfs[0].name};const d=parseDrawing(source.text,source.name,crs);setDrawing(d);setDxfSource(source);setHiddenLayers([]);}
@@ -97,7 +98,7 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
       if(!list.length)throw new Error(t("Keine exportierbaren JPEG-Fotos mit Position."));
       const zip=new JSZip(),manifest:any[]=[],used=new Set<string>(),failed:string[]=[];
       for(let i=0;i<list.length;i++) {
-        const photo=list[i],position=effectivePosition(photo,points)!,m=matchPhoto(photo,points),point=photo.override===undefined?m.point:null;
+        const photo=list[i],position=effectivePosition(photo,points,previousPoint)!,m=matchPhoto(photo,points,previousPoint),point=photo.override===undefined?m.point:null;
         setBusy(t('Metadaten schreiben {index} / {total} …',{index:i+1,total:list.length}));
         try {
           const input=new Uint8Array(await photo.file.arrayBuffer());
@@ -105,17 +106,18 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
           const output=changed?geotagJpeg(input,position,point):input;
           let name=photo.file.name,n=2;while(used.has(name.toLowerCase()))name=photo.file.name.replace(/(\.[^.]+)$/,`_${n++}$1`);used.add(name.toLowerCase());
           zip.file(`photos/${name}`,output);
-          manifest.push({file:name,originalFile:photo.file.name,modified:changed,source:point?'Emlid survey point':photo.override?'Manual':'Original EXIF',role:point?'SurveyPoint':'PhotoLocation',point:point?.name||'',latitude:position.lat,longitude:position.lon,exifAltitude:position.altitude,heightReference:point?point.heightReference:'Unspecified',crs:point?.crs||'',easting:point?.easting??'',northing:point?.northing??'',orthometricHeight:point?.elevation??'',ellipsoidalHeight:point?.ellipsoidal??'',solution:point?.solution||'',correction:point?.correction||'',originalPosition:photo.original,surveyRecord:point?.raw||null});
+          manifest.push({file:name,originalFile:photo.file.name,modified:changed,source:point?'Emlid survey point':photo.override?'Manual':'Original EXIF',role:point?'SurveyPoint':'PhotoLocation',point:point?.name||'',latitude:position.lat,longitude:position.lon,exifAltitude:position.altitude,heightReference:point?point.heightReference:'Unspecified',crs:point?.crs||'',easting:point?.easting??'',northing:point?.northing??'',orthometricHeight:point?.elevation??'',ellipsoidalHeight:point?.ellipsoidal??'',solution:point?.solution||'',correction:point?.correction||'',assignmentCorrection:m.method==='shifted'?'previous-csv-row':'',originalAssignmentPoint:m.sourcePoint?.name||'',originalAssignmentRecord:m.sourcePoint?.raw||null,originalPosition:photo.original,surveyRecord:point?.raw||null});
         }catch(e){failed.push(`${photo.file.name}: ${e instanceof Error?e.message:String(e)}`);}
       }
       if(!manifest.length)throw new Error(failed.join('\n'));
-      zip.file('positions.json',JSON.stringify({version:VERSION,files:manifest,failed},null,2));
-      zip.file('positions.csv',Papa.unparse(manifest.map(({surveyRecord,originalPosition,...row})=>row)));
+      zip.file('positions.json',JSON.stringify({version:VERSION,previousCsvPointCorrection:previousPoint,files:manifest,failed},null,2));
+      zip.file('positions.csv',Papa.unparse(manifest.map(({surveyRecord,originalPosition,originalAssignmentRecord,...row})=>row)));
       zip.file('README.txt',[
         `MeasureMap ${VERSION}`, 'EXIF GPS + MetaLens Survey XMP.',
         t('Emlid-Positionen sind vermessene Punkte, keine belegten Kameraposen.'),
         t('EXIF-Höhe: CSV Elevation. Höhenbezug und Ellipsoid-/UTM-Daten im XMP.'),
         t('Originale wurden nicht verändert.'),
+        t(previousPoint?'Emlid-Korrektur: vorherige CSV-Zeile aktiv. Manuelle Zuordnungen bleiben erhalten.':'Emlid-Korrektur: aus.'),
         `${t('Nicht exportiert')}: ${photos.length-list.length} ${t('Fotos (nicht ausgewählt, ohne Position oder kein JPEG).')}`,
         `${t('Fehlgeschlagen')}: ${failed.length}`,failed.join('\n')
       ].join('\n'));
@@ -136,6 +138,8 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
         <button className="drop-zone" disabled={!!busy} onClick={()=>filesInput.current?.click()}><div className="upload-symbol"><Upload size={23}/></div><strong>{t("Dateien hinzufügen")}</strong><span>{t("Fotos, Emlid-CSV, DXF oder ZIP")}</span><small>{t("Hier ablegen oder auswählen")}</small></button>
         <button className="secondary-button full" disabled={!!busy} onClick={()=>folderInput.current?.click()}><Camera size={16}/> {t("Fotoordner öffnen")}</button>
         <div className="source-row"><FileSpreadsheet size={18}/><div><strong>{csvName||'Emlid CSV'}</strong><small>{points.length?t('{count} Messpunkte',{count:points.length})+' · '+(points[0]?.crs||t('CRS unbekannt')):t("Noch keine Messpunkte geladen")}</small></div><span className={`source-dot ${points.length?'loaded':''}`}/></div>
+        <div className="emlid-fix-controls"><button className={`secondary-button emlid-fix-button ${previousPoint?'active':''}`} disabled={!!busy||!points.length} aria-pressed={previousPoint} onClick={()=>{setPreviousPoint(old=>!old);setDockPreview(null);}}>{t('Emlid: einen Messpunkt zurück')}<span>{t(previousPoint?'An':'Aus')}</span></button><button className="icon-button" aria-label={t('Info zur Emlid-Korrektur')} title={t('Info zur Emlid-Korrektur')} aria-expanded={emlidFixInfo} onClick={()=>setEmlidFixInfo(old=>!old)}><Info size={18}/></button></div>
+        {emlidFixInfo&&<section className="emlid-fix-info" aria-label={t('Info zur Emlid-Korrektur')}><p>{t('Beobachteter Emlid-Versatz: Ein Foto des gerade gespeicherten Messpunkts kann im Export beim nächsten Messpunkt stehen. Diese Option ordnet automatisch verknüpfte Fotos stattdessen dem vorherigen Messpunkt zu.')}</p><p>{t('Maßgeblich ist die Reihenfolge der CSV-Zeilen, nicht die Punktnummer minus eins. Manuelle Punktzuordnungen, manuelle Positionen und reine GPS-Fotos bleiben unverändert.')}</p><p>{t('Ohne gültige vorherige CSV-Zeile wird keine Position übernommen. Ausschalten stellt die ursprüngliche automatische Zuordnung wieder her. Bei neuer CSV ist die Korrektur zunächst aus.')}</p><p>{t('Karte, RTK-Messwerte und JPEG-Export verwenden dieselbe korrigierte Zuordnung. Die ursprüngliche Zuordnung wird im Exportprotokoll festgehalten.')}</p></section>}
         <div className="source-row"><Layers size={18}/><div><strong>{drawing?.name||t("DXF-Zeichnung")}</strong><small>{drawing?t('{count} Elemente · {layers} Layer',{count:drawing.features.length,layers:layerNames.length}):t("Optionaler Vermessungsplan")}</small></div><span className={`source-dot ${drawing?'loaded':''}`}/></div>
         <div className="divider"/><div className="panel-title"><span>{t("Kartenebenen")}</span><span className="step">02</span></div>
         <label className="toggle-row"><span>OpenStreetMap</span><span className="always-on">{t("AKTIV")}</span></label>
@@ -148,7 +152,7 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
         <div className="privacy-note"><LocateFixed size={16}/><p>{t("Fotos und Messdaten bleiben auf diesem Gerät. Die Karte lädt OSM- und optionale ALKIS-Kacheln.")}</p></div>
       </aside>
       <section className="map-panel"><div className="map-toolbar"><div><span className="status-dot"/> {t("Positionsübersicht ")}<small>{assigned} {t("mit Messpunkt · ")}{without} {t("ohne Position")}</small></div><div className="map-toolbar-actions"><button className="icon-button" aria-label={t(showPhotos?"Foto-Thumbnails ausblenden":"Foto-Thumbnails einblenden")} title={t(showPhotos?"Foto-Thumbnails ausblenden":"Foto-Thumbnails einblenden")} aria-pressed={!showPhotos} onClick={()=>{setShowPhotos(old=>!old);setDockPreview(null);}}>{showPhotos?<Eye size={18}/>:<EyeOff size={18}/>}</button><button className="quiet-button" onClick={()=>setFit(n=>n+1)}><LocateFixed size={15}/> {t("Alles zeigen")}</button></div></div>
-        <SurveyMap photos={photos} points={points} selected={selected} onSelect={selectPhoto} onPreview={setDockPreview} onOpen={openPhoto} drawing={drawing} hiddenLayers={hiddenLayers} showDxf={showDxf} labels={labels} showPoints={showPoints} showPhotos={showPhotos} alkis={alkis} style={style} opacity={opacity} fit={fit} placing={placing} onPlace={onPlace} onError={setError}/>
+        <SurveyMap photos={photos} points={points} selected={selected} previousPoint={previousPoint} onSelect={selectPhoto} onPreview={setDockPreview} onOpen={openPhoto} drawing={drawing} hiddenLayers={hiddenLayers} showDxf={showDxf} labels={labels} showPoints={showPoints} showPhotos={showPhotos} alkis={alkis} style={style} opacity={opacity} fit={fit} placing={placing} onPlace={onPlace} onError={setError}/>
         <PhotoExperience photos={orderedPhotos} selected={selected} previewId={dockPreview} onSelect={selectPhoto} opened={imageView} onOpen={openPhoto} onClose={()=>setImageView(false)}/>
         {placing&&<div className="map-message">{t("Auf die gewünschte Position klicken.")}<button onClick={()=>setPlacing(false)}>{t("Abbrechen")}</button></div>}
         {!photos.length&&!points.length&&<div className="map-empty"><MapPin size={25}/><strong>{t("Dein Projekt auf der Karte")}</strong><span>{t("Fotos und die zugehörige CSV hinzufügen.")}</span></div>}
@@ -159,6 +163,7 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
         {current.metadataError&&<p className="warning-text">{t(current.metadataError)}</p>}
         <label className="field-label">{t("Vermessungspunkt")}<select aria-label={t("Vermessungspunkt zuordnen")} value={current.pointId===undefined?'auto':current.pointId||'none'} onChange={e=>updatePhoto({pointId:e.target.value==='auto'?undefined:e.target.value==='none'?null:e.target.value,override:undefined})}><option value="auto">{t("Automatisch zuordnen")}</option><option value="none">{t("Keine CSV-Zuordnung / Original-GPS")}</option>{points.map(p=><option key={p.id} value={p.id}>{p.name} · {p.solution} · {p.raw.Code}</option>)}</select></label>
         <small className="match-method">{match&&t(methodLabel[match.method])}</small>
+        {match?.sourcePoint&&<p className={match.point?'point-note':'warning-text'}>{match.point?t('CSV-Punkt {source} → {target}',{source:match.sourcePoint.name,target:match.point.name}):t('Kein gültiger vorheriger CSV-Messpunkt. Foto manuell zuordnen.')}</p>}
         <div className="coordinate-card"><div><span>{t("Breitengrad")}</span><strong>{fmt(pos?.lat,8)}°</strong></div><div><span>{t("Längengrad")}</span><strong>{fmt(pos?.lon,8)}°</strong></div><div><span>{match?.point&&current.override===undefined?t("NHN / EXIF-Höhe"):t("EXIF-Höhe")}</span><strong>{fmt(pos?.altitude)} m</strong></div></div>
         {match?.point&&current.override===undefined&&<><div className="rtk-heading"><span>{t("VERMESSUNGSDATEN")}</span><b>{match.point.correction} {match.point.solution}</b></div><dl className="survey-values"><div><dt>{t("Koordinatensystem")}</dt><dd>{match.point.crs||t("Unbekannt")}</dd></div><div><dt>UTM Easting</dt><dd>{fmt(match.point.easting)} m</dd></div><div><dt>UTM Northing</dt><dd>{fmt(match.point.northing)} m</dd></div><div><dt>{t("Ellipsoidhöhe")}</dt><dd>{fmt(match.point.ellipsoidal)} m</dd></div><div><dt>Lateral RMS</dt><dd>{fmt(number(match.point.raw['Lateral RMS']))} m</dd></div></dl><p className="point-note">{t("Position des vermessenen Punktes. Kameraversatz und Blickrichtung sind nicht bekannt.")}</p></>}
         <details className="manual-details"><summary>{t("Position manuell bearbeiten")}</summary><label>{t("Breitengrad")}<input value={manualLat} onChange={e=>setManualLat(e.target.value)} inputMode="decimal"/></label><label>{t("Längengrad")}<input value={manualLon} onChange={e=>setManualLon(e.target.value)} inputMode="decimal"/></label><label>{t("Höhe in m (optional)")}<input value={manualAlt} onChange={e=>setManualAlt(e.target.value)} inputMode="decimal"/></label><button className="secondary-button full" onClick={manualSave}>{t("Koordinaten übernehmen")}</button><button className="secondary-button full" onClick={()=>setPlacing(true)}><MapPin size={14}/> {t("Auf Karte setzen")}</button></details>
@@ -169,7 +174,7 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
         </>:<div className="detail-empty"><Camera size={34}/><h2>{t("Ein Foto auswählen")}</h2><p>{t("Vorschau, Position und RTK-Messwerte erscheinen hier.")}</p><div>EXIF GPS + XMP<br/><span>{t("UTM · Höhen · Messqualität")}</span></div></div>}
       </aside>
       <section className="gallery-panel"><div className="gallery-toolbar"><div><strong>{t("Fotos")}</strong><span>{photos.length}</span></div><div className="filter-buttons">{[['all',t("Alle")],['rtk',t("Mit Messpunkt")],['missing',t("Ohne Position")]].map(([v,label])=><button key={v} className={filter===v?'active':''} onClick={()=>setFilter(v)}>{t(label)}</button>)}</div><input aria-label={t("Fotos suchen")} placeholder={t("Dateiname suchen …")} value={search} onChange={e=>setSearch(e.target.value)}/></div>
-        <div className="gallery-scroll" ref={gallery}>{visible.length?visible.map(p=>{const m=matchPhoto(p,points),position=effectivePosition(p,points);return <button key={p.id} className={`photo-tile ${selected===p.id?'active':''} ${p.excluded?'excluded':''}`} onClick={()=>selectPhoto(p.id)} onDoubleClick={()=>openPhoto(p.id)}><img src={p.url} alt={p.file.name} loading="lazy"/><span className={`tile-badge ${position?'good':'warning'}`}>{p.override?t("MANUELL"):m.point?`P ${m.point.name} · ${m.point.solution}`:p.original?'GPS':t("OHNE POSITION")}</span><strong>{p.file.name}</strong><small>{p.excluded?t("Vom Export ausgeschlossen"):m.point&&p.override===undefined?t("EXIF + RTK bereit"):position?t("Position verfügbar"):t("Zuordnung erforderlich")}</small></button>}):<div className="gallery-empty"><ImageIcon size={22}/><span>{photos.length?t("Keine Fotos für diesen Filter."):t("Noch keine Fotos. Emlid-Export oder Handyfotos hinzufügen.")}</span></div>}</div>
+        <div className="gallery-scroll" ref={gallery}>{visible.length?visible.map(p=>{const m=matchPhoto(p,points,previousPoint),position=effectivePosition(p,points,previousPoint);return <button key={p.id} className={`photo-tile ${selected===p.id?'active':''} ${p.excluded?'excluded':''}`} onClick={()=>selectPhoto(p.id)} onDoubleClick={()=>openPhoto(p.id)}><img src={p.url} alt={p.file.name} loading="lazy"/><span className={`tile-badge ${position?'good':'warning'}`}>{p.override?t("MANUELL"):m.point?`P ${m.point.name} · ${m.point.solution}`:position&&p.original?'GPS':t("OHNE POSITION")}</span><strong>{p.file.name}</strong><small>{p.excluded?t("Vom Export ausgeschlossen"):m.point&&p.override===undefined?t("EXIF + RTK bereit"):position?t("Position verfügbar"):t("Zuordnung erforderlich")}</small></button>}):<div className="gallery-empty"><ImageIcon size={22}/><span>{photos.length?t("Keine Fotos für diesen Filter."):t("Noch keine Fotos. Emlid-Export oder Handyfotos hinzufügen.")}</span></div>}</div>
       </section>
     </main>
     <Footer onInfo={()=>setHelp(true)}/>

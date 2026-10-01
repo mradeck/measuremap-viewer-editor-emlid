@@ -3,7 +3,7 @@ import Papa from 'papaparse';
 import exifr from 'exifr';
 import proj4 from 'proj4';
 
-export const VERSION = 'v2026.10.1.10';
+export const VERSION = 'v2026.10.1.11';
 export const CRS_OPTIONS = ['EPSG:25832', 'EPSG:25833', 'EPSG:32632', 'EPSG:32633', 'EPSG:4326'] as const;
 for (const zone of [32, 33]) {
   proj4.defs(`EPSG:258${zone}`, `+proj=utm +zone=${zone} +ellps=GRS80 +units=m +no_defs`);
@@ -11,7 +11,7 @@ for (const zone of [32, 33]) {
 }
 export interface Position { lat: number; lon: number; altitude: number | null }
 export interface SurveyPoint extends Position {
-  id: string; name: string; easting: number | null; northing: number | null;
+  id: string; name: string; sourceRow?: number; easting: number | null; northing: number | null;
   elevation: number | null; ellipsoidal: number | null; crs: string; heightReference:string;
   photos: string[]; solution: string; correction: string; raw: Record<string, string>;
 }
@@ -19,7 +19,7 @@ export interface Photo {
   id: string; file: File; url: string; original: Position | null; metadataError?: string; capturedAt?: number;
   override?: Position | null; pointId?: string | null; excluded?: boolean;
 }
-export type Match = { point: SurveyPoint | null; method: 'csv' | 'name' | 'manual' | 'ambiguous' | 'none' };
+export type Match = { point: SurveyPoint | null; sourcePoint?: SurveyPoint; method: 'csv' | 'name' | 'manual' | 'ambiguous' | 'none' | 'shifted' | 'offset-missing' };
 export const number = (s: unknown): number | null => {
   if (s === null || s === undefined || String(s).trim() === '') return null;
   const n = Number(String(s).replace(',', '.')); return Number.isFinite(n) ? n : null;
@@ -40,7 +40,7 @@ export function parseSurveyCsv(text: string): {points: SurveyPoint[]; skipped: n
     const lat = number(raw.Latitude), lon = number(raw.Longitude);
     if (lat === null || lon === null || !validPosition({lat, lon, altitude:null})) { skipped++; return []; }
     const elevation = number(raw.Elevation), ellipsoidal = number(raw['Ellipsoidal height']);
-    return [{id:`row-${i}`, name:raw.Name || `P${i+1}`, lat, lon, altitude:elevation,
+    return [{id:`row-${i}`, sourceRow:i, name:raw.Name || `P${i+1}`, lat, lon, altitude:elevation,
       easting:number(raw.Easting), northing:number(raw.Northing), elevation, ellipsoidal,
       crs:inferCrs(raw['CS name'] || ''), heightReference:/DHHN2016/i.test(raw['CS name']||'')?'DHHN2016 (NHN)':/NHN/i.test(raw['CS name']||'')?'NHN (realization unspecified)':'Elevation (reference unspecified)', photos:(raw['Point photos'] || '').split(/[;|\n]/).filter(Boolean).map(n=>n.trim().split(/[\\/]/).pop()!),
       solution:raw['Solution status'] || '', correction:raw['Correction type'] || '', raw}];
@@ -48,7 +48,15 @@ export function parseSurveyCsv(text: string): {points: SurveyPoint[]; skipped: n
   if (!points.length) throw new Error(t('CSV enthält keine gültigen geografischen Positionen.'));
   return {points, skipped};
 }
-export function matchPhoto(photo: Photo, points: SurveyPoint[]): Match {
+export function matchPhoto(photo: Photo, points: SurveyPoint[], previousPoint=false): Match {
+  if(previousPoint&&photo.pointId===undefined&&photo.override===undefined){
+    const original=matchPhoto(photo,points);
+    if(!original.point)return original;
+    const source=original.point;
+    // Follow source CSV order, preserving gaps from invalid coordinate rows.
+    const previous=source.sourceRow===undefined?points[points.indexOf(source)-1]:points.find(p=>p.sourceRow===source.sourceRow!-1);
+    return {point:previous||null,sourcePoint:source,method:previous?'shifted':'offset-missing'};
+  }
   if (photo.pointId === null) return {point:null, method:'none'};
   if (photo.pointId !== undefined) return {point:points.find(p=>p.id===photo.pointId) || null, method:'manual'};
   const name = photo.file.name.toLowerCase();
@@ -59,9 +67,10 @@ export function matchPhoto(photo: Photo, points: SurveyPoint[]): Match {
   const byName = points.filter(p=>p.name.toLowerCase() === (emlid || stem));
   return {point:byName.length===1?byName[0]:null, method:byName.length>1?'ambiguous':byName.length===1?'name':'none'};
 }
-export function effectivePosition(photo: Photo, points: SurveyPoint[]): Position | null {
+export function effectivePosition(photo: Photo, points: SurveyPoint[], previousPoint=false): Position | null {
   if (photo.override !== undefined) return photo.override;
-  return matchPhoto(photo, points).point || photo.original;
+  const match=matchPhoto(photo,points,previousPoint);
+  return match.method==='offset-missing'?null:match.point||photo.original;
 }
 export async function readPhoto(file: File): Promise<Photo> {
   let original: Position | null = null, metadataError: string | undefined, capturedAt:number|undefined;

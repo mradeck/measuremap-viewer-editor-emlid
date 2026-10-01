@@ -2,6 +2,21 @@ export type Language = 'de' | 'en';
 let activeLanguage:Language='de';
 export const setActiveLanguage=(language:Language)=>{activeLanguage=language;};
 export const english:Record<string,string>={
+"Emlid: einen Messpunkt zurück":"Emlid: shift back one point",
+"Info zur Emlid-Korrektur":"Emlid correction info",
+"An":"On",
+"Aus":"Off",
+"Emlid: vorherige CSV-Zeile":"Emlid: previous CSV row",
+"Kein vorheriger Messpunkt":"No previous survey point",
+"CSV-Punkt {source} → {target}":"CSV point {source} → {target}",
+"Kein gültiger vorheriger CSV-Messpunkt. Foto manuell zuordnen.":"No valid previous CSV survey point. Assign the photo manually.",
+"Beobachteter Emlid-Versatz: Ein Foto des gerade gespeicherten Messpunkts kann im Export beim nächsten Messpunkt stehen. Diese Option ordnet automatisch verknüpfte Fotos stattdessen dem vorherigen Messpunkt zu.":"Observed Emlid offset: a photo of the point just saved may appear under the next survey point in the export. This option assigns automatically linked photos to the previous point instead.",
+"Maßgeblich ist die Reihenfolge der CSV-Zeilen, nicht die Punktnummer minus eins. Manuelle Punktzuordnungen, manuelle Positionen und reine GPS-Fotos bleiben unverändert.":"The CSV row order is used, not the point number minus one. Manual point assignments, manual positions and GPS-only photos remain unchanged.",
+"Ohne gültige vorherige CSV-Zeile wird keine Position übernommen. Ausschalten stellt die ursprüngliche automatische Zuordnung wieder her. Bei neuer CSV ist die Korrektur zunächst aus.":"Without a valid previous CSV row, no position is assigned. Turning this off restores the original automatic assignment. The correction starts off for each new CSV.",
+"Karte, RTK-Messwerte und JPEG-Export verwenden dieselbe korrigierte Zuordnung. Die ursprüngliche Zuordnung wird im Exportprotokoll festgehalten.":"The map, RTK values and JPEG export use the same corrected assignment. The original assignment is recorded in the export report.",
+"Emlid-Korrektur: vorherige CSV-Zeile aktiv. Manuelle Zuordnungen bleiben erhalten.":"Emlid correction: previous CSV row enabled. Manual assignments remain unchanged.",
+"Emlid-Korrektur: aus.":"Emlid correction: off.",
+
   "Bildzoom": "Photo zoom",
   "Bild verkleinern": "Zoom photo out",
   "Bild vergrößern": "Zoom photo in",
