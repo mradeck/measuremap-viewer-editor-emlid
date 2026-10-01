@@ -1,8 +1,7 @@
 import {useEffect,useRef,useState} from 'react';
-import {X} from 'lucide-react';
+import ImageViewer from './ImageViewer';
 import type {Photo} from './model';
 import PhotoDock from './PhotoDock';
-import {translate as t} from '../ui/translations';
 
 interface Props {photos:Photo[];selected:string|null;previewId:string|null;onSelect:(id:string)=>void;opened:boolean;onOpen:(id:string)=>void;onClose:()=>void}
 export default function PhotoExperience(props:Props) {
@@ -42,10 +41,7 @@ export default function PhotoExperience(props:Props) {
   },[]);
   const current=props.photos.find(p=>p.id===props.selected);
   return <><div ref={region} className="photo-experience-anchor"/>
-    {props.opened&&current&&<section className="large-photo-view" aria-label={t('Große Bildansicht')}>
-      <img src={current.url} alt={current.file.name} onDoubleClick={props.onClose}/>
-      <div className="large-photo-heading"><span>{current.file.name}</span><button className="icon-button" aria-label={t('Zurück zur Karte')} title={t('Zurück zur Karte')} onClick={props.onClose}><X size={20}/></button></div>
-    </section>}
+    {props.opened&&current&&<ImageViewer key={current.id} photo={current} onClose={props.onClose}/>}
     <PhotoDock photos={props.photos} selected={props.selected} previewId={props.opened?null:props.previewId} onSelect={props.onSelect} onOpen={props.onOpen} collapsed={collapsed} onToggle={()=>setCollapsed(old=>!old)}/>
   </>;
 }

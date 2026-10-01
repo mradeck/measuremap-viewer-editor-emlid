@@ -2,6 +2,12 @@ export type Language = 'de' | 'en';
 let activeLanguage:Language='de';
 export const setActiveLanguage=(language:Language)=>{activeLanguage=language;};
 export const english:Record<string,string>={
+  "Bildzoom": "Photo zoom",
+  "Bild verkleinern": "Zoom photo out",
+  "Bild vergrößern": "Zoom photo in",
+  "Bild einpassen": "Fit photo",
+  "Einpassen": "Fit",
+  "Strg + Mausrad: Zoom · Alt + Ziehen: Verschieben": "Ctrl + mouse wheel: zoom · Alt + drag: pan",
   "Foto-Thumbnails ausblenden": "Hide photo thumbnails",
   "Foto-Thumbnails einblenden": "Show photo thumbnails",
   "Große Bildansicht": "Large photo view",
