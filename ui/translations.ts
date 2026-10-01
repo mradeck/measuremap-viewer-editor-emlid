@@ -2,6 +2,8 @@ export type Language = 'de' | 'en';
 let activeLanguage:Language='de';
 export const setActiveLanguage=(language:Language)=>{activeLanguage=language;};
 export const english:Record<string,string>={
+  "Foto-Thumbnails ausblenden": "Hide photo thumbnails",
+  "Foto-Thumbnails einblenden": "Show photo thumbnails",
   "Große Bildansicht": "Large photo view",
   "Zurück zur Karte": "Back to map",
   "Foto groß anzeigen": "Open large photo",

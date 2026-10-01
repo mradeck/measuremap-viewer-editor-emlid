@@ -6,9 +6,10 @@ import 'leaflet/dist/leaflet.css';
 import type {Photo,SurveyPoint,Position} from './model';
 import {effectivePosition,matchPhoto} from './model';
 import type {Drawing} from './dxf';
+export const MAX_MAP_ZOOM=26;
 export const ALKIS_URL='https://geoservices.bayern.de/od/wms/alkis/v1/parzellarkarte';
 export const ALKIS_STYLES={farbe:'by_alkis_parzellarkarte_farbe',grau:'by_alkis_parzellarkarte_grau',gelb:'by_alkis_parzellarkarte_umr_gelb',schwarz:'by_alkis_parzellarkarte_umr_schwarz'};
-interface Props {photos:Photo[];points:SurveyPoint[];selected:string|null;onSelect:(id:string)=>void;onPreview:(id:string)=>void;onOpen:(id:string)=>void;drawing:Drawing|null;hiddenLayers:string[];showDxf:boolean;labels:boolean;showPoints:boolean;alkis:boolean;style:keyof typeof ALKIS_STYLES;opacity:number;fit:number;placing:boolean;onPlace:(p:Position)=>void;onError:(s:string)=>void}
+interface Props {photos:Photo[];points:SurveyPoint[];selected:string|null;onSelect:(id:string)=>void;onPreview:(id:string)=>void;onOpen:(id:string)=>void;drawing:Drawing|null;hiddenLayers:string[];showDxf:boolean;labels:boolean;showPoints:boolean;showPhotos:boolean;alkis:boolean;style:keyof typeof ALKIS_STYLES;opacity:number;fit:number;placing:boolean;onPlace:(p:Position)=>void;onError:(s:string)=>void}
 export default function SurveyMap(props:Props) {
   const {language}=usePreferences();
   const [zoomLevel,setZoomLevel]=useState(18);
@@ -17,8 +18,8 @@ export default function SurveyMap(props:Props) {
   const node=useRef<HTMLDivElement>(null),map=useRef<L.Map>(),overlay=useRef<L.LayerGroup>(),wms=useRef<L.TileLayer.WMS>();
   const latest=useRef(props);latest.current=props;
   useEffect(()=>{
-    const m=L.map(node.current!,{maxZoom:22,zoomControl:false}).setView([48.30723,11.65589],18);map.current=m;
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxNativeZoom:19,maxZoom:22,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(m);
+    const m=L.map(node.current!,{maxZoom:MAX_MAP_ZOOM,zoomControl:false}).setView([48.30723,11.65589],18);map.current=m;
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxNativeZoom:19,maxZoom:MAX_MAP_ZOOM,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(m);
     overlay.current=L.layerGroup().addTo(m);
     m.on('zoomend',()=>setZoomLevel(m.getZoom()));
     m.on('click',e=>{if(latest.current.placing)latest.current.onPlace({lat:e.latlng.lat,lon:e.latlng.lng,altitude:null});});
@@ -29,7 +30,7 @@ export default function SurveyMap(props:Props) {
   useEffect(()=>{
     const m=map.current!;if(wms.current){m.removeLayer(wms.current);wms.current=undefined;}
     if(!props.alkis)return;
-    const layer=L.tileLayer.wms(ALKIS_URL,{layers:ALKIS_STYLES[props.style],format:'image/png',transparent:true,version:'1.1.1',opacity:props.opacity,maxZoom:22,attribution:'© Bayerische Vermessungsverwaltung · <a href="https://www.ldbv.bayern.de/produkte/weitere/opendata.html">LDBV</a> · <a href="https://www.govdata.de/dl-de/by-2-0">dl-de/by-2-0</a>'});
+    const layer=L.tileLayer.wms(ALKIS_URL,{layers:ALKIS_STYLES[props.style],format:'image/png',transparent:true,version:'1.1.1',opacity:props.opacity,maxNativeZoom:22,maxZoom:MAX_MAP_ZOOM,attribution:'© Bayerische Vermessungsverwaltung · <a href="https://www.ldbv.bayern.de/produkte/weitere/opendata.html">LDBV</a> · <a href="https://www.govdata.de/dl-de/by-2-0">dl-de/by-2-0</a>'});
     layer.on('tileerror',()=>latest.current.onError(t("ALKIS konnte nicht geladen werden. Internetverbindung bzw. Dienst prüfen.")));
     layer.addTo(m);wms.current=layer;
   },[props.alkis,props.style,props.opacity]);
@@ -45,7 +46,7 @@ export default function SurveyMap(props:Props) {
     // Small screen-space stacks reveal at most five slots at any zoom.
     // Every Leaflet marker retains the exact geographic anchor.
     const groups=new Map<string,number>();
-    for(const p of props.photos) {
+    for(const p of props.showPhotos?props.photos:[]) {
       const pos=effectivePosition(p,props.points);if(!pos)continue;
       const pixel=map.current!.project([pos.lat,pos.lon]);
       const key=`${Math.round(pixel.x/36)},${Math.round(pixel.y/36)}`,n=groups.get(key)||0;groups.set(key,n+1);
@@ -56,13 +57,13 @@ export default function SurveyMap(props:Props) {
       const marker=L.marker([pos.lat,pos.lon],{icon:L.divIcon({html:div,className:'photo-marker',iconSize:[44,52],iconAnchor:[22,52]}),zIndexOffset:p.id===props.selected?1000:100}).on('click',()=>{if(p.id!==latest.current.selected)skipPan.current=true;latest.current.onSelect(p.id);}).on('dblclick',e=>{L.DomEvent.stopPropagation(e.originalEvent);latest.current.onOpen(p.id);}).on('mouseover',()=>latest.current.onPreview(p.id)).addTo(g);
       photoMarkers.current.set(p.id,marker);
     }
-  },[props.photos,props.points,props.drawing,props.hiddenLayers,props.showDxf,props.labels,props.showPoints,language,zoomLevel]);
+  },[props.photos,props.points,props.drawing,props.hiddenLayers,props.showDxf,props.labels,props.showPoints,props.showPhotos,language,zoomLevel]);
   useEffect(()=>{
     for(const [id,marker] of photoMarkers.current){
       marker.getElement()?.querySelector('.photo-pin')?.classList.toggle('selected',id===props.selected);
       marker.setZIndexOffset(id===props.selected?1000:100);
     }
-  },[props.selected,props.photos,props.points,zoomLevel,props.drawing,props.hiddenLayers,props.showDxf,props.labels,props.showPoints,language]);
+  },[props.selected,props.photos,props.points,zoomLevel,props.drawing,props.hiddenLayers,props.showDxf,props.labels,props.showPoints,props.showPhotos,language]);
   useEffect(()=>{
     const coords:[number,number][]=[];
     for(const p of props.photos){const pos=effectivePosition(p,props.points);if(pos)coords.push([pos.lat,pos.lon]);}
@@ -80,5 +81,5 @@ export default function SurveyMap(props:Props) {
       m.panTo(center,{animate:true,duration:.35});
     }
   },[props.selected]);
-  return <div ref={node} className={`survey-map ${props.placing?'placing':''}`} aria-label={t("Karte mit Fotos und Vermessungspunkten")}/>;
+  return <div ref={node} data-zoom={zoomLevel} className={`survey-map ${props.placing?'placing':''}`} aria-label={t("Karte mit Fotos und Vermessungspunkten")}/>;
 }

@@ -4,7 +4,7 @@ import type {Photo} from './model';
 import PhotoDock from './PhotoDock';
 import {translate as t} from '../ui/translations';
 
-interface Props {photos:Photo[];selected:string|null;previewId:string|null;onSelect:(id:string)=>void;opened:boolean;onOpen:(id:string)=>void;onClose:()=>void}
+interface Props {showDock:boolean;photos:Photo[];selected:string|null;previewId:string|null;onSelect:(id:string)=>void;opened:boolean;onOpen:(id:string)=>void;onClose:()=>void}
 export default function PhotoExperience(props:Props) {
   const [collapsed,setCollapsed]=useState(false);
   const region=useRef<HTMLDivElement>(null),latest=useRef(props);latest.current=props;
@@ -46,6 +46,6 @@ export default function PhotoExperience(props:Props) {
       <img src={current.url} alt={current.file.name} onDoubleClick={props.onClose}/>
       <div className="large-photo-heading"><span>{current.file.name}</span><button className="icon-button" aria-label={t('Zurück zur Karte')} title={t('Zurück zur Karte')} onClick={props.onClose}><X size={20}/></button></div>
     </section>}
-    <PhotoDock photos={props.photos} selected={props.selected} previewId={props.opened?null:props.previewId} onSelect={props.onSelect} onOpen={props.onOpen} collapsed={collapsed} onToggle={()=>setCollapsed(old=>!old)}/>
+    {props.showDock&&<PhotoDock photos={props.photos} selected={props.selected} previewId={props.opened?null:props.previewId} onSelect={props.onSelect} onOpen={props.onOpen} collapsed={collapsed} onToggle={()=>setCollapsed(old=>!old)}/>}
   </>;
 }

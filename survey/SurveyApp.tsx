@@ -1,6 +1,6 @@
 import {translate as t} from '../ui/translations';
 import React,{useState,useRef,useEffect,useMemo} from 'react';
-import {Camera,MapPin,Upload,Download,Layers,FileSpreadsheet,ScanLine,LocateFixed,CheckCircle2,AlertTriangle,X,ChevronRight,Image as ImageIcon,Trash2,Info} from 'lucide-react';
+import {Camera,MapPin,Upload,Download,Layers,FileSpreadsheet,ScanLine,LocateFixed,CheckCircle2,AlertTriangle,X,ChevronRight,Image as ImageIcon,Trash2,Info,Eye,EyeOff} from 'lucide-react';
 import JSZip from 'jszip';
 import Papa from 'papaparse';
 import SurveyMap,{ALKIS_STYLES} from './SurveyMap';
@@ -19,7 +19,7 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
   const {language}=usePreferences();
   const fmt=(n:number|null|undefined,d=3)=>n===null||n===undefined?'—':n.toLocaleString(language==='de'?'de-DE':'en-GB',{minimumFractionDigits:d,maximumFractionDigits:d});
   const [photos,setPhotos]=useState<Photo[]>([]),[points,setPoints]=useState<SurveyPoint[]>([]),[selected,setSelected]=useState<string|null>(null);
-  const [imageView,setImageView]=useState(false);
+  const [imageView,setImageView]=useState(false),[showPhotos,setShowPhotos]=useState(true);
   function openPhoto(id:string){selectPhoto(id);setImageView(true);}
   const [dockPreview,setDockPreview]=useState<string|null>(null);
   function selectPhoto(id:string){setDockPreview(null);setSelected(id);}
@@ -147,9 +147,9 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
         {drawing&&<><label className="toggle-row"><span>{t("DXF-Beschriftungen")}</span><input type="checkbox" checked={labels} onChange={e=>setLabels(e.target.checked)}/></label><div className="dxf-layers">{layerNames.map(l=><label key={l}><input type="checkbox" checked={!hiddenLayers.includes(l)} onChange={e=>setHiddenLayers(old=>e.target.checked?old.filter(x=>x!==l):[...old,l])}/>{l}</label>)}</div>{drawing.unsupported.length>0&&<small>{t("Nicht dargestellt: ")}{drawing.unsupported.join(', ')}</small>}</>}
         <div className="privacy-note"><LocateFixed size={16}/><p>{t("Fotos und Messdaten bleiben auf diesem Gerät. Die Karte lädt OSM- und optionale ALKIS-Kacheln.")}</p></div>
       </aside>
-      <section className="map-panel"><div className="map-toolbar"><div><span className="status-dot"/> {t("Positionsübersicht ")}<small>{assigned} {t("mit Messpunkt · ")}{without} {t("ohne Position")}</small></div><button className="quiet-button" onClick={()=>setFit(n=>n+1)}><LocateFixed size={15}/> {t("Alles zeigen")}</button></div>
-        <SurveyMap photos={photos} points={points} selected={selected} onSelect={selectPhoto} onPreview={setDockPreview} onOpen={openPhoto} drawing={drawing} hiddenLayers={hiddenLayers} showDxf={showDxf} labels={labels} showPoints={showPoints} alkis={alkis} style={style} opacity={opacity} fit={fit} placing={placing} onPlace={onPlace} onError={setError}/>
-        <PhotoExperience photos={orderedPhotos} selected={selected} previewId={dockPreview} onSelect={selectPhoto} opened={imageView} onOpen={openPhoto} onClose={()=>setImageView(false)}/>
+      <section className="map-panel"><div className="map-toolbar"><div><span className="status-dot"/> {t("Positionsübersicht ")}<small>{assigned} {t("mit Messpunkt · ")}{without} {t("ohne Position")}</small></div><div className="map-toolbar-actions"><button className="icon-button" aria-label={t(showPhotos?"Foto-Thumbnails ausblenden":"Foto-Thumbnails einblenden")} title={t(showPhotos?"Foto-Thumbnails ausblenden":"Foto-Thumbnails einblenden")} aria-pressed={!showPhotos} onClick={()=>{setShowPhotos(old=>!old);setDockPreview(null);}}>{showPhotos?<Eye size={18}/>:<EyeOff size={18}/>}</button><button className="quiet-button" onClick={()=>setFit(n=>n+1)}><LocateFixed size={15}/> {t("Alles zeigen")}</button></div></div>
+        <SurveyMap photos={photos} points={points} selected={selected} onSelect={selectPhoto} onPreview={setDockPreview} onOpen={openPhoto} drawing={drawing} hiddenLayers={hiddenLayers} showDxf={showDxf} labels={labels} showPoints={showPoints} showPhotos={showPhotos} alkis={alkis} style={style} opacity={opacity} fit={fit} placing={placing} onPlace={onPlace} onError={setError}/>
+        <PhotoExperience showDock={showPhotos} photos={orderedPhotos} selected={selected} previewId={dockPreview} onSelect={selectPhoto} opened={imageView} onOpen={openPhoto} onClose={()=>setImageView(false)}/>
         {placing&&<div className="map-message">{t("Auf die gewünschte Position klicken.")}<button onClick={()=>setPlacing(false)}>{t("Abbrechen")}</button></div>}
         {!photos.length&&!points.length&&<div className="map-empty"><MapPin size={25}/><strong>{t("Dein Projekt auf der Karte")}</strong><span>{t("Fotos und die zugehörige CSV hinzufügen.")}</span></div>}
         <div className="map-legend"><span><i className="mint-dot"/> {t("Messpunkt")}</span><span><i className="amber-line"/> DXF</span><span><ImageIcon size={12}/> {t("Foto")}</span></div>
