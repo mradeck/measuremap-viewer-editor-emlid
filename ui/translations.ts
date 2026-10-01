@@ -2,6 +2,14 @@ export type Language = 'de' | 'en';
 let activeLanguage:Language='de';
 export const setActiveLanguage=(language:Language)=>{activeLanguage=language;};
 export const english:Record<string,string>={
+  "Vorheriges Foto": "Previous photo",
+  "Nächstes Foto": "Next photo",
+  "Fotoleiste nach Aufnahmedatum": "Photo strip by capture date",
+  "Aufnahme (EXIF)": "Captured (EXIF)",
+  "Aufnahme (Dateiname)": "Captured (filename)",
+  "Dateidatum (Ersatz)": "File date (fallback)",
+  "Datum unbekannt": "Unknown date",
+  "Hover zum Durchsehen · Pfeiltasten zum Wechseln": "Hover to browse · arrow keys to navigate",
   "CSV-Dateiname": "CSV filename",
   "Emlid-Punktname": "Emlid point name",
   "Manuelle Zuordnung": "Manual assignment",
@@ -294,6 +302,8 @@ export const english:Record<string,string>={
   "HDR erkannt (Maximum: {nits} Nits)": "HDR Detected (Max: {nits} nits)"
 };
 export const german:Record<string,string>={
+  "Previous photo": "Vorheriges Foto",
+  "Next photo": "Nächstes Foto",
   "Local (Offline)": "Lokal (offline)",
   "Niutech (Primary)": "Niutech (primär)",
   "Failed to load script": "Skript konnte nicht geladen werden",

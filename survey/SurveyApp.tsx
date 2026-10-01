@@ -4,6 +4,8 @@ import {Camera,MapPin,Upload,Download,Layers,FileSpreadsheet,ScanLine,LocateFixe
 import JSZip from 'jszip';
 import Papa from 'papaparse';
 import SurveyMap,{ALKIS_STYLES} from './SurveyMap';
+import PhotoDock from './PhotoDock';
+import {chronologicalPhotos} from './chronology';
 import {VERSION,CRS_OPTIONS,parseSurveyCsv,readPhoto,matchPhoto,effectivePosition,number,validPosition,type Photo,type SurveyPoint,type Position} from './model';
 import {parseDrawing,type Drawing} from './dxf';
 import {geotagJpeg} from './jpeg';
@@ -17,6 +19,9 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
   const {language}=usePreferences();
   const fmt=(n:number|null|undefined,d=3)=>n===null||n===undefined?'—':n.toLocaleString(language==='de'?'de-DE':'en-GB',{minimumFractionDigits:d,maximumFractionDigits:d});
   const [photos,setPhotos]=useState<Photo[]>([]),[points,setPoints]=useState<SurveyPoint[]>([]),[selected,setSelected]=useState<string|null>(null);
+  const [dockPreview,setDockPreview]=useState<string|null>(null);
+  function selectPhoto(id:string){setDockPreview(null);setSelected(id);}
+  useEffect(()=>setDockPreview(null),[selected]);
   const [drawing,setDrawing]=useState<Drawing|null>(null),[dxfSource,setDxfSource]=useState<{text:string;name:string}|null>(null),[crs,setCrs]=useState('EPSG:25832');
   const [hiddenLayers,setHiddenLayers]=useState<string[]>([]),[showDxf,setShowDxf]=useState(true),[labels,setLabels]=useState(false),[showPoints,setShowPoints]=useState(true);
   const [alkis,setAlkis]=useState(false),[style,setStyle]=useState<keyof typeof ALKIS_STYLES>('farbe'),[opacity,setOpacity]=useState(.75);
@@ -28,7 +33,8 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
   const exportable=photos.filter(p=>!p.excluded&&effectivePosition(p,points)&&/\.jpe?g$/i.test(p.file.name));
   const assigned=photos.filter(p=>matchPhoto(p,points).point&&p.override===undefined).length;
   const without=photos.filter(p=>!effectivePosition(p,points)).length;
-  const visible=photos.filter(p=>(filter!=='missing'||!effectivePosition(p,points))&&(filter!=='rtk'||matchPhoto(p,points).point)&&(p.file.name.toLowerCase().includes(search.toLowerCase())));
+  const orderedPhotos=useMemo(()=>chronologicalPhotos(photos),[photos]);
+  const visible=orderedPhotos.filter(p=>(filter!=='missing'||!effectivePosition(p,points))&&(filter!=='rtk'||matchPhoto(p,points).point)&&(p.file.name.toLowerCase().includes(search.toLowerCase())));
   const layerNames=useMemo(()=>[...new Set(drawing?.features.map(f=>f.layer)||[])],[drawing]);
   useEffect(()=>{setPlacing(false);setManualLat(pos?String(pos.lat):'');setManualLon(pos?String(pos.lon):'');setManualAlt(pos?.altitude!=null?String(pos.altitude):'');},[selected,points,photos]);
   async function importFiles(input:File[]) {
@@ -58,7 +64,7 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
         if(seen.has(key))continue;seen.add(key);
         try {incoming.push(await readPhoto(file));}catch(e){errors.push(`${file.name}: ${String(e)}`);}
       }
-      if(incoming.length){setPhotos(old=>[...old,...incoming]);if(!selected)setSelected(incoming[0].id);messages.push(t('{count} Fotos geladen',{count:incoming.length}));}
+      if(incoming.length){setPhotos(old=>[...old,...incoming]);if(!selected)setSelected(chronologicalPhotos(incoming)[0].id);messages.push(t('{count} Fotos geladen',{count:incoming.length}));}
       if(!messages.length)messages.push(t("Keine neuen unterstützten Dateien gefunden."));
       setNotice(messages.join(' · '));if(errors.length)setError(errors.join('\n'));setFit(n=>n+1);
     }catch(e){setError(e instanceof Error?e.message:String(e));}finally{setBusy('');}
@@ -125,7 +131,8 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
         <div className="privacy-note"><LocateFixed size={16}/><p>{t("Fotos und Messdaten bleiben auf diesem Gerät. Die Karte lädt OSM- und optionale ALKIS-Kacheln.")}</p></div>
       </aside>
       <section className="map-panel"><div className="map-toolbar"><div><span className="status-dot"/> {t("Positionsübersicht ")}<small>{assigned} {t("mit Messpunkt · ")}{without} {t("ohne Position")}</small></div><button className="quiet-button" onClick={()=>setFit(n=>n+1)}><LocateFixed size={15}/> {t("Alles zeigen")}</button></div>
-        <SurveyMap photos={photos} points={points} selected={selected} onSelect={setSelected} drawing={drawing} hiddenLayers={hiddenLayers} showDxf={showDxf} labels={labels} showPoints={showPoints} alkis={alkis} style={style} opacity={opacity} fit={fit} placing={placing} onPlace={onPlace} onError={setError}/>
+        <SurveyMap photos={photos} points={points} selected={selected} onSelect={selectPhoto} onPreview={setDockPreview} drawing={drawing} hiddenLayers={hiddenLayers} showDxf={showDxf} labels={labels} showPoints={showPoints} alkis={alkis} style={style} opacity={opacity} fit={fit} placing={placing} onPlace={onPlace} onError={setError}/>
+        <PhotoDock photos={orderedPhotos} selected={selected} previewId={dockPreview} onSelect={selectPhoto}/>
         {placing&&<div className="map-message">{t("Auf die gewünschte Position klicken.")}<button onClick={()=>setPlacing(false)}>{t("Abbrechen")}</button></div>}
         {!photos.length&&!points.length&&<div className="map-empty"><MapPin size={25}/><strong>{t("Dein Projekt auf der Karte")}</strong><span>{t("Fotos und die zugehörige CSV hinzufügen.")}</span></div>}
         <div className="map-legend"><span><i className="mint-dot"/> {t("Messpunkt")}</span><span><i className="amber-line"/> DXF</span><span><ImageIcon size={12}/> {t("Foto")}</span></div>

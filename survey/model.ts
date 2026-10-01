@@ -3,7 +3,7 @@ import Papa from 'papaparse';
 import exifr from 'exifr';
 import proj4 from 'proj4';
 
-export const VERSION = 'v2026.10.1.1';
+export const VERSION = 'v2026.10.1.2';
 export const CRS_OPTIONS = ['EPSG:25832', 'EPSG:25833', 'EPSG:32632', 'EPSG:32633', 'EPSG:4326'] as const;
 for (const zone of [32, 33]) {
   proj4.defs(`EPSG:258${zone}`, `+proj=utm +zone=${zone} +ellps=GRS80 +units=m +no_defs`);
@@ -16,7 +16,7 @@ export interface SurveyPoint extends Position {
   photos: string[]; solution: string; correction: string; raw: Record<string, string>;
 }
 export interface Photo {
-  id: string; file: File; url: string; original: Position | null; metadataError?: string;
+  id: string; file: File; url: string; original: Position | null; metadataError?: string; capturedAt?: number;
   override?: Position | null; pointId?: string | null; excluded?: boolean;
 }
 export type Match = { point: SurveyPoint | null; method: 'csv' | 'name' | 'manual' | 'ambiguous' | 'none' };
@@ -64,16 +64,18 @@ export function effectivePosition(photo: Photo, points: SurveyPoint[]): Position
   return matchPhoto(photo, points).point || photo.original;
 }
 export async function readPhoto(file: File): Promise<Photo> {
-  let original: Position | null = null, metadataError: string | undefined;
+  let original: Position | null = null, metadataError: string | undefined, capturedAt:number|undefined;
   try {
     const tags = await exifr.parse(file, {gps:true, tiff:true, exif:true});
+    const date=tags?.DateTimeOriginal ?? tags?.CreateDate;
+    if(date instanceof Date && Number.isFinite(date.getTime()))capturedAt=date.getTime();
     if (tags && typeof tags.latitude === 'number' && typeof tags.longitude === 'number') {
       const altitude = number(tags.GPSAltitude);
       const p = {lat:tags.latitude, lon:tags.longitude, altitude:altitude===null?null:tags.GPSAltitudeRef===1?-Math.abs(altitude):altitude};
       if (validPosition(p)) original = p;
     }
   } catch { metadataError = 'EXIF konnte nicht gelesen werden; Export prüft die Datei erneut.'; }
-  return {id:crypto.randomUUID(), file, url:URL.createObjectURL(file), original, metadataError};
+  return {id:crypto.randomUUID(), file, url:URL.createObjectURL(file), original, metadataError, capturedAt};
 }
 export function projectToLatLon(x:number, y:number, crs:string): [number,number] {
   const [lon,lat] = proj4(crs, 'EPSG:4326', [x,y]);
