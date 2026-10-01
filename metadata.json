@@ -1,0 +1,5 @@
+{
+  "name": "MeasureMap",
+  "description": "Emlid survey photo mapping, DXF/ALKIS overlays and local GPS/RTK metadata editing. German and English; light and dark interface.",
+  "requestFramePermissions": []
+}
