@@ -4,7 +4,7 @@ import {Camera,MapPin,Upload,Download,Layers,FileSpreadsheet,ScanLine,LocateFixe
 import JSZip from 'jszip';
 import Papa from 'papaparse';
 import SurveyMap,{ALKIS_STYLES} from './SurveyMap';
-import PhotoDock from './PhotoDock';
+import PhotoExperience from './PhotoExperience';
 import {chronologicalPhotos} from './chronology';
 import {VERSION,CRS_OPTIONS,parseSurveyCsv,readPhoto,matchPhoto,effectivePosition,number,validPosition,type Photo,type SurveyPoint,type Position} from './model';
 import {parseDrawing,type Drawing} from './dxf';
@@ -19,6 +19,8 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
   const {language}=usePreferences();
   const fmt=(n:number|null|undefined,d=3)=>n===null||n===undefined?'—':n.toLocaleString(language==='de'?'de-DE':'en-GB',{minimumFractionDigits:d,maximumFractionDigits:d});
   const [photos,setPhotos]=useState<Photo[]>([]),[points,setPoints]=useState<SurveyPoint[]>([]),[selected,setSelected]=useState<string|null>(null);
+  const [imageView,setImageView]=useState(false);
+  function openPhoto(id:string){selectPhoto(id);setImageView(true);}
   const [dockPreview,setDockPreview]=useState<string|null>(null);
   function selectPhoto(id:string){setDockPreview(null);setSelected(id);}
   useEffect(()=>setDockPreview(null),[selected]);
@@ -131,14 +133,14 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
         <div className="privacy-note"><LocateFixed size={16}/><p>{t("Fotos und Messdaten bleiben auf diesem Gerät. Die Karte lädt OSM- und optionale ALKIS-Kacheln.")}</p></div>
       </aside>
       <section className="map-panel"><div className="map-toolbar"><div><span className="status-dot"/> {t("Positionsübersicht ")}<small>{assigned} {t("mit Messpunkt · ")}{without} {t("ohne Position")}</small></div><button className="quiet-button" onClick={()=>setFit(n=>n+1)}><LocateFixed size={15}/> {t("Alles zeigen")}</button></div>
-        <SurveyMap photos={photos} points={points} selected={selected} onSelect={selectPhoto} onPreview={setDockPreview} drawing={drawing} hiddenLayers={hiddenLayers} showDxf={showDxf} labels={labels} showPoints={showPoints} alkis={alkis} style={style} opacity={opacity} fit={fit} placing={placing} onPlace={onPlace} onError={setError}/>
-        <PhotoDock photos={orderedPhotos} selected={selected} previewId={dockPreview} onSelect={selectPhoto}/>
+        <SurveyMap photos={photos} points={points} selected={selected} onSelect={selectPhoto} onPreview={setDockPreview} onOpen={openPhoto} drawing={drawing} hiddenLayers={hiddenLayers} showDxf={showDxf} labels={labels} showPoints={showPoints} alkis={alkis} style={style} opacity={opacity} fit={fit} placing={placing} onPlace={onPlace} onError={setError}/>
+        <PhotoExperience photos={orderedPhotos} selected={selected} previewId={dockPreview} onSelect={selectPhoto} opened={imageView} onOpen={openPhoto} onClose={()=>setImageView(false)}/>
         {placing&&<div className="map-message">{t("Auf die gewünschte Position klicken.")}<button onClick={()=>setPlacing(false)}>{t("Abbrechen")}</button></div>}
         {!photos.length&&!points.length&&<div className="map-empty"><MapPin size={25}/><strong>{t("Dein Projekt auf der Karte")}</strong><span>{t("Fotos und die zugehörige CSV hinzufügen.")}</span></div>}
         <div className="map-legend"><span><i className="mint-dot"/> {t("Messpunkt")}</span><span><i className="amber-line"/> DXF</span><span><ImageIcon size={12}/> {t("Foto")}</span></div>
       </section>
       <aside className="detail-panel"><div className="panel-title"><span>{t("Foto & Position")}</span><span className="step">03</span></div>
-        {current?<><div className="photo-preview"><img src={current.url} alt={current.file.name} onError={e=>{e.currentTarget.alt=t("Bildvorschau wird von diesem Browser nicht unterstützt.");}}/><span>{match?.point&&current.override===undefined?t('PUNKT {name}',{name:match.point.name}):t("FOTO")}</span></div><h2>{current.file.name}</h2><div className={`position-state ${pos?'good':'warning'}`}>{pos?<CheckCircle2 size={15}/>:<AlertTriangle size={15}/>} {current.override?t("Manuelle Position"):match?.point?t("Messpunkt zugeordnet"):current.original?t("GPS aus Original"):t("Position fehlt")}</div>
+        {current?<><div className="photo-preview" onDoubleClick={()=>openPhoto(current.id)}><img src={current.url} alt={current.file.name} onError={e=>{e.currentTarget.alt=t("Bildvorschau wird von diesem Browser nicht unterstützt.");}}/><span>{match?.point&&current.override===undefined?t('PUNKT {name}',{name:match.point.name}):t("FOTO")}</span></div><h2>{current.file.name}</h2><div className={`position-state ${pos?'good':'warning'}`}>{pos?<CheckCircle2 size={15}/>:<AlertTriangle size={15}/>} {current.override?t("Manuelle Position"):match?.point?t("Messpunkt zugeordnet"):current.original?t("GPS aus Original"):t("Position fehlt")}</div>
         {current.metadataError&&<p className="warning-text">{t(current.metadataError)}</p>}
         <label className="field-label">{t("Vermessungspunkt")}<select aria-label={t("Vermessungspunkt zuordnen")} value={current.pointId===undefined?'auto':current.pointId||'none'} onChange={e=>updatePhoto({pointId:e.target.value==='auto'?undefined:e.target.value==='none'?null:e.target.value,override:undefined})}><option value="auto">{t("Automatisch zuordnen")}</option><option value="none">{t("Keine CSV-Zuordnung / Original-GPS")}</option>{points.map(p=><option key={p.id} value={p.id}>{p.name} · {p.solution} · {p.raw.Code}</option>)}</select></label>
         <small className="match-method">{match&&t(methodLabel[match.method])}</small>
@@ -152,7 +154,7 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
         </>:<div className="detail-empty"><Camera size={34}/><h2>{t("Ein Foto auswählen")}</h2><p>{t("Vorschau, Position und RTK-Messwerte erscheinen hier.")}</p><div>EXIF GPS + XMP<br/><span>{t("UTM · Höhen · Messqualität")}</span></div></div>}
       </aside>
       <section className="gallery-panel"><div className="gallery-toolbar"><div><strong>{t("Fotos")}</strong><span>{photos.length}</span></div><div className="filter-buttons">{[['all',t("Alle")],['rtk',t("Mit Messpunkt")],['missing',t("Ohne Position")]].map(([v,label])=><button key={v} className={filter===v?'active':''} onClick={()=>setFilter(v)}>{t(label)}</button>)}</div><input aria-label={t("Fotos suchen")} placeholder={t("Dateiname suchen …")} value={search} onChange={e=>setSearch(e.target.value)}/></div>
-        <div className="gallery-scroll">{visible.length?visible.map(p=>{const m=matchPhoto(p,points),position=effectivePosition(p,points);return <button key={p.id} className={`photo-tile ${selected===p.id?'active':''} ${p.excluded?'excluded':''}`} onClick={()=>setSelected(p.id)}><img src={p.url} alt={p.file.name} loading="lazy"/><span className={`tile-badge ${position?'good':'warning'}`}>{p.override?t("MANUELL"):m.point?`P ${m.point.name} · ${m.point.solution}`:p.original?'GPS':t("OHNE POSITION")}</span><strong>{p.file.name}</strong><small>{p.excluded?t("Vom Export ausgeschlossen"):m.point&&p.override===undefined?t("EXIF + RTK bereit"):position?t("Position verfügbar"):t("Zuordnung erforderlich")}</small></button>}):<div className="gallery-empty"><ImageIcon size={22}/><span>{photos.length?t("Keine Fotos für diesen Filter."):t("Noch keine Fotos. Emlid-Export oder Handyfotos hinzufügen.")}</span></div>}</div>
+        <div className="gallery-scroll">{visible.length?visible.map(p=>{const m=matchPhoto(p,points),position=effectivePosition(p,points);return <button key={p.id} className={`photo-tile ${selected===p.id?'active':''} ${p.excluded?'excluded':''}`} onClick={()=>selectPhoto(p.id)} onDoubleClick={()=>openPhoto(p.id)}><img src={p.url} alt={p.file.name} loading="lazy"/><span className={`tile-badge ${position?'good':'warning'}`}>{p.override?t("MANUELL"):m.point?`P ${m.point.name} · ${m.point.solution}`:p.original?'GPS':t("OHNE POSITION")}</span><strong>{p.file.name}</strong><small>{p.excluded?t("Vom Export ausgeschlossen"):m.point&&p.override===undefined?t("EXIF + RTK bereit"):position?t("Position verfügbar"):t("Zuordnung erforderlich")}</small></button>}):<div className="gallery-empty"><ImageIcon size={22}/><span>{photos.length?t("Keine Fotos für diesen Filter."):t("Noch keine Fotos. Emlid-Export oder Handyfotos hinzufügen.")}</span></div>}</div>
       </section>
     </main>
     <Footer onInfo={()=>setHelp(true)}/>

@@ -2,6 +2,12 @@ export type Language = 'de' | 'en';
 let activeLanguage:Language='de';
 export const setActiveLanguage=(language:Language)=>{activeLanguage=language;};
 export const english:Record<string,string>={
+  "Große Bildansicht": "Large photo view",
+  "Zurück zur Karte": "Back to map",
+  "Foto groß anzeigen": "Open large photo",
+  "Fotoleiste ausklappen": "Expand photo strip",
+  "Fotoleiste einklappen": "Collapse photo strip",
+  "Doppelklick: großes Bild · Pfeiltasten / horizontales Mausrad": "Double-click: large photo · arrow keys / horizontal mouse wheel",
   "Vorheriges Foto": "Previous photo",
   "Nächstes Foto": "Next photo",
   "Fotoleiste nach Aufnahmedatum": "Photo strip by capture date",

@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.2
+# MeasureMap · v2026.10.1.3
 
 Eigenständige React/TypeScript-SPA zur lokalen Georeferenzierung von Emlid-Fotos. Repository und Netlify-Projekt: `measuremap-viewer-editor-emlid`. Die vorhandene MetaLens-Metadatenansicht bleibt unter „Metadaten-Inspektor“ erreichbar. Beim Wechsel bleibt das geladene Vermessungsprojekt erhalten.
 
@@ -104,3 +104,5 @@ Der Footer folgt den Link-Pills von SkyCheck: OpenStreetMap, ALKIS/LDBV und Date
 - `netlify.toml` enthält SPA-Fallback und Cache-Header. Keine Tokens oder private Fotos im Repository.
 
 Die mittige Fotoleiste zeigt fünf chronologisch benachbarte Fotos. Hover vergrößert die Vorschau und wechselt die Auswahl; Vor-/Zurück-Buttons und Pfeiltasten führen durch die gesamte Serie. Die Karte folgt der Auswahl. Sortierung: EXIF-Aufnahmezeit, Emlid-Zeitstempel im Dateinamen, ersatzweise Dateidatum (sichtbar gekennzeichnet).
+
+Doppelklick auf Thumbnail, Kartenmarker oder Bildvorschau öffnet das Foto anstelle der Karte. Die Leiste lässt sich einklappen, während Pfeiltasten und horizontales Mausrad (auch Shift + Mausrad) weiter funktionieren. Escape oder „Zurück zur Karte“ beendet die Bildansicht. Home/End springen zum Anfang/Ende. An den Grenzen bleibt die Navigation in Gegenrichtung erreichbar; Eingabefelder werden nicht durch Tastenkürzel gestört.
