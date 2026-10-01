@@ -29,6 +29,7 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
   const [alkis,setAlkis]=useState(false),[style,setStyle]=useState<keyof typeof ALKIS_STYLES>('farbe'),[opacity,setOpacity]=useState(.75);
   const [fit,setFit]=useState(0),[placing,setPlacing]=useState(false),[busy,setBusy]=useState(''),[notice,setNotice]=useState(''),[error,setError]=useState(''),[filter,setFilter]=useState('all'),[search,setSearch]=useState(''),[help,setHelp]=useState(false);
   const [csvName,setCsvName]=useState(''),[manualLat,setManualLat]=useState(''),[manualLon,setManualLon]=useState(''),[manualAlt,setManualAlt]=useState('');
+  const gallery=useRef<HTMLDivElement>(null);
   const filesInput=useRef<HTMLInputElement>(null),folderInput=useRef<HTMLInputElement>(null),allPhotos=useRef<Photo[]>([]);allPhotos.current=photos;
   useEffect(()=>()=>{allPhotos.current.forEach(p=>URL.revokeObjectURL(p.url));},[]);
   const current=photos.find(p=>p.id===selected),match=current?matchPhoto(current,points):null,pos=current?effectivePosition(current,points):null;
@@ -37,6 +38,20 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
   const without=photos.filter(p=>!effectivePosition(p,points)).length;
   const orderedPhotos=useMemo(()=>chronologicalPhotos(photos),[photos]);
   const visible=orderedPhotos.filter(p=>(filter!=='missing'||!effectivePosition(p,points))&&(filter!=='rtk'||matchPhoto(p,points).point)&&(p.file.name.toLowerCase().includes(search.toLowerCase())));
+  useEffect(()=>{
+    const strip=gallery.current;if(!strip)return;
+    function centerSelected(){
+      const tile=strip!.querySelector<HTMLElement>('.photo-tile.active');
+      if(!tile||!strip!.clientWidth)return;
+      const frame=strip!.getBoundingClientRect(),item=tile.getBoundingClientRect();
+      const desired=strip!.scrollLeft+item.left-frame.left-strip!.clientLeft+(item.width-strip!.clientWidth)/2;
+      const left=Math.max(0,Math.min(desired,strip!.scrollWidth-strip!.clientWidth));
+      strip!.scrollTo({left,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+    }
+    centerSelected();
+    const observer=new ResizeObserver(centerSelected);observer.observe(strip);
+    return()=>observer.disconnect();
+  },[selected,photos,points,filter,search]);
   const layerNames=useMemo(()=>[...new Set(drawing?.features.map(f=>f.layer)||[])],[drawing]);
   useEffect(()=>{setPlacing(false);setManualLat(pos?String(pos.lat):'');setManualLon(pos?String(pos.lon):'');setManualAlt(pos?.altitude!=null?String(pos.altitude):'');},[selected,points,photos]);
   async function importFiles(input:File[]) {
@@ -154,7 +169,7 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
         </>:<div className="detail-empty"><Camera size={34}/><h2>{t("Ein Foto auswählen")}</h2><p>{t("Vorschau, Position und RTK-Messwerte erscheinen hier.")}</p><div>EXIF GPS + XMP<br/><span>{t("UTM · Höhen · Messqualität")}</span></div></div>}
       </aside>
       <section className="gallery-panel"><div className="gallery-toolbar"><div><strong>{t("Fotos")}</strong><span>{photos.length}</span></div><div className="filter-buttons">{[['all',t("Alle")],['rtk',t("Mit Messpunkt")],['missing',t("Ohne Position")]].map(([v,label])=><button key={v} className={filter===v?'active':''} onClick={()=>setFilter(v)}>{t(label)}</button>)}</div><input aria-label={t("Fotos suchen")} placeholder={t("Dateiname suchen …")} value={search} onChange={e=>setSearch(e.target.value)}/></div>
-        <div className="gallery-scroll">{visible.length?visible.map(p=>{const m=matchPhoto(p,points),position=effectivePosition(p,points);return <button key={p.id} className={`photo-tile ${selected===p.id?'active':''} ${p.excluded?'excluded':''}`} onClick={()=>selectPhoto(p.id)} onDoubleClick={()=>openPhoto(p.id)}><img src={p.url} alt={p.file.name} loading="lazy"/><span className={`tile-badge ${position?'good':'warning'}`}>{p.override?t("MANUELL"):m.point?`P ${m.point.name} · ${m.point.solution}`:p.original?'GPS':t("OHNE POSITION")}</span><strong>{p.file.name}</strong><small>{p.excluded?t("Vom Export ausgeschlossen"):m.point&&p.override===undefined?t("EXIF + RTK bereit"):position?t("Position verfügbar"):t("Zuordnung erforderlich")}</small></button>}):<div className="gallery-empty"><ImageIcon size={22}/><span>{photos.length?t("Keine Fotos für diesen Filter."):t("Noch keine Fotos. Emlid-Export oder Handyfotos hinzufügen.")}</span></div>}</div>
+        <div className="gallery-scroll" ref={gallery}>{visible.length?visible.map(p=>{const m=matchPhoto(p,points),position=effectivePosition(p,points);return <button key={p.id} className={`photo-tile ${selected===p.id?'active':''} ${p.excluded?'excluded':''}`} onClick={()=>selectPhoto(p.id)} onDoubleClick={()=>openPhoto(p.id)}><img src={p.url} alt={p.file.name} loading="lazy"/><span className={`tile-badge ${position?'good':'warning'}`}>{p.override?t("MANUELL"):m.point?`P ${m.point.name} · ${m.point.solution}`:p.original?'GPS':t("OHNE POSITION")}</span><strong>{p.file.name}</strong><small>{p.excluded?t("Vom Export ausgeschlossen"):m.point&&p.override===undefined?t("EXIF + RTK bereit"):position?t("Position verfügbar"):t("Zuordnung erforderlich")}</small></button>}):<div className="gallery-empty"><ImageIcon size={22}/><span>{photos.length?t("Keine Fotos für diesen Filter."):t("Noch keine Fotos. Emlid-Export oder Handyfotos hinzufügen.")}</span></div>}</div>
       </section>
     </main>
     <Footer onInfo={()=>setHelp(true)}/>

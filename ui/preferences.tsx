@@ -1,3 +1,4 @@
+import {VERSION} from '../survey/model';
 import React,{createContext,useContext,useState,useEffect} from 'react';
 import {Sun,Moon,Languages} from 'lucide-react';
 import {setActiveLanguage,translate as t,type Language} from './translations';
@@ -11,7 +12,7 @@ const Context=createContext<{language:Language;theme:Theme;toggleLanguage:()=>vo
 export function PreferencesProvider({children}:{children:React.ReactNode}){
   const [preferences,setPreferences]=useState(readPreferences);
   setActiveLanguage(preferences.language);
-  useEffect(()=>{try{localStorage.setItem(storageKey,JSON.stringify(preferences));}catch{} document.documentElement.lang=preferences.language;document.documentElement.dataset.theme=preferences.theme;document.documentElement.classList.toggle('dark',preferences.theme==='dark');document.title='MeasureMap · v2026.10.1.1';},[preferences]);
+  useEffect(()=>{try{localStorage.setItem(storageKey,JSON.stringify(preferences));}catch{} document.documentElement.lang=preferences.language;document.documentElement.dataset.theme=preferences.theme;document.documentElement.classList.toggle('dark',preferences.theme==='dark');document.title=`MeasureMap · ${VERSION}`;},[preferences]);
   const value={...preferences,toggleLanguage:()=>setPreferences(p=>({...p,language:p.language==='de'?'en':'de'})),toggleTheme:()=>setPreferences(p=>({...p,theme:p.theme==='dark'?'light':'dark'}))};
   return <Context.Provider value={value}><div className="theme-root" data-theme={preferences.theme}>{children}</div></Context.Provider>;
 }
