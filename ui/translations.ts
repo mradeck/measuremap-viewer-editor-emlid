@@ -7,7 +7,7 @@ export const english:Record<string,string>={
   "Bild vergrößern": "Zoom photo in",
   "Bild einpassen": "Fit photo",
   "Einpassen": "Fit",
-  "Strg + Mausrad: Zoom · Alt + Ziehen: Verschieben": "Ctrl + mouse wheel: zoom · Alt + drag: pan",
+  "Strg + Mausrad: Zoom · Linke Maustaste ziehen: Verschieben": "Ctrl + mouse wheel: zoom · Left mouse drag: pan",
   "Foto-Thumbnails ausblenden": "Hide photo thumbnails",
   "Foto-Thumbnails einblenden": "Show photo thumbnails",
   "Große Bildansicht": "Large photo view",

@@ -29,14 +29,14 @@ export default function ImageViewer({photo,onClose}:{photo:Photo;onClose:()=>voi
     return()=>{observer.disconnect();el.removeEventListener('wheel',wheel);};
   },[]);
   function stopDrag(id:number){if(drag.current?.id===id){drag.current=null;setDragging(false);if(node.current?.hasPointerCapture(id))node.current.releasePointerCapture(id);}}
-  return <section ref={node} className={`large-photo-view ${dragging?'dragging':''}`} aria-label={t('Große Bildansicht')} data-scale={transform.scale} onPointerDown={e=>{
-    if(!e.altKey||e.button!==0||(e.target as HTMLElement).closest('button')||current.current.scale<=1)return;
+  return <section ref={node} className={`large-photo-view ${dragging?'dragging':transform.scale>1?'pannable':''}`} aria-label={t('Große Bildansicht')} data-scale={transform.scale} onPointerDown={e=>{
+    if(e.button!==0||(e.target as HTMLElement).closest('button')||current.current.scale<=1)return;
     e.preventDefault();drag.current={id:e.pointerId,x:e.clientX,y:e.clientY,start:current.current};setDragging(true);e.currentTarget.setPointerCapture(e.pointerId);
   }} onPointerMove={e=>{
     const active=drag.current;if(!active||active.id!==e.pointerId)return;
     e.preventDefault();apply(clampImage(size.current,{...active.start,x:active.start.x+e.clientX-active.x,y:active.start.y+e.clientY-active.y}));
   }} onPointerUp={e=>stopDrag(e.pointerId)} onPointerCancel={e=>stopDrag(e.pointerId)} onLostPointerCapture={()=>{drag.current=null;setDragging(false);}}>
-    <img ref={image} src={photo.url} alt={photo.file.name} draggable={false} onLoad={measure} style={{transform:`translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`}} onDoubleClick={e=>{if(!e.altKey&&!e.ctrlKey)onClose();}}/>
+    <img ref={image} src={photo.url} alt={photo.file.name} draggable={false} onLoad={measure} style={{transform:`translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`}} onDoubleClick={e=>{if(!e.ctrlKey)onClose();}}/>
     <div className="large-photo-heading"><span>{photo.file.name}</span><button className="icon-button" aria-label={t('Zurück zur Karte')} title={t('Zurück zur Karte')} onClick={onClose}><X size={20}/></button></div>
     <div className="image-zoom-controls" role="group" aria-label={t('Bildzoom')}>
       <button aria-label={t('Bild verkleinern')} title={t('Bild verkleinern')} disabled={transform.scale<=1} onClick={()=>zoom(1/1.5)}><Minus size={16}/></button>
@@ -44,6 +44,6 @@ export default function ImageViewer({photo,onClose}:{photo:Photo;onClose:()=>voi
       <button aria-label={t('Bild vergrößern')} title={t('Bild vergrößern')} disabled={transform.scale>=16} onClick={()=>zoom(1.5)}><Plus size={16}/></button>
       <button className="image-fit" aria-label={t('Bild einpassen')} title={t('Bild einpassen')} onClick={()=>apply(FIT_IMAGE)}><ScanLine size={16}/>{t('Einpassen')}</button>
     </div>
-    <div className="image-gesture-hint">{t('Strg + Mausrad: Zoom · Alt + Ziehen: Verschieben')}</div>
+    <div className="image-gesture-hint">{t('Strg + Mausrad: Zoom · Linke Maustaste ziehen: Verschieben')}</div>
   </section>;
 }

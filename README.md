@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.9
+# MeasureMap · v2026.10.1.10
 
 Eigenständige React/TypeScript-SPA zur lokalen Georeferenzierung von Emlid-Fotos. Repository und Netlify-Projekt: `measuremap-viewer-editor-emlid`. Die vorhandene MetaLens-Metadatenansicht bleibt unter „Metadaten-Inspektor“ erreichbar. Beim Wechsel bleibt das geladene Vermessungsprojekt erhalten.
 
@@ -111,4 +111,4 @@ Die Fotogalerie unter der Karte scrollt horizontal mit der Auswahl und hält das
 
 Maximale Zoomstufe: 26. OSM-Kacheln werden oberhalb von Stufe 19, ALKIS-Kacheln oberhalb von Stufe 22 vergrößert; die zusätzlichen Zoomstufen erzeugen keine neuen Details der Hintergrundkarten. DXF und Messpunkte bleiben georeferenziert. Der Auge-Button entfernt ausschließlich die vollständigen Fotomarker (Bild, Rahmen, Hintergrund und Beschriftung) vorübergehend von der Karte. Schwebende Fotoleiste und Galerie unter der Karte bleiben nutzbar.
 
-Große Fotoansicht: Strg + Mausrad zoomt um die Zeigerposition bis 16×; Alt + linke Maustaste verschiebt den vergrößerten Ausschnitt. Plus/Minus und Einpassen stehen zusätzlich als Buttons zur Verfügung. Ein Foto-Wechsel setzt den Ausschnitt zurück; Bildränder begrenzen das Verschieben.
+Große Fotoansicht: Strg + Mausrad zoomt um die Zeigerposition bis 16×; Ziehen mit der linken Maustaste verschiebt den vergrößerten Ausschnitt. Plus/Minus und Einpassen stehen zusätzlich als Buttons zur Verfügung. Ein Foto-Wechsel setzt den Ausschnitt zurück; Bildränder begrenzen das Verschieben.
