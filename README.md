@@ -1,10 +1,20 @@
-# MeasureMap · v2026.10.1.23
+# MeasureMap · v2026.10.1.24
 
 **English** | [Deutsch](README.de.md)
 
 A standalone React/TypeScript SPA for locally georeferencing Emlid survey photos. Repository and Netlify project: `measuremap-viewer-editor-emlid`. The existing MetaLens metadata inspector remains available through **Metadata inspector**. Switching views preserves the loaded survey project.
 
 [Open MeasureMap](https://measuremap-viewer-editor-emlid.netlify.app/)
+
+## Roof / subject surface and GSD · v2026.10.1.24
+
+In **DJI → Recalculate route → Roof / subject surface and GSD**, enter the roof/subject height above launch ground and the launch offset above that same ground. Preview shows the actual vertical capture distance, **GSD on roof / subject** and the comparison **GSD at launch ground level** using the specified image resolution.
+
+Capture distance = relative flight height + launch offset − roof/subject height. A 40 m relative flight with a ground launch above a 15 m roof has 25 m capture distance. At the same flight altitude, higher roofs produce finer estimated GSD and require smaller lane/photo distances to retain the same overlap percentages. The estimate uses the imported raster/capture calibration when available, or supported camera optics; it assumes a horizontal subject plane. Tilted cameras and sloping roofs have varying GSD across the image.
+
+**Apply subject surface** preserves flight altitude, writes the capture distance into DJI `globalShootHeight`, enables automatic spacing and discards the old executable raster. Then **Recalculate route** to use the smaller spacing. Export / reimport preserves flight and shooting heights. On import, the relative subject level is inferred from those heights with an initial zero launch offset; verify physical roof height and launch offset. Missing camera calibration / resolution displays no guessed GSD. Roofs at or above flight level are rejected.
+
+Fixed-plane roof correction is available for constant, relative-to-launch flights. It is disabled for variable-height routes and active DEM/DSM terrain following: DSM roofs are already represented in the elevation model, and the model-clearance field drives spacing/GSD. Roof height must not be subtracted twice. Reference: [DJI roof inspection workflow](https://enterprise-insights.dji.com/blog/roof-inspection-workflow?hs_amp=true).
 
 ## Local terrain following and launch-height calculator · v2026.10.1.23
 

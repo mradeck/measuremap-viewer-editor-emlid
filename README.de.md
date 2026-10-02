@@ -1,10 +1,20 @@
-# MeasureMap · v2026.10.1.23
+# MeasureMap · v2026.10.1.24
 
 [English](README.md) | **Deutsch**
 
 Eigenständige React/TypeScript-SPA zur lokalen Georeferenzierung von Emlid-Fotos. Repository und Netlify-Projekt: `measuremap-viewer-editor-emlid`. Die vorhandene MetaLens-Metadatenansicht bleibt unter „Metadaten-Inspektor“ erreichbar. Beim Wechsel bleibt das geladene Vermessungsprojekt erhalten.
 
 [MeasureMap öffnen](https://measuremap-viewer-editor-emlid.netlify.app/)
+
+## Dach-/Motivebene und GSD · v2026.10.1.24
+
+Unter **DJI → Route neu berechnen → Dach / Motivebene und GSD** die Dach-/Motivhöhe über dem Startboden und den Startversatz über demselben Boden eingeben. Die Vorschau zeigt den tatsächlichen vertikalen Aufnahmeabstand, **GSD auf Dach / Motiv** und als Vergleich die **GSD auf Startbodenniveau**, jeweils mit der eingestellten Fotoauflösung.
+
+Aufnahmeabstand = relative Flughöhe + Startversatz − Dach-/Motivhöhe. Bei 40 m relativer Flughöhe, Start am Boden und einem 15 m hohen Dach beträgt der Aufnahmeabstand 25 m. Bei gleicher Flughöhe erzeugen höhere Dächer eine feinere geschätzte GSD und benötigen kleinere Bahn-/Fotoabstände für dieselben Überlappungsprozente. Die Schätzung nutzt Originalraster-/Fotoauslöser-Kalibrierung oder unterstützte Kameraoptik und eine horizontale Motivebene. Geneigte Kameras und Dächer haben unterschiedliche GSD innerhalb des Bildes.
+
+**Motivebene übernehmen** erhält die Flughöhe, schreibt den Aufnahmeabstand in DJI `globalShootHeight`, aktiviert automatische Abstände und verwirft die bisherige ausführbare Route. Danach **Route neu berechnen** für die neuen Abstände. Export und Rückimport erhalten Flug- und Aufnahmehöhe. Beim Import wird die relative Motivebene daraus mit zunächst 0 m Startversatz abgeleitet; tatsächliche Dachhöhe und Startversatz prüfen. Ohne Kamerakalibrierung / Fotoauflösung wird keine GSD geraten. Motivebenen auf oder oberhalb der Flughöhe werden abgelehnt.
+
+Die feste Dachkorrektur gilt für konstante Flughöhen relativ zum Start. Bei variablen Höhenfolgen und aktiver DEM-/DSM-Geländefolge ist sie deaktiviert: DSM-Dächer sind bereits Teil des Höhenmodells; dort steuert der Modellabstand die Abstände und GSD. Die Dachhöhe darf nicht doppelt abgezogen werden. Quelle: [DJI-Dachinspektionsworkflow](https://enterprise-insights.dji.com/de/blog/roof-inspection-workflow).
 
 ## Lokale Geländefolge und Start-Höhenrechenhilfe · v2026.10.1.23
 

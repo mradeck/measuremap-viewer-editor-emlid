@@ -111,3 +111,8 @@ export async function recalculateTerrainMission(m:Mission,settings:PlanSettings,
  const terrain=await terrainProfile(plan,options,X.numeric(td,'autoFlightSpeed')??0);
  return recalculateMission(adjusted,{...settings,terrain});
 }
+
+export function subjectDistance(relativeFlightHeight:number,subjectAboveLaunchGround:number,launchAboveGround:number):number{
+ if(![relativeFlightHeight,subjectAboveLaunchGround,launchAboveGround].every(Number.isFinite)||launchAboveGround<0)throw new Error('Invalid subject / launch height.');
+ return relativeFlightHeight+launchAboveGround-subjectAboveLaunchGround;
+}

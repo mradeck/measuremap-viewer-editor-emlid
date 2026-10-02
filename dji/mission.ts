@@ -142,3 +142,10 @@ export function setShootingHeight(m:Mission,height:number):Mission{
  if(!Number.isFinite(height)||height<=0)throw new Error('Shooting height must be positive.');
  return rewrite(m,(d,execution)=>{if(execution)return;const e=all(d,'globalShootHeight')[0];if(!e)throw new Error('Missing DJI shooting height.');set(e,height);});
 }
+
+export function setSubjectSurface(m:Mission,subjectAboveLaunchGround:number,launchAboveGround:number):Mission{
+ if(m.heightMode!=='relativeToStartPoint'||m.flightHeight===null||![subjectAboveLaunchGround,launchAboveGround].every(Number.isFinite)||launchAboveGround<0)throw new Error('A relative-to-launch mission and valid subject / launch levels are required.');
+ if(m.points.length>1&&Math.max(...m.points.map(p=>p.height))-Math.min(...m.points.map(p=>p.height))>.01)throw new Error('A fixed subject surface requires a constant flight height.');
+ const clearance=m.flightHeight+launchAboveGround-subjectAboveLaunchGround;
+ return planningOnly(setShootingHeight(m,clearance));
+}
