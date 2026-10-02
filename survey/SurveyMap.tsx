@@ -40,7 +40,7 @@ export default function SurveyMap(props:Props) {
   },[props.alkis,props.style,props.opacity]);
   useEffect(()=>{
     const m=map.current!;if(orthoLayer.current){m.removeLayer(orthoLayer.current);orthoLayer.current=undefined;}
-    if(props.ortho&&props.showOrtho){const layer=new OrthoLayer(props.ortho,props.orthoOpacity);layer.addTo(m);orthoLayer.current=layer;}
+    if(props.ortho&&props.showOrtho){const layer=new OrthoLayer(props.ortho,props.orthoOpacity);layer.on('tileerror',()=>latest.current.onError(t('Orthofoto konnte nicht nachgeladen werden.')));layer.addTo(m);orthoLayer.current=layer;}
   },[props.ortho,props.showOrtho]);
   useEffect(()=>{orthoLayer.current?.setOpacity(props.orthoOpacity);},[props.orthoOpacity]);
   useEffect(()=>{

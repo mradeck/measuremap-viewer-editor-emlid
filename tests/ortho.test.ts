@@ -21,3 +21,13 @@ test('NoData and alpha become transparent, PixelIsPoint centers are respected',a
  assert.deepEqual(pixelToWorld(imageAffine(image),.5,.5),[696900,5353800]);
  const o=await decodeOrtho(image,'rgba.tif');assert.deepEqual([o.pixels[3],o.pixels[7],o.pixels[11],o.pixels[15]],[0,0,128,255]);
 });
+test('16K raster windows retain individual pixels lost by the overview',async()=>{
+ const width=16384,height=4,values=new Uint8Array(width*height*3);
+ for(let y=0;y<height;y++)for(let x=0;x<width;x++){const i=(y*width+x)*3;values[i]=x%2?255:0;values[i+1]=y*50;values[i+2]=x%256;}
+ const image=await (await fromArrayBuffer(writeArrayBuffer(values,{...metadata,width,height,PhotometricInterpretation:2,SamplesPerPixel:3,BitsPerSample:[8,8,8]}))).getImage();
+ const o=await decodeOrtho(image,'16k.tif');assert.equal(o.width,16384);assert.equal(o.previewWidth,4096);
+ const region=await o.readWindow([12344,1,12348,3]);assert.equal(region.width,4);assert.equal(region.height,2);
+ assert.deepEqual([...region.pixels.slice(0,8)],[0,50,56,255,255,50,57,255]);
+ assert.strictEqual(await o.readWindow([12344,1,12348,3]),region);
+ const abort=new AbortController();abort.abort();await assert.rejects(o.readWindow([12344,1,12348,3],abort.signal),{name:'AbortError'});
+});

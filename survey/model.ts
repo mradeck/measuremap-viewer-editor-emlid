@@ -3,7 +3,7 @@ import Papa from 'papaparse';
 import exifr from 'exifr';
 import proj4 from 'proj4';
 
-export const VERSION = 'v2026.10.1.14';
+export const VERSION = 'v2026.10.1.15';
 export const CRS_OPTIONS = ['EPSG:25832', 'EPSG:25833', 'EPSG:32632', 'EPSG:32633', 'EPSG:4326'] as const;
 for (const zone of [32, 33]) {
   proj4.defs(`EPSG:258${zone}`, `+proj=utm +zone=${zone} +ellps=GRS80 +units=m +no_defs`);

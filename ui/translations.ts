@@ -2,6 +2,8 @@ export type Language = 'de' | 'en';
 let activeLanguage:Language='de';
 export const setActiveLanguage=(language:Language)=>{activeLanguage=language;};
 export const english:Record<string,string>={
+"Detailansicht in Originalauflösung. Bildbereiche werden beim Zoomen lokal nachgeladen.":"Full-resolution detail view. Image regions are loaded locally as you zoom.",
+"Orthofoto konnte nicht nachgeladen werden.":"Could not load orthophoto detail.",
 "Fotos, Emlid-CSV, DXF, GeoTIFF oder ZIP":"Photos, Emlid CSV, DXF, GeoTIFF or ZIP",
 "Orthofoto · GeoTIFF":"Orthophoto · GeoTIFF",
 "Georeferenziertes TIFF hinzufügen":"Add a georeferenced TIFF",

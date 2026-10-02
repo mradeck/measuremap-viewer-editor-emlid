@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.14
+# MeasureMap · v2026.10.1.15
 
 **English** | [Deutsch](README.de.md)
 
@@ -25,7 +25,7 @@ npm run build
 
 Copy the entire contents of `dist/` to a static web server. Subdirectory hosting is supported (`base: './'`). No backend or photo uploads are required. Do not open the app directly through `file://`; use `npm run preview` for local testing.
 
-The displayed version follows `vYear.Month.Version.Subversion`; the npm version `2026.10.1-14` represents the same version as valid SemVer.
+The displayed version follows `vYear.Month.Version.Subversion`; the npm version `2026.10.1-15` represents the same version as valid SemVer.
 
 ## Workflow
 
@@ -135,4 +135,4 @@ Load one `.tif` or `.tiff` through **Add files**, drag and drop, a folder, or a 
 
 The orthophoto is reprojected into map tiles above the basemap/ALKIS and below DXF, survey points and photos. **Show all** includes its extent. The layer has visibility, opacity and removal controls. RGB/RGBA, grayscale and palette TIFFs are supported; alpha and NoData are transparent. RGB/RGBA supports 8/16-bit integer channels.
 
-The app builds a local preview capped at 4096 pixels on the longest side, reading bounded source windows to limit memory use. Zooming further magnifies this preview, not the full native raster. The TIFF stays unchanged and is not part of the photo metadata export. Loading another orthophoto replaces the current layer. Files remain local; reload discards the project.
+The app uses an overview for distant views and reads the visible GeoTIFF windows at native resolution when zoomed in, including 8K/16K images. Native windows are cached with a 32 MiB limit and at most two concurrent reads. Obsolete tile reads are cancelled when changing views. Bilinear interpolation preserves transparent edges, and high-DPI displays render up to twice the tile resolution. Original pixel resolution is the final detail limit; further zoom cannot add information. The TIFF stays unchanged and is not part of the photo metadata export. Loading another orthophoto replaces the current layer. Files remain local; reload discards the project.
