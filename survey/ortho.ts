@@ -1,6 +1,9 @@
 import proj4 from 'proj4';
 import {translate as t} from '../ui/translations';
-import type {GeoTIFFImage} from 'geotiff';
+import type {GeoTIFFImage,Pool} from 'geotiff';
+import {cachedRasterReader} from './ortho-cache';
+let decoderPool:Promise<Pool>|undefined;
+async function getDecoderPool(){if(typeof Worker==='undefined')return undefined;return decoderPool??=import('geotiff').then(({Pool})=>new Pool(2));}
 export type Affine=[number,number,number,number,number,number];
 export interface Ortho {name:string;crs:string;width:number;height:number;previewWidth:number;previewHeight:number;pixels:Uint8ClampedArray;affine:Affine;bounds:[number,number][];projection:proj4.Converter;readWindow:(window:RasterWindow,signal?:AbortSignal)=>Promise<RasterPixels>}
 export type RasterWindow=[number,number,number,number];
@@ -30,6 +33,7 @@ export async function readOrtho(file:File):Promise<Ortho> {
   return decodeOrtho(image,file.name);
 }
 export async function decodeOrtho(image:GeoTIFFImage,name:string):Promise<Ortho> {
+  const pool=await getDecoderPool();
   const crs=rasterCrs(image.getGeoKeys()||{}),affine=imageAffine(image),width=image.getWidth(),height=image.getHeight();
   if(!width||!height)throw new Error(t('GeoTIFF: leeres Raster.'));
   const projection=proj4(crs,'EPSG:4326');
@@ -46,20 +50,20 @@ export async function decodeOrtho(image:GeoTIFFImage,name:string):Promise<Ortho>
   for(let y=0;y<previewHeight;y+=rows){
     const n=Math.min(rows,previewHeight-y),top=Math.floor(y*height/previewHeight),bottom=Math.ceil((y+n)*height/previewHeight);
     const window:[number,number,number,number]=[0,top,width,bottom];
-    const raster=await readRasterWindow(image,window,previewWidth,n);
+    const raster=await readRasterWindow(image,window,previewWidth,n,undefined,pool);
     pixels.set(raster.pixels,y*previewWidth*4);
     await new Promise<void>(resolve=>setTimeout(resolve,0));
   }
-  return {name,crs,width,height,previewWidth,previewHeight,pixels,affine,bounds,projection,readWindow:makeNativeReader(image)};
+  return {name,crs,width,height,previewWidth,previewHeight,pixels,affine,bounds,projection,readWindow:cachedRasterReader(width,height,window=>readRasterWindow(image,window,undefined,undefined,undefined,pool))};
 }
 
 function validateColorFormat(image:GeoTIFFImage){
   const dir=image.getFileDirectory(),bits=dir.getValue('BitsPerSample')||[8],pi=dir.getValue('PhotometricInterpretation');
   if(pi===2&&(image.getSamplesPerPixel()>4||bits.some(b=>b!==8&&b!==16)))throw new Error(t('GeoTIFF: unterstützt werden RGB/RGBA mit 8 oder 16 Bit, Graustufen und Farbindizes.'));
 }
-export async function readRasterWindow(image:GeoTIFFImage,window:RasterWindow,width=window[2]-window[0],height=window[3]-window[1],signal?:AbortSignal):Promise<RasterPixels>{
+export async function readRasterWindow(image:GeoTIFFImage,window:RasterWindow,width=window[2]-window[0],height=window[3]-window[1],signal?:AbortSignal,pool?:Pool):Promise<RasterPixels>{
   const dir=image.getFileDirectory(),bits=dir.getValue('BitsPerSample')||[8],pi=dir.getValue('PhotometricInterpretation'),extra=dir.getValue('ExtraSamples'),nodata=image.getGDALNoData();
-  const options={window,width,height,interleave:true as const,resampleMethod:'nearest',signal};
+  const options={window,width,height,interleave:true as const,resampleMethod:'nearest',signal,pool};
   const rgb=await image.readRGB({...options,enableAlpha:true}),channels=rgb.length/(width*height);
   const mask=nodata!==null&&pi!==2?await image.readRasters({...options,samples:[0]}):null;
   const pixels=new Uint8ClampedArray(width*height*4);
@@ -71,25 +75,4 @@ export async function readRasterWindow(image:GeoTIFFImage,window:RasterWindow,wi
     pixels[dst+3]=empty?0:alpha*255;
   }
   return {pixels,width,height};
-}
-/** Cache decoded visible windows, not the entire 8K/16K image. */
-function makeNativeReader(image:GeoTIFFImage):Ortho['readWindow']{
-  const cache=new Map<string,RasterPixels>();let bytes=0,active=0;
-  const queue:Array<()=>void>=[];
-  return async(window,signal)=>{
-    const key=window.join(','),hit=cache.get(key);
-    if(signal?.aborted)throw new DOMException('Aborted','AbortError');
-    if(hit){cache.delete(key);cache.set(key,hit);return hit;}
-    if(active>=2)await new Promise<void>(resolve=>queue.push(resolve));else active++;
-    try {
-      if(signal?.aborted)throw new DOMException('Aborted','AbortError');
-      const result=await readRasterWindow(image,window,undefined,undefined,signal);
-      if(!signal?.aborted){
-        const old=cache.get(key);if(old)bytes-=old.pixels.byteLength;
-        cache.delete(key);cache.set(key,result);bytes+=result.pixels.byteLength;
-        while(bytes>32*1024*1024&&cache.size){const first=cache.keys().next().value!;bytes-=cache.get(first)!.pixels.byteLength;cache.delete(first);}
-      }
-      return result;
-    }finally{const next=queue.shift();if(next)next();else active--;}
-  };
 }

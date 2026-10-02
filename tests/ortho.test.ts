@@ -28,6 +28,6 @@ test('16K raster windows retain individual pixels lost by the overview',async()=
  const o=await decodeOrtho(image,'16k.tif');assert.equal(o.width,16384);assert.equal(o.previewWidth,4096);
  const region=await o.readWindow([12344,1,12348,3]);assert.equal(region.width,4);assert.equal(region.height,2);
  assert.deepEqual([...region.pixels.slice(0,8)],[0,50,56,255,255,50,57,255]);
- assert.strictEqual(await o.readWindow([12344,1,12348,3]),region);
+ assert.deepEqual(await o.readWindow([12344,1,12348,3]),region);
  const abort=new AbortController();abort.abort();await assert.rejects(o.readWindow([12344,1,12348,3],abort.signal),{name:'AbortError'});
 });

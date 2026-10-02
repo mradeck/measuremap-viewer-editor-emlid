@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.16
+# MeasureMap · v2026.10.1.17
 
 **English** | [Deutsch](README.de.md)
 
@@ -25,7 +25,7 @@ npm run build
 
 Copy the entire contents of `dist/` to a static web server. Subdirectory hosting is supported (`base: './'`). No backend or photo uploads are required. Do not open the app directly through `file://`; use `npm run preview` for local testing.
 
-The displayed version follows `vYear.Month.Version.Subversion`; the npm version `2026.10.1-16` represents the same version as valid SemVer.
+The displayed version follows `vYear.Month.Version.Subversion`; the npm version `2026.10.1-17` represents the same version as valid SemVer.
 
 ## Workflow
 
@@ -142,3 +142,11 @@ The app uses an overview for distant views and reads the visible GeoTIFF windows
 DXF imports are additive, including multiple files in one import or ZIP. Each drawing has its own visibility, removal, CRS and layer controls; identically named layers in different drawings remain independent. The CRS selector for new files sets the import default; an existing drawing's own selector only changes that drawing.
 
 Map lines, points and labels use DXF object colors or inherited layer colors. ACI colors and 24-bit TrueColor are supported; TrueColor takes precedence. CAD's adaptive ACI color 7 uses the interface foreground color for readability. Standalone BYBLOCK objects fall back to the layer color; block INSERT geometry remains unsupported. No private DXF files are included in the repository.
+
+## Map rendering performance
+
+CAD geometry and survey points use a shared Canvas renderer. DXF, points and photo markers are independent layers, so zoom-dependent photo stacking no longer rebuilds CAD geometry. Adaptive raster reprojection interpolates a checked coordinate grid instead of running a full projection for every display pixel. Accuracy checks use a 0.1 source-pixel tolerance and subdivide cells when necessary. Native detail and transparent bilinear sampling are retained.
+
+Native GeoTIFF reads share fixed 512-pixel source blocks across neighbouring tiles and zoom levels, with a 32 MiB LRU cache and at most two concurrent reads. Overlapping requests share decoding; cancelled consumers do not cancel another tile's shared read. Obsolete queued reads skip decoding. Two browser workers decompress TIFF blocks, and pixel sampling periodically yields to keep map interaction responsive. Initial loading still needs to build the overview, and decoding speed depends on TIFF compression and storage layout.
+
+The footer also links to [Geodata Inspector & Cleaner](https://geodata-inspector-cleaner.netlify.app/).

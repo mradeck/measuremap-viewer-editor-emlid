@@ -14,17 +14,17 @@ export const ALKIS_URL='https://geoservices.bayern.de/od/wms/alkis/v1/parzellark
 export const ALKIS_STYLES={farbe:'by_alkis_parzellarkarte_farbe',grau:'by_alkis_parzellarkarte_grau',gelb:'by_alkis_parzellarkarte_umr_gelb',schwarz:'by_alkis_parzellarkarte_umr_schwarz'};
 interface Props {ortho:Ortho|null;showOrtho:boolean;orthoOpacity:number;previousPoint:boolean;photos:Photo[];points:SurveyPoint[];selected:string|null;onSelect:(id:string)=>void;onPreview:(id:string|null)=>void;onOpen:(id:string)=>void;drawing:Drawing|null;hiddenLayers:string[];showDxf:boolean;labels:boolean;showPoints:boolean;showPhotos:boolean;alkis:boolean;style:keyof typeof ALKIS_STYLES;opacity:number;fit:number;placing:boolean;onPlace:(p:Position)=>void;onError:(s:string)=>void}
 export default function SurveyMap(props:Props) {
-  const {language}=usePreferences();
+  const {language,theme}=usePreferences();
   const [zoomLevel,setZoomLevel]=useState(18);
   const zoom=useRef<L.Control.Zoom>(),skipPan=useRef(false);
   const orthoLayer=useRef<OrthoLayer>();
   const photoMarkers=useRef(new Map<string,L.Marker>()),hoveredPhoto=useRef<string|null>(null);
-  const node=useRef<HTMLDivElement>(null),map=useRef<L.Map>(),overlay=useRef<L.LayerGroup>(),wms=useRef<L.TileLayer.WMS>();
+  const node=useRef<HTMLDivElement>(null),map=useRef<L.Map>(),overlay=useRef<L.LayerGroup>(),cad=useRef<L.LayerGroup>(),surveyPoints=useRef<L.LayerGroup>(),wms=useRef<L.TileLayer.WMS>();
   const latest=useRef(props);latest.current=props;
   useEffect(()=>{
-    const m=L.map(node.current!,{maxZoom:MAX_MAP_ZOOM,zoomControl:false}).setView([48.30723,11.65589],18);map.current=m;
+    const m=L.map(node.current!,{maxZoom:MAX_MAP_ZOOM,zoomControl:false,preferCanvas:true}).setView([48.30723,11.65589],18);map.current=m;
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxNativeZoom:19,maxZoom:MAX_MAP_ZOOM,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(m);
-    overlay.current=L.layerGroup().addTo(m);
+    overlay.current=L.layerGroup().addTo(m);cad.current=L.layerGroup().addTo(m);surveyPoints.current=L.layerGroup().addTo(m);
     m.on('zoomend',()=>setZoomLevel(m.getZoom()));
     m.on('click',e=>{if(latest.current.placing)latest.current.onPlace({lat:e.latlng.lat,lon:e.latlng.lng,altitude:null});});
     const observer=new ResizeObserver(()=>m.invalidateSize());observer.observe(node.current!);
@@ -44,14 +44,23 @@ export default function SurveyMap(props:Props) {
   },[props.ortho,props.showOrtho]);
   useEffect(()=>{orthoLayer.current?.setOpacity(props.orthoOpacity);},[props.orthoOpacity]);
   useEffect(()=>{
-    const g=overlay.current!;g.clearLayers();photoMarkers.current.clear();hoveredPhoto.current=null;latest.current.onPreview(null);
+    const g=cad.current!;g.clearLayers();
+    const foreground=getComputedStyle(node.current!).getPropertyValue('--s-text').trim();
     if(props.showDxf && props.drawing) for(const f of props.drawing.features) {
       if(props.hiddenLayers.includes(f.layer))continue;
-      if(f.kind==='line')L.polyline(f.coords,{color:f.color,weight:2,opacity:.9}).addTo(g);
-      else if(f.kind==='point')L.circleMarker(f.coords[0],{radius:2,color:f.color,weight:1}).addTo(g);
-      else if(props.labels) {const el=document.createElement('span');el.textContent=f.text||'';el.style.color=f.color;L.marker(f.coords[0],{interactive:false,icon:L.divIcon({className:'dxf-label',html:el,iconSize:[110,20]})}).addTo(g);}
+      // Canvas strokeStyle needs a concrete color, not a CSS variable.
+      const color=f.color==='var(--s-text)'?foreground:f.color;
+      if(f.kind==='line')L.polyline(f.coords,{color,weight:2,opacity:.9,interactive:false}).addTo(g);
+      else if(f.kind==='point')L.circleMarker(f.coords[0],{radius:2,color,weight:1,interactive:false}).addTo(g);
+      else if(props.labels) {const el=document.createElement('span');el.textContent=f.text||'';el.style.color=color;L.marker(f.coords[0],{interactive:false,icon:L.divIcon({className:'dxf-label',html:el,iconSize:[110,20]})}).addTo(g);}
     }
+  },[props.drawing,props.hiddenLayers,props.showDxf,props.labels,theme]);
+  useEffect(()=>{
+    const g=surveyPoints.current!;g.clearLayers();
     if(props.showPoints)for(const p of props.points)L.circleMarker([p.lat,p.lon],{radius:3,color:'#74cfca',weight:1,fillOpacity:.55}).bindTooltip(t('PUNKT {name}',{name:p.name})).addTo(g);
+  },[props.points,props.showPoints,language]);
+  useEffect(()=>{
+    const g=overlay.current!;g.clearLayers();photoMarkers.current.clear();hoveredPhoto.current=null;latest.current.onPreview(null);
     // Small screen-space stacks reveal at most five slots at any zoom.
     // Every Leaflet marker retains the exact geographic anchor.
     const groups=new Map<string,number>();
@@ -81,13 +90,13 @@ export default function SurveyMap(props:Props) {
       });
       photoMarkers.current.set(p.id,marker);
     }
-  },[props.photos,props.points,props.drawing,props.hiddenLayers,props.showDxf,props.labels,props.showPoints,props.showPhotos,props.previousPoint,language,zoomLevel]);
+  },[props.photos,props.points,props.showPhotos,props.previousPoint,zoomLevel]);
   useEffect(()=>{
     for(const [id,marker] of photoMarkers.current){
       marker.getElement()?.querySelector('.photo-pin')?.classList.toggle('selected',id===props.selected);
       marker.setZIndexOffset(id===hoveredPhoto.current?2000:id===props.selected?1000:100);
     }
-  },[props.selected,props.photos,props.points,zoomLevel,props.drawing,props.hiddenLayers,props.showDxf,props.labels,props.showPoints,props.showPhotos,props.previousPoint,language]);
+  },[props.selected,props.photos,props.points,zoomLevel,props.showPhotos,props.previousPoint]);
   useEffect(()=>{
     const coords:[number,number][]=[];
     for(const p of props.photos){const pos=effectivePosition(p,props.points,props.previousPoint);if(pos)coords.push([pos.lat,pos.lon]);}

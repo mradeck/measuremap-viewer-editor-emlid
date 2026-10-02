@@ -1,6 +1,7 @@
 import L from 'leaflet';
 import {worldToPixel,type Ortho,type RasterWindow,type RasterPixels} from './ortho';
 import {sampleRaster} from './ortho-sampling';
+import {warpGrid} from './ortho-warp';
 /** Overview at distant zooms; native GeoTIFF windows as soon as details matter. */
 export default class OrthoLayer extends L.GridLayer {
   private requests=new Map<HTMLElement,AbortController>();
@@ -19,12 +20,14 @@ export default class OrthoLayer extends L.GridLayer {
   }
   private async renderTile(canvas:HTMLCanvasElement,coords:L.Coords,signal:AbortSignal){
     if(signal.aborted||!this._map)return;
-    const map=this._map,n=canvas.width,ratio=n/256,o=this.ortho,xy=new Float64Array(n*n*2);
+    const map=this._map,n=canvas.width,ratio=n/256,o=this.ortho;
+    const xy=warpGrid(n,(x,y)=>{
+      const ll=map.unproject(L.point(coords.x*256+(x+.5)/ratio,coords.y*256+(y+.5)/ratio),coords.z);
+      const [wx,wy]=o.projection.inverse([ll.lng,ll.lat]);return worldToPixel(o.affine,wx,wy);
+    });
     let left=Infinity,top=Infinity,right=-Infinity,bottom=-Infinity;
     for(let y=0;y<n;y++)for(let x=0;x<n;x++){
-      const ll=map.unproject(L.point(coords.x*256+(x+.5)/ratio,coords.y*256+(y+.5)/ratio),coords.z);
-      const [wx,wy]=o.projection.inverse([ll.lng,ll.lat]),[px,py]=worldToPixel(o.affine,wx,wy),i=(y*n+x)*2;
-      xy[i]=px;xy[i+1]=py;
+      const i=(y*n+x)*2,px=xy[i],py=xy[i+1];
       if(px>=0&&py>=0&&px<o.width&&py<o.height){left=Math.min(left,px);top=Math.min(top,py);right=Math.max(right,px);bottom=Math.max(bottom,py);}
     }
     if(!Number.isFinite(left))return;
@@ -35,7 +38,12 @@ export default class OrthoLayer extends L.GridLayer {
     const raster:RasterPixels=native?await o.readWindow(window,signal):{pixels:o.pixels,width:o.previewWidth,height:o.previewHeight};
     if(signal.aborted||!this._map)return;
     const ctx=canvas.getContext('2d')!,image=ctx.createImageData(n,n);
+    let lastYield=performance.now();
     for(let k=0;k<n*n;k++){
+      if(k%(n*8)===0&&performance.now()-lastYield>8){
+        await new Promise<void>(resolve=>setTimeout(resolve,0));
+        if(signal.aborted||!this._map)return;lastYield=performance.now();
+      }
       const px=xy[k*2],py=xy[k*2+1];if(px<0||py<0||px>=o.width||py>=o.height)continue;
       const sx=native?px-window[0]-.5:px/o.width*o.previewWidth-.5,sy=native?py-window[1]-.5:py/o.height*o.previewHeight-.5;
       sampleRaster(raster,sx,sy,image.data,k*4);
