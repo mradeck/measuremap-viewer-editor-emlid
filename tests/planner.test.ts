@@ -1,4 +1,4 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {DOMParser,XMLSerializer} from '@xmldom/xmldom';import JSZip from 'jszip';import {inspectMission,editAreaVertex,editMappingTemplate,exportMission,missionXml as X} from '../dji/mission';import {inferSettings,recalculateMission} from '../dji/planner';Object.assign(globalThis,{DOMParser,XMLSerializer});
+import {test} from 'node:test';import assert from 'node:assert/strict';import {DOMParser,XMLSerializer} from '@xmldom/xmldom';import JSZip from 'jszip';import {inspectMission,editAreaVertex,editMappingTemplate,exportMission,readMission,setFlightHeight,changeAreaTopology,changeSpeed,missionXml as X} from '../dji/mission';import {inferSettings,recalculateMission,estimateGsd,photoFootprint} from '../dji/planner';Object.assign(globalThis,{DOMParser,XMLSerializer});
 const ns='http://www.dji.com/wpmz/1.0.6',head=`<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:wpml="${ns}"><Document>`;
 const config='<wpml:missionConfig><wpml:takeOffSecurityHeight>40</wpml:takeOffSecurityHeight><wpml:droneInfo><wpml:droneEnumValue>77</wpml:droneEnumValue></wpml:droneInfo><wpml:payloadInfo><wpml:payloadEnumValue>66</wpml:payloadEnumValue><wpml:payloadPositionIndex>0</wpml:payloadPositionIndex></wpml:payloadInfo></wpml:missionConfig>';
 const tpl=head+config+'<Folder><wpml:templateType>mapping2d</wpml:templateType><wpml:templateId>0</wpml:templateId><wpml:autoFlightSpeed>2</wpml:autoFlightSpeed><wpml:waylineCoordinateSysParam><wpml:heightMode>relativeToStartPoint</wpml:heightMode><wpml:globalShootHeight>25</wpml:globalShootHeight></wpml:waylineCoordinateSysParam><Placemark><wpml:height>40</wpml:height><wpml:gimbalPitchAngle>-90</wpml:gimbalPitchAngle><wpml:direction>0</wpml:direction><wpml:margin>0</wpml:margin><wpml:shootType>time</wpml:shootType><wpml:overlap><wpml:orthoCameraOverlapH>80</wpml:orthoCameraOverlapH><wpml:orthoCameraOverlapW>80</wpml:orthoCameraOverlapW></wpml:overlap><Polygon><outerBoundaryIs><LinearRing><coordinates>11.5,48,0 11.501,48,0 11.501,48.001,0 11.5,48.001,0</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark></Folder></Document></kml>';
@@ -11,3 +11,27 @@ test('calibration survives boundary edits and overlap changes; action groups are
 });
 test('regeneration preserves startup focus / gimbal settings and remaps timelapse start and stop per lane',()=>{const seed=recalculateMission(synthetic(),{laneSpacing:10,photoDistance:5}),d=X.xml(seed.mission.waylines!);const p=X.all(d,'actionActuatorFunc')[1];p.textContent='startTimeLapse';const params=X.all(p.parentNode as Element,'actionActuatorFuncParam')[0];const n=d.createElementNS(ns,'wpml:minShootInterval');n.textContent='2.5';params.appendChild(n);const original=inspectMission('seed.kmz',tpl,new globalThis.XMLSerializer().serializeToString(d)),q=recalculateMission(original,{laneSpacing:8,photoDistance:6});const out=X.xml(q.mission.waylines!);assert.equal(new globalThis.XMLSerializer().serializeToString(X.all(out,'startActionGroup')[0]),new globalThis.XMLSerializer().serializeToString(X.all(X.xml(original.waylines!),'startActionGroup')[0]));assert.equal(X.all(out,'actionActuatorFunc').filter(e=>e.textContent==='startTimeLapse').length,q.lanes);assert.equal(X.all(out,'actionActuatorFunc').filter(e=>e.textContent==='stopTimeLapse').length,q.lanes);assert.ok(X.all(out,'minShootInterval').every(e=>Number(e.textContent)===3));});
 test('unsupported terrain / mission types, custom waypoint actions and impossible photo intervals fail explicitly',()=>{assert.throws(()=>recalculateMission({...synthetic(),templateType:'mapping3d'},{laneSpacing:5,photoDistance:5}),/mapping2d/);assert.throws(()=>recalculateMission(synthetic(),{laneSpacing:5,photoDistance:.1}),/0.5/);const q=recalculateMission(synthetic(),{laneSpacing:5,photoDistance:5});const bad=inspectMission('bad.kmz',tpl,q.mission.waylines!.replace('takePhoto','hover'));assert.throws(()=>recalculateMission(bad,{laneSpacing:5,photoDistance:5}),/custom/);});
+
+test('imported execution height wins over zero template and survives boundary edits, undo-independent topology edits and KMZ round trip',async()=>{
+ const route=recalculateMission(synthetic(),{laneSpacing:5,photoDistance:4}).mission.waylines;
+ const imported=inspectMission('zero.kmz',tpl.replace('<wpml:height>40','<wpml:height>0'),route);
+ assert.equal(imported.flightHeight,40);assert.equal(imported.height,25);
+ const moved=editAreaVertex(imported,0,0,{lat:48,lon:11.4999});assert.equal(moved.flightHeight,40);assert.equal(moved.height,25);assert.equal(X.numeric(X.xml(moved.template!),'height'),40);
+ const changed=changeSpeed(changeAreaTopology(setFlightHeight(moved,55),0,'insert',0),2);
+ assert.equal(changed.flightHeight,55);assert.equal(changed.height,40);
+ const q=recalculateMission(changed,inferSettings(changed)!);assert.ok(q.mission.points.every(p=>p.height===55));
+ const bytes=await exportMission(q.mission),round=await readMission({name:'round.kmz',arrayBuffer:async()=>bytes.slice().buffer as ArrayBuffer});assert.equal(round.flightHeight,55);assert.equal(round.height,40);
+});
+test('percentage density changes spacing, retains camera footprint and GSD; shooting height scales GSD',()=>{
+ const seed=recalculateMission(synthetic(),{laneSpacing:5,photoDistance:4}),m=inspectMission('calibrated.kmz',tpl,seed.mission.waylines),before=inferSettings(m)!,g=estimateGsd(m,5280,3956)!;
+ assert.ok(g.calibrated);assert.ok(g.x>0&&g.y>0);
+ const more=editMappingTemplate(m,{direction:0,margin:0,orthoCameraOverlapW:90,orthoCameraOverlapH:90}),spacing=inferSettings(more)!;
+ assert.ok(Math.abs(spacing.laneSpacing/before.laneSpacing-.5)<.001);assert.ok(Math.abs(spacing.photoDistance/before.photoDistance-.5)<.001);assert.deepEqual(estimateGsd(more,5280,3956),g);
+ const higher=setFlightHeight(more,65),higherGsd=estimateGsd(higher,5280,3956)!;assert.ok(Math.abs(higherGsd.x/g.x-2)<.001);assert.ok(Math.abs(higherGsd.y/g.y-2)<.001);
+ assert.equal(estimateGsd(m,0,3956),null);assert.equal(estimateGsd(m,NaN,3956),null);
+ const dense=recalculateMission(more,spacing),sparse=recalculateMission(m,before);assert.ok(dense.lanes>sparse.lanes);assert.ok(dense.photoInterval<sparse.photoInterval);
+});
+test('M3E template has an optics-based estimate; unknown cameras require original route calibration',()=>{
+ const footprint=photoFootprint(synthetic())!,gsd=estimateGsd(synthetic(),5280,3956)!;assert.equal(footprint.calibrated,false);assert.ok(gsd.x>.6&&gsd.x<.8);assert.ok(Math.abs(gsd.x-gsd.y)<.001);
+ assert.equal(photoFootprint({...synthetic(),payload:'unknown'}),null);assert.equal(estimateGsd({...synthetic(),height:0},5280,3956),null);
+});

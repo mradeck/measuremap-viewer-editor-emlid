@@ -24,7 +24,7 @@ export function recalculateMission(m:Mission,settings:PlanSettings):PlanResult{
  const td=X.xml(m.template);if(X.all(td,'Polygon').length!==1)throw new Error('Use one survey polygon per mission.');
  for(const flag of ['elevationOptimizeEnable','smartObliqueEnable','facadeWaylineEnable','quickOrthoMappingEnable'])if(X.numeric(td,flag))throw new Error('Terrain-following / oblique / quick-ortho missions need Pilot 2 recalculation.');
  const heightMode=X.val(td,'heightMode');if(!['relativeToStartPoint','WGS84'].includes(heightMode))throw new Error('Only constant relative-to-start or WGS84 flight heights are supported.');
- const height=X.numeric(td,'height')??X.numeric(td,'globalHeight')??X.numeric(td,'globalShootHeight'),speed=X.numeric(td,'autoFlightSpeed'),direction=X.numeric(td,'direction')??0,margin=X.numeric(td,'margin')??0;
+ const height=m.flightHeight,speed=X.numeric(td,'autoFlightSpeed'),direction=X.numeric(td,'direction')??0,margin=X.numeric(td,'margin')??0;
  if(height===null||!Number.isFinite(height)||!speed||speed<=0||speed>15)throw new Error('Invalid flight height / speed.');
  if(!Number.isFinite(settings.photoDistance)||settings.photoDistance<=0||settings.photoDistance>500)throw new Error('Invalid photo spacing.');
  const interval=settings.photoDistance/speed;if(interval<.5)throw new Error('Photo interval is below 0.5 s. Reduce speed or increase photo spacing.');
@@ -74,9 +74,23 @@ export function recalculateMission(m:Mission,settings:PlanSettings):PlanResult{
  let id=0;function group(index:number,end:number,type:string,param:number|null,actions:Element[]){const g=element('actionGroup');g.appendChild(element('actionGroupId',id++));g.appendChild(element('actionGroupStartIndex',index));g.appendChild(element('actionGroupEndIndex',end));g.appendChild(element('actionGroupMode','sequence'));const trigger=element('actionTrigger');trigger.appendChild(element('actionTriggerType',type));if(param!==null)trigger.appendChild(element('actionTriggerParam',param));g.appendChild(trigger);actions.forEach((a,i)=>{write(a,'actionId',i);g.appendChild(a);});points[index].appendChild(g);}
  for(const [begin,end] of plan.legs){if(useLapse){const startAction=action('startTimeLapse'),params=X.all(startAction,'actionActuatorFuncParam')[0];write(params,'minShootInterval',Number(interval.toFixed(6)));group(begin,begin,'reachPoint',null,[startAction]);group(end,end,'reachPoint',null,[action('stopTimeLapse')]);}else group(begin,end,shootType==='time'?'multipleTiming':'multipleDistance',shootType==='time'?interval:settings.photoDistance,[action('takePhoto')]);}
  // Keep calibrated template overlap consistent with explicit spacing overrides.
- const calibration=inferSettings(m);
+ const footprint=photoFootprint(m),side=X.numeric(td,'orthoCameraOverlapW'),front=X.numeric(td,'orthoCameraOverlapH');
+ const calibration=inferSettings(m)||(footprint&&side!==null&&front!==null?{laneSpacing:footprint.width*(1-side/100),photoDistance:footprint.length*(1-front/100)}:null);
  if(calibration){for(const [tag,target,previous] of [['orthoCameraOverlapW',settings.laneSpacing,calibration.laneSpacing],['orthoCameraOverlapH',settings.photoDistance,calibration.photoDistance]] as const){const before=X.numeric(td,tag);if(before!==null){const after=100*(1-target/previous*(1-before/100));if(after<0||after>95)throw new Error('Spacing implies overlap outside 0–95%. Adjust lane / photo spacing.');if(Math.abs(after-before)>1e-4)X.set(X.all(td,tag)[0],Number(after.toFixed(6)));}}}
  for(const t of X.all(td,'updateTime'))X.set(t,Date.now());
  const result={...inspectMission(m.name,new XMLSerializer().serializeToString(td),new XMLSerializer().serializeToString(wd),m.entries),templatePath:m.templatePath,waylinesPath:m.waylinesPath,referenceTemplate:m.referenceTemplate,referenceWaylines:m.referenceWaylines};
  return {mission:result,lanes:plan.legs.length,distance:plan.distance,duration:plan.distance/speed,area:plan.area,photoInterval:interval};
+}
+
+/** Effective footprint inferred from imported lanes/capture actions, or M3E nadir optics. */
+export function photoFootprint(m:Mission):{width:number;length:number;calibrated:boolean}|null{
+ const inferred=inferSettings(m),side=m.template?X.numeric(X.xml(m.template),'orthoCameraOverlapW'):null,front=m.template?X.numeric(X.xml(m.template),'orthoCameraOverlapH'):null;
+ if(inferred&&inferred.laneSpacing>0&&inferred.photoDistance>0&&side!==null&&front!==null&&side<100&&front<100)return {width:inferred.laneSpacing/(1-side/100),length:inferred.photoDistance/(1-front/100),calibrated:true};
+ // DJI Mavic 3 Enterprise wide camera: 84 degree diagonal FOV, 5280 x 3956.
+ if(m.drone==='77'&&m.payload==='66'&&m.height!==null&&m.height>0){const diagonal=2*m.height*Math.tan(42*Math.PI/180),r=5280/3956;return {width:diagonal*r/Math.hypot(r,1),length:diagonal/Math.hypot(r,1),calibrated:false};}
+ return null;
+}
+export function estimateGsd(m:Mission,widthPixels:number,heightPixels:number):{x:number;y:number;calibrated:boolean}|null{
+ const footprint=photoFootprint(m);if(!footprint||![widthPixels,heightPixels].every(n=>Number.isFinite(n)&&n>0))return null;
+ return {x:100*footprint.width/widthPixels,y:100*footprint.length/heightPixels,calibrated:footprint.calibrated};
 }

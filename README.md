@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.21
+# MeasureMap · v2026.10.1.22
 
 **English** | [Deutsch](README.de.md)
 
@@ -6,11 +6,19 @@ A standalone React/TypeScript SPA for locally georeferencing Emlid survey photos
 
 [Open MeasureMap](https://measuremap-viewer-editor-emlid.netlify.app/)
 
+## Overlap, photo density, GSD and retained flight height · v2026.10.1.22
+
+The DJI panel exposes side overlap and **Photo density / forward overlap** as percentages (0–95%). Higher forward overlap means shorter capture distances and more photos. Click **Apply overlap**, then **Recalculate route**. Automatic spacing uses the imported raster/capture calibration, or the Mavic 3 Enterprise wide-camera geometry when no original raster exists. Manual metre spacing remains available and updates exported overlap values.
+
+**Flight height** displays the imported executable route height, even when the template contains a zero placeholder. Moving, adding or deleting boundary vertices and changing raster settings retain it. **Apply flight height** offsets the route heights and shooting height together, keeping the existing height reference and the difference between launch and subject level. The shooting height above the subject is displayed separately; the takeoff safety height remains independent.
+
+GSD is estimated in cm/pixel from the effective footprint divided by the image dimensions. Enter the actual photo width/height; M3E defaults are 5280 × 3956 pixels. For templates without raster calibration, the M3E fallback uses its 84° diagonal field of view and shooting height. See [DJI Mavic 3 Enterprise camera specifications](https://enterprise.dji.com/mavic-3-enterprise/specs). Unknown cameras need a calibrated imported raster and explicit photo resolution; no guessed resolution is used. The estimate assumes a flat subject surface; tilted cameras and terrain produce varying GSD across an image. Changing overlap changes capture density, not GSD; changing shooting height changes both footprint and GSD.
+
 ## Local route recalculation · v2026.10.1.21
 
 After editing a survey boundary, open **DJI · Pilot 2 → Recalculate route**. Check the lane and photo spacing, then click **Recalculate route**. The computed route appears directly on the map. **Export DJI KMZ** now includes both the edited template and the new executable `waylines.wpml`.
 
-For imported missions with an identifiable raster and capture interval, spacing is calibrated from the original route. Changed side/forward overlap and shooting height scale that calibration. The inferred values are estimates, not manufacturer camera specifications; the checkbox and numeric fields let you override them. For standalone templates without calibration, supply suitable spacing yourself. A loaded original or any later recalculation remains recoverable through Undo.
+For imported missions with an identifiable raster and capture interval, spacing is calibrated from the original route. Changed side/forward overlap and shooting height scale that calibration. The inferred values are estimates, not manufacturer camera specifications; the checkbox and numeric fields let you override them. For unsupported-camera templates without calibration, supply suitable spacing yourself. A loaded original or any later recalculation remains recoverable through Undo.
 
 The planner supports a single `mapping2d` polygon, optional holes, concave boundaries, flight direction, positive survey margin, constant relative-to-start or WGS84 height, and time/distance capture. Visibility paths keep transfer segments within the buffered survey area and outside interior exclusions. Startup camera/focus actions and device configuration are retained; flight-point actions and their indices are regenerated for each survey lane. It does not retain hand-edited waypoints when recalculating. Terrain-following, variable heights, oblique/quick-ortho, 3D missions and custom waypoint actions require Pilot 2 and produce explicit errors.
 

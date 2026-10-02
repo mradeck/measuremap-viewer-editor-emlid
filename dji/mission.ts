@@ -1,7 +1,7 @@
 import JSZip from 'jszip';
 export type Coordinate={lon:number;lat:number;alt:number};
 export interface Waypoint extends Coordinate {folder:number;index:number;height:number;speed:number;}
-export interface Mission {name:string;template:string|null;waylines:string|null;entries:Map<string,Uint8Array>;templatePath?:string;waylinesPath?:string;referenceTemplate?:string|null;referenceWaylines?:string|null;namespace:string;templateType:string;points:Waypoint[];rings:Coordinate[][];speed:number|null;height:number|null;heightMode:string;drone:string;payload:string;}
+export interface Mission {name:string;template:string|null;waylines:string|null;entries:Map<string,Uint8Array>;templatePath?:string;waylinesPath?:string;referenceTemplate?:string|null;referenceWaylines?:string|null;namespace:string;templateType:string;points:Waypoint[];rings:Coordinate[][];speed:number|null;height:number|null;flightHeight:number|null;heightMode:string;drone:string;payload:string;}
 const KML='http://www.opengis.net/kml/2.2';
 function xml(source:string):Document {
  if(/<!DOCTYPE|<!ENTITY/i.test(source))throw new Error('DTD / entities are not supported.');
@@ -25,7 +25,7 @@ export function inspectMission(name:string,template:string|null,waylines:string|
  else if(td)all(td,'Placemark').forEach((p,index)=>{const c=all(p,'Point')[0];if(!c)return;const q=coords(val(c,'coordinates'))[0];if(q)points.push({...q,folder:0,index:numeric(p,'index')??index,height:numeric(p,'height')??numeric(td,'globalHeight')??q.alt,speed:numeric(p,'waypointSpeed')??numeric(td,'autoFlightSpeed')??0});});
  if(!points.length&&!namespace&&td)points=all(td,'LineString').flatMap((line,folder)=>coords(val(line,'coordinates')).map((p,index)=>({...p,folder,index,height:p.alt,speed:0})));
  if(!points.length&&!rings.some(r=>r.length>=3))throw new Error('No route points or survey polygon found.');
- return {name,template,waylines,entries,referenceTemplate:template,referenceWaylines:waylines,namespace,templateType:val(d,'templateType')||(namespace?'waypoint':'KML'),points,rings,speed:numeric(wd||d,'autoFlightSpeed'),height:numeric(d,'globalShootHeight')??numeric(d,'globalHeight')??points[0]?.height??null,heightMode:val(wd||d,'executeHeightMode')||val(d,'heightMode')||'unknown',drone:val(d,'droneEnumValue'),payload:val(d,'payloadEnumValue')};
+ return {name,template,waylines,entries,referenceTemplate:template,referenceWaylines:waylines,namespace,templateType:val(d,'templateType')||(namespace?'waypoint':'KML'),points,rings,speed:numeric(wd||d,'autoFlightSpeed'),height:numeric(d,'globalShootHeight')??numeric(d,'globalHeight')??points[0]?.height??null,flightHeight:points[0]?.height??numeric(d,'globalHeight')??numeric(d,'height')??numeric(d,'globalShootHeight'),heightMode:val(wd||d,'executeHeightMode')||val(d,'heightMode')||'unknown',drone:val(d,'droneEnumValue'),payload:val(d,'payloadEnumValue')};
 }
 export async function readMission(file:{name:string;arrayBuffer:()=>Promise<ArrayBuffer>}):Promise<Mission>{
  const bytes=await file.arrayBuffer();if(bytes.byteLength>64*1024*1024)throw new Error('Mission file exceeds 64 MB.');
@@ -43,7 +43,7 @@ export async function readMission(file:{name:string;arrayBuffer:()=>Promise<Arra
 }
 function rewrite(m:Mission,edit:(d:Document,execution:boolean)=>void):Mission {
  const apply=(s:string|null,execution:boolean)=>{if(!s)return null;const d=xml(s);edit(d,execution);if(!execution)for(const e of all(d,'updateTime'))set(e,Date.now());return new XMLSerializer().serializeToString(d);};
- return {...inspectMission(m.name,apply(m.template,false),apply(m.waylines,true),m.entries),templatePath:m.templatePath,waylinesPath:m.waylinesPath,referenceTemplate:m.referenceTemplate,referenceWaylines:m.referenceWaylines};
+ return {...inspectMission(m.name,apply(m.template,false),apply(m.waylines,true),m.entries),templatePath:m.templatePath,waylinesPath:m.waylinesPath,referenceTemplate:m.referenceTemplate,referenceWaylines:m.referenceWaylines,...(!m.waylines?{flightHeight:m.flightHeight}:{})};
 }
 export function transformMission(m:Mission,east:number,north:number,angle:number):Mission{
  if(![east,north,angle].every(Number.isFinite))throw new Error('Invalid transformation.');
@@ -59,7 +59,17 @@ export function transformMission(m:Mission,east:number,north:number,angle:number
 }
 export function changeHeight(m:Mission,delta:number):Mission{
  if(!Number.isFinite(delta))throw new Error('Invalid height offset.');
- return rewrite(m,d=>{for(const tag of ['globalShootHeight','globalHeight','height','ellipsoidHeight','executeHeight'])for(const e of all(d,tag)){const n=Number(e.textContent);if(Number.isFinite(n))set(e,n+delta);}});
+ const result=rewrite(m,(d,execution)=>{for(const tag of ['globalShootHeight','globalHeight','height','ellipsoidHeight','executeHeight'])for(const e of all(d,tag)){const n=Number(e.textContent);if(Number.isFinite(n))set(e,!execution&&m.templateType==='mapping2d'&&['height','globalHeight'].includes(tag)&&m.flightHeight!==null?m.flightHeight+delta:n+delta);}});
+ return {...result,flightHeight:m.flightHeight===null?result.flightHeight:m.flightHeight+delta};
+}
+export function setFlightHeight(m:Mission,height:number):Mission{
+ if(!Number.isFinite(height)||m.flightHeight===null)throw new Error('Invalid flight height.');
+ return changeHeight(m,height-m.flightHeight);
+}
+// Copy the execution height into the template before discarding the old route.
+function planningOnly(m:Mission):Mission{
+ const normalized=rewrite(m,(d,execution)=>{if(!execution&&m.templateType==='mapping2d'&&m.flightHeight!==null){for(const tag of ['height','globalHeight'])for(const e of all(d,tag))set(e,m.flightHeight);}});
+ return {...normalized,...inspectMission(m.name,normalized.template,null,m.entries),templatePath:m.templatePath,waylinesPath:m.waylinesPath,referenceTemplate:m.referenceTemplate,referenceWaylines:m.referenceWaylines,flightHeight:m.flightHeight};
 }
 export function changeSpeed(m:Mission,speed:number):Mission{
  if(!Number.isFinite(speed)||speed<=0||speed>15)throw new Error('Speed must be > 0 and ≤ 15 m/s.');
@@ -88,7 +98,7 @@ export function editMappingTemplate(m:Mission,values:{direction:number;orthoCame
  if(!Object.values(values).every(Number.isFinite)||values.direction<0||values.direction>360||values.margin<0||values.margin>1000||values.orthoCameraOverlapH<0||values.orthoCameraOverlapH>95||values.orthoCameraOverlapW<0||values.orthoCameraOverlapW>95)throw new Error('Invalid mapping parameters.');
  const changed=rewrite(m,(d,execution)=>{if(!execution)for(const [key,value] of Object.entries(values)){const e=all(d,key)[0];if(!e)throw new Error(`Missing DJI field: ${key}`);set(e,value);}});
  // Never keep a stale executable route after raster-generating changes.
- return {...inspectMission(changed.name,changed.template,null,changed.entries),templatePath:m.templatePath,waylinesPath:m.waylinesPath,referenceTemplate:m.referenceTemplate,referenceWaylines:m.referenceWaylines};
+ return planningOnly(changed);
 }
 export async function exportMission(m:Mission):Promise<Uint8Array>{
  if(!m.namespace.startsWith('http://www.dji.com/wpmz/'))throw new Error('This KML has no DJI WPML device / mission settings. Import a Pilot 2 mission for compatible export.');
@@ -106,7 +116,7 @@ export function editAreaVertex(m:Mission,ring:number,index:number,position:{lat:
  if(!m.template)throw new Error('A planning template is required.');
  if(!Number.isFinite(position.lat)||Math.abs(position.lat)>90||!Number.isFinite(position.lon)||Math.abs(position.lon)>180)throw new Error('Invalid WGS84 area vertex.');
  const result=rewrite(m,(d,execution)=>{if(execution)return;const r=all(d,'LinearRing')[ring];if(!r)throw new Error('Area ring not found.');const e=all(r,'coordinates')[0],c=coords(e.textContent||'');if(!c[index])throw new Error('Area vertex not found.');const closed=c.length>1&&c[0].lat===c[c.length-1].lat&&c[0].lon===c[c.length-1].lon;c[index]={...c[index],...position};if(closed&&(index===0||index===c.length-1)){c[0]={...c[0],...position};c[c.length-1]={...c[c.length-1],...position};}set(e,c.map(coordText).join('\n'));});
- return {...inspectMission(result.name,result.template,null,result.entries),templatePath:m.templatePath,waylinesPath:m.waylinesPath,referenceTemplate:m.referenceTemplate,referenceWaylines:m.referenceWaylines};
+ return planningOnly(result);
 }
 /** Remove the repeated closing coordinate from the editing handles. */
 export function areaVertices(ring:Coordinate[]):Coordinate[]{
@@ -123,7 +133,7 @@ export function changeAreaTopology(m:Mission,ring:number,operation:'insert'|'del
   else{const a=vertices[index],b=vertices[(index+1)%vertices.length],p=position||{lat:(a.lat+b.lat)/2,lon:(a.lon+b.lon)/2};if(!Number.isFinite(p.lat)||Math.abs(p.lat)>90||!Number.isFinite(p.lon)||Math.abs(p.lon)>180)throw new Error('Invalid WGS84 area vertex.');vertices.splice(index+1,0,{...p,alt:(a.alt+b.alt)/2});}
   if(closed)vertices.push({...vertices[0]});set(e,vertices.map(coordText).join('\n'));
  });
- return {...inspectMission(result.name,result.template,null,result.entries),templatePath:m.templatePath,waylinesPath:m.waylinesPath,referenceTemplate:m.referenceTemplate,referenceWaylines:m.referenceWaylines};
+ return planningOnly(result);
 }
 
 export const missionXml={xml,all,val,numeric,set,coordText,updateMetrics};

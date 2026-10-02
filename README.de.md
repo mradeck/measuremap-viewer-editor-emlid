@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.21
+# MeasureMap · v2026.10.1.22
 
 [English](README.md) | **Deutsch**
 
@@ -6,11 +6,19 @@ Eigenständige React/TypeScript-SPA zur lokalen Georeferenzierung von Emlid-Foto
 
 [MeasureMap öffnen](https://measuremap-viewer-editor-emlid.netlify.app/)
 
+## Überlappung, Fotodichte, GSD und erhaltene Flughöhe · v2026.10.1.22
+
+Im DJI-Bereich sind Querüberlappung und **Fotodichte / Längsüberlappung** direkt in Prozent (0–95 %) einstellbar. Mehr Längsüberlappung bedeutet kürzere Fotoabstände und mehr Fotos. **Überlappung übernehmen**, anschließend **Route neu berechnen**. Automatische Abstände verwenden das importierte Originalraster mit Fotoauslösern oder bei fehlender Kalibrierung die Geometrie der Mavic 3 Enterprise Weitwinkelkamera. Manuelle Meterabstände bleiben verfügbar und aktualisieren die Überlappungswerte im Export.
+
+**Flughöhe** zeigt die tatsächliche importierte Routenflughöhe, auch bei einem 0-Platzhalter in der Vorlage. Das Verschieben, Einfügen und Löschen von Eckpunkten sowie Rasteränderungen erhalten diese Höhe. **Flughöhe übernehmen** versetzt Routen- und Aufnahmehöhe gemeinsam; Höhenbezug und Differenz zwischen Start- und Motivebene bleiben erhalten. Die Aufnahmehöhe über dem Motiv wird separat angezeigt. Die Sicherheits-/Startflughöhe bleibt unabhängig.
+
+Die GSD wird in cm/Pixel aus dem effektiven Bildfußabdruck geteilt durch die Fotoauflösung geschätzt. Tatsächliche Fotobreite und -höhe angeben; M3E-Vorgabe: 5280 × 3956 Pixel. Ohne Rasterkalibrierung verwendet die M3E-Berechnung 84° diagonalen Bildwinkel und Aufnahmehöhe; siehe [DJI-Kameraspezifikationen](https://enterprise.dji.com/mavic-3-enterprise/specs). Unbekannte Kameras benötigen ein kalibriertes Originalraster und explizite Fotoauflösung; es wird keine Auflösung geraten. Die Schätzung setzt eine ebene Motivfläche voraus; geneigte Kameras und Gelände verursachen unterschiedliche GSD innerhalb des Bildes. Überlappung verändert die Fotodichte, nicht die GSD. Die Aufnahmehöhe beeinflusst Bildfußabdruck und GSD.
+
 ## Lokale Routenneuberechnung · v2026.10.1.21
 
 Nach einer Umrissänderung **DJI · Pilot 2 → Route neu berechnen** öffnen. Bahn- und Fotoabstand prüfen, dann **Route neu berechnen** klicken. Die neue Route erscheint direkt auf der Karte. **DJI-KMZ exportieren** enthält anschließend die geänderte Vorlage und eine neu erzeugte ausführbare `waylines.wpml`.
 
-Bei importierten Missionen mit erkennbaren Flugbahnen und Fotointervallen werden die Abstände aus dem Original abgeleitet. Geänderte Quer-/Längsüberlappung und Aufnahmehöhe skalieren diese Kalibrierung. Die Ableitung ist eine Schätzung aus dem Original, keine Hersteller-Kameraspezifikation; Checkbox und Zahlenfelder ermöglichen manuelle Vorgaben. Bei einzelnen Vorlagen ohne Kalibrierung geeignete Abstände selbst vorgeben. Rückgängig stellt die vorherige Route wieder her.
+Bei importierten Missionen mit erkennbaren Flugbahnen und Fotointervallen werden die Abstände aus dem Original abgeleitet. Geänderte Quer-/Längsüberlappung und Aufnahmehöhe skalieren diese Kalibrierung. Die Ableitung ist eine Schätzung aus dem Original, keine Hersteller-Kameraspezifikation; Checkbox und Zahlenfelder ermöglichen manuelle Vorgaben. Bei Vorlagen nicht unterstützter Kameras ohne Kalibrierung geeignete Abstände selbst vorgeben. Rückgängig stellt die vorherige Route wieder her.
 
 Unterstützt werden ein `mapping2d`-Polygon mit optionalen Innenaussparungen, konkave Umrisse, Flugrichtung, positiver Rand, konstante relative oder WGS84-Flughöhe sowie zeit-/distanzbasierte Fotoauslösung. Verbindungen zwischen Bahnen bleiben innerhalb der erweiterten Planungsfläche und außerhalb ihrer Aussparungen. Start-Kamera-/Fokusaktionen und Geräteparameter bleiben erhalten; Wegpunktaktionen und Indizes werden für die neuen Bahnen erzeugt. Manuell geänderte Wegpunkte werden bei der Neuberechnung ersetzt. Geländeprofile, variable Höhen, Schrägflug/Quick-Ortho, 3D-Missionen und eigene Wegpunktaktionen benötigen Pilot 2 und werden ausdrücklich zurückgewiesen.
 
