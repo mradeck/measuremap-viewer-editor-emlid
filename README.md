@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.17
+# MeasureMap · v2026.10.1.18
 
 **English** | [Deutsch](README.de.md)
 
@@ -25,7 +25,7 @@ npm run build
 
 Copy the entire contents of `dist/` to a static web server. Subdirectory hosting is supported (`base: './'`). No backend or photo uploads are required. Do not open the app directly through `file://`; use `npm run preview` for local testing.
 
-The displayed version follows `vYear.Month.Version.Subversion`; the npm version `2026.10.1-17` represents the same version as valid SemVer.
+The displayed version follows `vYear.Month.Version.Subversion`; the npm version `2026.10.1-18` represents the same version as valid SemVer.
 
 ## Workflow
 
@@ -150,3 +150,5 @@ CAD geometry and survey points use a shared Canvas renderer. DXF, points and pho
 Native GeoTIFF reads share fixed 512-pixel source blocks across neighbouring tiles and zoom levels, with a 32 MiB LRU cache and at most two concurrent reads. Overlapping requests share decoding; cancelled consumers do not cancel another tile's shared read. Obsolete queued reads skip decoding. Two browser workers decompress TIFF blocks, and pixel sampling periodically yields to keep map interaction responsive. Initial loading still needs to build the overview, and decoding speed depends on TIFF compression and storage layout.
 
 The footer also links to [Geodata Inspector & Cleaner](https://geodata-inspector-cleaner.netlify.app/).
+
+The language button follows Geodata Inspector & Cleaner: the current German or British flag and DE/EN code toggle between German and English. Flags are inline SVGs for consistent rendering, including Chrome on Windows. The Pointcloudmanager footer link opens its public website at https://pointcloud-manager.com/.

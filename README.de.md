@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.17
+# MeasureMap · v2026.10.1.18
 
 [English](README.md) | **Deutsch**
 
@@ -25,7 +25,7 @@ npm run build
 
 Den gesamten Inhalt von `dist/` auf einen statischen Webserver kopieren. Unterverzeichnisse sind unterstützt (`base: './'`). Kein Backend und keine Foto-Uploads nötig. Nicht direkt über `file://` öffnen; zum lokalen Prüfen `npm run preview` verwenden.
 
-Die sichtbare Version entspricht `vJahr.Monat.Version.Subversion`; die npm-Version `2026.10.1-17` bildet dieselbe Version als gültiges SemVer ab.
+Die sichtbare Version entspricht `vJahr.Monat.Version.Subversion`; die npm-Version `2026.10.1-18` bildet dieselbe Version als gültiges SemVer ab.
 
 ## Arbeitsablauf
 
@@ -142,3 +142,5 @@ CAD-Geometrie und Messpunkte nutzen einen gemeinsamen Canvas-Renderer. DXF, Mess
 Originalbereiche des GeoTIFFs werden in festen 512-Pixel-Blöcken über benachbarte Kacheln und Zoomstufen hinweg wiederverwendet. Der LRU-Cache ist auf 32 MiB begrenzt; maximal zwei Lesevorgänge laufen gleichzeitig. Überlappende Anfragen teilen die Dekodierung. Das Abbrechen einer Kachel beendet keine noch benötigte gemeinsame Anfrage; überholte Warteschlangenaufträge überspringen die Dekodierung. Zwei Browser-Worker dekomprimieren TIFF-Blöcke, und die Pixelberechnung gibt regelmäßig Rechenzeit für die Kartenbedienung frei. Beim ersten Laden muss weiterhin die Übersicht erstellt werden; die Geschwindigkeit hängt auch von Kompression und Speicheraufbau des TIFFs ab.
 
 Der Footer verlinkt zusätzlich den [Geodata Inspector & Cleaner](https://geodata-inspector-cleaner.netlify.app/).
+
+Der Sprachbutton folgt dem Geodata Inspector & Cleaner: Die aktuelle deutsche beziehungsweise britische Flagge mit DE/EN-Kürzel schaltet zwischen Deutsch und Englisch um. Inline-SVGs gewährleisten eine einheitliche Darstellung, auch in Chrome unter Windows. Der Pointcloudmanager-Link im Footer öffnet die öffentliche Website https://pointcloud-manager.com/.
