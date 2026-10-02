@@ -1,10 +1,22 @@
-# MeasureMap · v2026.10.1.20
+# MeasureMap · v2026.10.1.21
 
 **English** | [Deutsch](README.de.md)
 
 A standalone React/TypeScript SPA for locally georeferencing Emlid survey photos. Repository and Netlify project: `measuremap-viewer-editor-emlid`. The existing MetaLens metadata inspector remains available through **Metadata inspector**. Switching views preserves the loaded survey project.
 
 [Open MeasureMap](https://measuremap-viewer-editor-emlid.netlify.app/)
+
+## Local route recalculation · v2026.10.1.21
+
+After editing a survey boundary, open **DJI · Pilot 2 → Recalculate route**. Check the lane and photo spacing, then click **Recalculate route**. The computed route appears directly on the map. **Export DJI KMZ** now includes both the edited template and the new executable `waylines.wpml`.
+
+For imported missions with an identifiable raster and capture interval, spacing is calibrated from the original route. Changed side/forward overlap and shooting height scale that calibration. The inferred values are estimates, not manufacturer camera specifications; the checkbox and numeric fields let you override them. For standalone templates without calibration, supply suitable spacing yourself. A loaded original or any later recalculation remains recoverable through Undo.
+
+The planner supports a single `mapping2d` polygon, optional holes, concave boundaries, flight direction, positive survey margin, constant relative-to-start or WGS84 height, and time/distance capture. Visibility paths keep transfer segments within the buffered survey area and outside interior exclusions. Startup camera/focus actions and device configuration are retained; flight-point actions and their indices are regenerated for each survey lane. It does not retain hand-edited waypoints when recalculating. Terrain-following, variable heights, oblique/quick-ortho, 3D missions and custom waypoint actions require Pilot 2 and produce explicit errors.
+
+Limits: 150 input boundary vertices, 300 buffered vertices, 600 lanes, 2,000 generated waypoints and a 10 km input extent; spacing 0.25–500 m. Duration is a travel estimate excluding action waits, takeoff, return and turn dynamics. The planner does not check obstacles, airspace or terrain, and does not reproduce DJI's proprietary optimizer. Import and review the result in Pilot 2 before flying; actual controller validation is still pending.
+
+Geometry and offsets use [clipper-lib](https://github.com/junmer/clipper-lib) under Boost Software License 1.0 with bundled JSBN (Tom Wu permissive license). [Distributed third-party notices](public/third-party/clipper-notices.txt).
 
 ## DJI Pilot 2 missions
 
@@ -15,11 +27,11 @@ Version **v2026.10.1.19** adds the **DJI · Pilot 2** group. Load a `.kmz` or `.
 - Set route speed. Timed capture intervals retain their original values, so changing speed changes photo overlap.
 - Select and edit waypoint coordinates, height and speed; enable **Drag on map** to move waypoints directly. Indices, action groups, turn settings and unknown DJI XML fields are retained.
 - **v2026.10.1.20:** Enable **Edit boundary** in the map toolbar or DJI panel. Drag numbered vertices to change the outline live; click or drag a **+** edge handle to insert a vertex. Click a numbered vertex and choose **Delete vertex** to remove it. Three vertices are the minimum; the duplicated closing point is not shown as a separate handle. Numeric boundary controls also allow inserting/deleting vertices.
-- Edit boundary vertices, mapping direction, camera overlap or margin. These changes discard the old executable waylines and export a **planning template** for recalculation and saving in Pilot 2. Undo restores the previous route.
+- Edit boundary vertices, mapping direction, camera overlap or margin. These changes discard the old executable waylines. Use **Recalculate route** for supported 2D missions; alternatively export a **planning template** for Pilot 2. Undo restores the previous route.
 - Undo up to 29 recent edits or restore the imported original. Loading another mission replaces the active DJI mission; survey photos and overlays remain loaded.
 - Export a new KMZ, preserving the original WPML namespace, device configuration and auxiliary resources. Unedited DJI XML is retained exactly; the archive is reimported before download. Route distance/duration fields updated after speed or point edits are geometric estimates and exclude action waits and turn dynamics.
 
-DJI's [WPML overview](https://developer.dji.com/doc/cloud-api-tutorial/en/api-reference/dji-wpml/overview.html) distinguishes planning templates (`wpmz/template.kml`) from executable routes (`wpmz/waylines.wpml`). A standalone DJI template KML can be wrapped as a planning KMZ; generic geographic KML without DJI device and mission parameters is viewable/editable but cannot be exported as an executable DJI mission. No flight-raster generator or assumed drone/camera configuration is added.
+DJI's [WPML overview](https://developer.dji.com/doc/cloud-api-tutorial/en/api-reference/dji-wpml/overview.html) distinguishes planning templates (`wpmz/template.kml`) from executable routes (`wpmz/waylines.wpml`). A standalone DJI template KML can be wrapped as a planning KMZ; generic geographic KML without DJI device and mission parameters is viewable/editable but cannot be exported as an executable DJI mission. Local 2D recalculation is available as described above; drone/camera configuration is never assumed.
 
 Import the result into Pilot 2 and review the route, height reference, launch location and actions before flying. Original KMZ/KML files are never overwritten. Structural round-trip tests pass, including a private local 51-waypoint Pilot 2 sample; **validation on an actual DJI controller remains pending**. Missions and private samples stay local and are not included in GitHub or deployments.
 
@@ -42,7 +54,7 @@ npm run build
 
 Copy the entire contents of `dist/` to a static web server. Subdirectory hosting is supported (`base: './'`). No backend or photo uploads are required. Do not open the app directly through `file://`; use `npm run preview` for local testing.
 
-The displayed version follows `vYear.Month.Version.Subversion`; the npm version `2026.10.1-20` represents the same version as valid SemVer.
+The displayed version follows `vYear.Month.Version.Subversion`; the npm version `2026.10.1-21` represents the same version as valid SemVer.
 
 ## Workflow
 

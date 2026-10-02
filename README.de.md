@@ -1,10 +1,22 @@
-# MeasureMap · v2026.10.1.20
+# MeasureMap · v2026.10.1.21
 
 [English](README.md) | **Deutsch**
 
 Eigenständige React/TypeScript-SPA zur lokalen Georeferenzierung von Emlid-Fotos. Repository und Netlify-Projekt: `measuremap-viewer-editor-emlid`. Die vorhandene MetaLens-Metadatenansicht bleibt unter „Metadaten-Inspektor“ erreichbar. Beim Wechsel bleibt das geladene Vermessungsprojekt erhalten.
 
 [MeasureMap öffnen](https://measuremap-viewer-editor-emlid.netlify.app/)
+
+## Lokale Routenneuberechnung · v2026.10.1.21
+
+Nach einer Umrissänderung **DJI · Pilot 2 → Route neu berechnen** öffnen. Bahn- und Fotoabstand prüfen, dann **Route neu berechnen** klicken. Die neue Route erscheint direkt auf der Karte. **DJI-KMZ exportieren** enthält anschließend die geänderte Vorlage und eine neu erzeugte ausführbare `waylines.wpml`.
+
+Bei importierten Missionen mit erkennbaren Flugbahnen und Fotointervallen werden die Abstände aus dem Original abgeleitet. Geänderte Quer-/Längsüberlappung und Aufnahmehöhe skalieren diese Kalibrierung. Die Ableitung ist eine Schätzung aus dem Original, keine Hersteller-Kameraspezifikation; Checkbox und Zahlenfelder ermöglichen manuelle Vorgaben. Bei einzelnen Vorlagen ohne Kalibrierung geeignete Abstände selbst vorgeben. Rückgängig stellt die vorherige Route wieder her.
+
+Unterstützt werden ein `mapping2d`-Polygon mit optionalen Innenaussparungen, konkave Umrisse, Flugrichtung, positiver Rand, konstante relative oder WGS84-Flughöhe sowie zeit-/distanzbasierte Fotoauslösung. Verbindungen zwischen Bahnen bleiben innerhalb der erweiterten Planungsfläche und außerhalb ihrer Aussparungen. Start-Kamera-/Fokusaktionen und Geräteparameter bleiben erhalten; Wegpunktaktionen und Indizes werden für die neuen Bahnen erzeugt. Manuell geänderte Wegpunkte werden bei der Neuberechnung ersetzt. Geländeprofile, variable Höhen, Schrägflug/Quick-Ortho, 3D-Missionen und eigene Wegpunktaktionen benötigen Pilot 2 und werden ausdrücklich zurückgewiesen.
+
+Grenzen: 150 Eingabeeckpunkte, 300 gepufferte Punkte, 600 Bahnen, 2.000 erzeugte Wegpunkte und 10 km Eingabeausdehnung; Bahnabstand 0,25–500 m. Dauer ist eine reine Streckenschätzung ohne Aktionswartezeiten, Start/Rückkehr und Kurvendynamik. Es gibt keine Gelände-, Hindernis- oder Luftraumprüfung; DJI-eigene Optimierung wird nicht identisch nachgebildet. Vor dem Flug das Ergebnis in Pilot 2 importieren und prüfen. Der tatsächliche Controller-Test steht weiterhin aus.
+
+Geometrie und Randberechnung nutzen [clipper-lib](https://github.com/junmer/clipper-lib), Boost Software License 1.0 mit JSBN (freizügige Tom-Wu-Lizenz). [Mitgelieferte Lizenzhinweise](public/third-party/clipper-notices.txt).
 
 ## DJI-Pilot-2-Flugpläne
 
@@ -15,11 +27,11 @@ Eigenständige React/TypeScript-SPA zur lokalen Georeferenzierung von Emlid-Foto
 - Fluggeschwindigkeit setzen. Zeitbasierte Fotoauslöser bleiben unverändert; dadurch verändert eine andere Geschwindigkeit die Überlappung.
 - Wegpunkte auswählen und Koordinaten, Höhe oder Geschwindigkeit ändern. Mit **Auf Karte ziehen** direkt verschieben. Indizes, Kameraaktionen, Aktionsgruppen, Kurveneinstellungen und unbekannte DJI-Felder bleiben erhalten.
 - **v2026.10.1.20:** **Umriss bearbeiten** in der Kartenleiste oder DJI-Gruppe aktivieren. Nummerierte Eckpunkte ziehen; der Umriss folgt live. **+** auf einer Kante anklicken oder an die neue Position ziehen, um einen Punkt einzufügen. Eckpunkt anklicken und **Eckpunkt löschen** wählen. Mindestens drei Punkte bleiben erhalten; ein doppelter Abschlusskoordinatenpunkt wird nicht separat angezeigt. Auch die numerische Eckpunktansicht bietet Einfügen und Löschen.
-- Flächeneckpunkte, Flugrichtung, Kameraüberlappung und Rand ändern. Dafür wird die bisherige ausführbare Route entfernt: Die exportierte **Planungsvorlage** in Pilot 2 neu berechnen und speichern. Rückgängig stellt die vorherige Route wieder her.
+- Flächeneckpunkte, Flugrichtung, Kameraüberlappung und Rand ändern. Dafür wird die bisherige ausführbare Route entfernt: Für unterstützte 2D-Missionen **Route neu berechnen** nutzen; alternativ die **Planungsvorlage** in Pilot 2 berechnen. Rückgängig stellt die vorherige Route wieder her.
 - Bis zu 29 Änderungen zurücknehmen oder den Importstand wiederherstellen. Ein weiterer Flugplan ersetzt die aktive DJI-Mission; Fotos und Kartenebenen bleiben geladen.
 - Als neue KMZ exportieren. WPML-Version, Geräteparameter und Zusatzressourcen bleiben erhalten. Ohne Bearbeitung bleiben beide XML-Dateien exakt erhalten; vor dem Download wird der Export erneut eingelesen. Aktualisierte Distanz-/Dauerfelder sind geometrische Schätzungen ohne Aktionswartezeiten und Kurvendynamik.
 
-Die [DJI-WPML-Dokumentation](https://developer.dji.com/doc/cloud-api-tutorial/en/api-reference/dji-wpml/overview.html) unterscheidet Planungsvorlage (`wpmz/template.kml`) und ausführbare Route (`wpmz/waylines.wpml`). Eine einzelne DJI-Vorlagen-KML wird als Planungsvorlage verpackt. Allgemeine Geometrie-KML ohne DJI-Geräte-/Missionsparameter ist darstellbar und bearbeitbar, aber nicht als ausführbare DJI-Mission exportierbar. Ein Flugrastergenerator und angenommene Drohnen-/Kameramodelle werden nicht eingesetzt.
+Die [DJI-WPML-Dokumentation](https://developer.dji.com/doc/cloud-api-tutorial/en/api-reference/dji-wpml/overview.html) unterscheidet Planungsvorlage (`wpmz/template.kml`) und ausführbare Route (`wpmz/waylines.wpml`). Eine einzelne DJI-Vorlagen-KML wird als Planungsvorlage verpackt. Allgemeine Geometrie-KML ohne DJI-Geräte-/Missionsparameter ist darstellbar und bearbeitbar, aber nicht als ausführbare DJI-Mission exportierbar. Die lokale 2D-Rasterberechnung ist oben beschrieben; Drohnen-/Kameramodelle werden nicht stillschweigend angenommen.
 
 Vor dem Flug in Pilot 2 importieren und Route, Höhenbezug, Startpunkt und Aktionen prüfen. Originaldateien bleiben unverändert. Struktur- und Exporttests einschließlich eines ausschließlich lokal geprüften Pilot-2-Beispiels mit 51 Wegpunkten bestanden; **der Importtest auf einem echten DJI-Controller steht noch aus**. Private Flugpläne werden nicht in GitHub oder die Website aufgenommen.
 
@@ -42,7 +54,7 @@ npm run build
 
 Den gesamten Inhalt von `dist/` auf einen statischen Webserver kopieren. Unterverzeichnisse sind unterstützt (`base: './'`). Kein Backend und keine Foto-Uploads nötig. Nicht direkt über `file://` öffnen; zum lokalen Prüfen `npm run preview` verwenden.
 
-Die sichtbare Version entspricht `vJahr.Monat.Version.Subversion`; die npm-Version `2026.10.1-20` bildet dieselbe Version als gültiges SemVer ab.
+Die sichtbare Version entspricht `vJahr.Monat.Version.Subversion`; die npm-Version `2026.10.1-21` bildet dieselbe Version als gültiges SemVer ab.
 
 ## Arbeitsablauf
 

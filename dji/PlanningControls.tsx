@@ -1,0 +1,21 @@
+import React,{useState} from 'react';
+import {Route,Loader2} from 'lucide-react';
+import {usePreferences} from '../ui/preferences';
+import type {Mission} from './mission';
+import {inferSettings,recalculateMission,type PlanResult} from './planner';
+export default function PlanningControls({mission,onChange}:{mission:Mission;onChange:(m:Mission)=>void}){
+ const {language}=usePreferences(),de=language==='de',s=(a:string,b:string)=>de?a:b,inferred=inferSettings(mission);
+ const [manual,setManual]=useState(false),[lane,setLane]=useState('5'),[photo,setPhoto]=useState('5'),[busy,setBusy]=useState(false),[error,setError]=useState(''),[last,setLast]=useState<PlanResult|null>(null);
+ const settings=inferred&&!manual?inferred:{laneSpacing:Number(lane),photoDistance:Number(photo)};
+ function edit(key:'lane'|'photo',value:string){if(!manual&&inferred){setLane(String(inferred.laneSpacing));setPhoto(String(inferred.photoDistance));}setManual(true);if(key==='lane')setLane(value);else setPhoto(value);}
+ async function calculate(){setBusy(true);setError('');try{await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));const result=recalculateMission(mission,settings);onChange(result.mission);setLast(result);}catch(e){setError(String(e instanceof Error?e.message:e));}finally{setBusy(false);}}
+ return <section className="dji-planning"><strong>{s('Route neu berechnen','Recalculate route')}</strong><p className="dji-note">{s('2D-Flächenraster direkt auf diesem Gerät berechnen. Die neue Route erscheint sofort auf der Karte und wird als DJI-KMZ exportiert.','Calculate a 2D survey raster on this device. The new route appears immediately on the map and exports as DJI KMZ.')}</p>
+ <label className="toggle-row"><span>{s('Abstände aus Original ableiten','Derive spacing from original')}</span><input type="checkbox" checked={!!inferred&&!manual} disabled={!inferred} onChange={e=>{if(!e.target.checked&&inferred){setLane(String(inferred.laneSpacing));setPhoto(String(inferred.photoDistance));}setManual(!e.target.checked);}}/></label>
+ <div className="dji-fields"><label>{s('Bahnabstand (m)','Lane spacing (m)')}<input type="number" min=".25" step=".1" value={inferred&&!manual?Number(settings.laneSpacing.toFixed(3)):lane} onChange={e=>edit('lane',e.target.value)}/></label><label>{s('Fotoabstand (m)','Photo spacing (m)')}<input type="number" min=".1" step=".1" value={inferred&&!manual?Number(settings.photoDistance.toFixed(3)):photo} onChange={e=>edit('photo',e.target.value)}/></label></div>
+ <p className="dji-note">{inferred?s('Ableitung aus Originalraster und Fotoauslösern; geänderte Überlappung und Aufnahmehöhe werden berücksichtigt.','Derived from original lanes and capture actions; changed overlap and shooting height are taken into account.'):s('Keine Kalibrierung aus der Originalroute verfügbar. Bahn- und Fotoabstand bitte passend zu Kamera, Aufnahmehöhe und gewünschter Überlappung setzen. Die Vorgabewerte sind keine Kamerakalibrierung.','No original-route calibration is available. Set lane and photo spacing for the camera, shooting height and desired overlap. Default values are not camera calibration.')}</p>
+ <button className="primary-button full" disabled={busy} onClick={()=>void calculate()}>{busy?<Loader2 size={16}/>:<Route size={16}/>} {s(busy?'Route wird berechnet …':'Route neu berechnen',busy?'Calculating route …':'Recalculate route')}</button>
+ {last&&last.mission.waylines===mission.waylines&&<p role="status" className="dji-note">{s('Neu berechnet','Recalculated')}: {last.lanes} {s('Bahnen','lanes')} · {mission.points.length} WP · {Math.round(last.distance)} m · ~{Math.round(last.duration/60)} min · {last.photoInterval.toFixed(2)} s / {s('Foto','photo')}</p>}
+ {error&&<p role="alert" className="dji-warning">{error}</p>}
+ <p className="dji-note">{s('Neue gleichmäßige Flughöhe und neue Fotoaktionen ersetzen die vorherige Route. Start-Kameraaktionen bleiben erhalten. Kein Geländemodell, keine Hindernisprüfung und keine DJI-Rastergarantie; vor dem Flug in Pilot 2 prüfen.','A new constant flight height and new capture actions replace the prior route. Initial camera actions are retained. No terrain model, obstacle checking or identical DJI raster guarantee; review in Pilot 2 before flying.')}</p>
+ </section>;
+}
