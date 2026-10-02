@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.19
+# MeasureMap · v2026.10.1.20
 
 **English** | [Deutsch](README.de.md)
 
@@ -14,6 +14,7 @@ Version **v2026.10.1.19** adds the **DJI · Pilot 2** group. Load a `.kmz` or `.
 - Offset flight heights while retaining the original height reference and terrain-height differences. Takeoff safety height is not changed.
 - Set route speed. Timed capture intervals retain their original values, so changing speed changes photo overlap.
 - Select and edit waypoint coordinates, height and speed; enable **Drag on map** to move waypoints directly. Indices, action groups, turn settings and unknown DJI XML fields are retained.
+- **v2026.10.1.20:** Enable **Edit boundary** in the map toolbar or DJI panel. Drag numbered vertices to change the outline live; click or drag a **+** edge handle to insert a vertex. Click a numbered vertex and choose **Delete vertex** to remove it. Three vertices are the minimum; the duplicated closing point is not shown as a separate handle. Numeric boundary controls also allow inserting/deleting vertices.
 - Edit boundary vertices, mapping direction, camera overlap or margin. These changes discard the old executable waylines and export a **planning template** for recalculation and saving in Pilot 2. Undo restores the previous route.
 - Undo up to 29 recent edits or restore the imported original. Loading another mission replaces the active DJI mission; survey photos and overlays remain loaded.
 - Export a new KMZ, preserving the original WPML namespace, device configuration and auxiliary resources. Unedited DJI XML is retained exactly; the archive is reimported before download. Route distance/duration fields updated after speed or point edits are geometric estimates and exclude action waits and turn dynamics.
@@ -41,7 +42,7 @@ npm run build
 
 Copy the entire contents of `dist/` to a static web server. Subdirectory hosting is supported (`base: './'`). No backend or photo uploads are required. Do not open the app directly through `file://`; use `npm run preview` for local testing.
 
-The displayed version follows `vYear.Month.Version.Subversion`; the npm version `2026.10.1-19` represents the same version as valid SemVer.
+The displayed version follows `vYear.Month.Version.Subversion`; the npm version `2026.10.1-20` represents the same version as valid SemVer.
 
 ## Workflow
 

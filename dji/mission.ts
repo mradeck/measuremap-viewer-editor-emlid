@@ -108,3 +108,20 @@ export function editAreaVertex(m:Mission,ring:number,index:number,position:{lat:
  const result=rewrite(m,(d,execution)=>{if(execution)return;const r=all(d,'LinearRing')[ring];if(!r)throw new Error('Area ring not found.');const e=all(r,'coordinates')[0],c=coords(e.textContent||'');if(!c[index])throw new Error('Area vertex not found.');const closed=c.length>1&&c[0].lat===c[c.length-1].lat&&c[0].lon===c[c.length-1].lon;c[index]={...c[index],...position};if(closed&&(index===0||index===c.length-1)){c[0]={...c[0],...position};c[c.length-1]={...c[c.length-1],...position};}set(e,c.map(coordText).join('\n'));});
  return {...inspectMission(result.name,result.template,null,result.entries),templatePath:m.templatePath,waylinesPath:m.waylinesPath};
 }
+/** Remove the repeated closing coordinate from the editing handles. */
+export function areaVertices(ring:Coordinate[]):Coordinate[]{
+ const first=ring[0],last=ring[ring.length-1];
+ return first&&last&&ring.length>1&&first.lat===last.lat&&first.lon===last.lon?ring.slice(0,-1):ring.slice();
+}
+export function changeAreaTopology(m:Mission,ring:number,operation:'insert'|'delete',index:number,position?:{lat:number;lon:number}):Mission {
+ if(!m.template)throw new Error('A planning template is required.');
+ const result=rewrite(m,(d,execution)=>{
+  if(execution)return;const el=all(d,'LinearRing')[ring];if(!el)throw new Error('Area ring not found.');
+  const e=all(el,'coordinates')[0],original=coords(e.textContent||''),vertices=areaVertices(original),closed=vertices.length!==original.length;
+  if(!Number.isInteger(index)||index<0||index>=vertices.length)throw new Error('Area vertex not found.');
+  if(operation==='delete'){if(vertices.length<=3)throw new Error('An area needs at least three vertices.');vertices.splice(index,1);}
+  else{const a=vertices[index],b=vertices[(index+1)%vertices.length],p=position||{lat:(a.lat+b.lat)/2,lon:(a.lon+b.lon)/2};if(!Number.isFinite(p.lat)||Math.abs(p.lat)>90||!Number.isFinite(p.lon)||Math.abs(p.lon)>180)throw new Error('Invalid WGS84 area vertex.');vertices.splice(index+1,0,{...p,alt:(a.alt+b.alt)/2});}
+  if(closed)vertices.push({...vertices[0]});set(e,vertices.map(coordText).join('\n'));
+ });
+ return {...inspectMission(result.name,result.template,null,result.entries),templatePath:m.templatePath,waylinesPath:m.waylinesPath};
+}

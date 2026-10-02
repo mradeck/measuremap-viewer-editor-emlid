@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {DOMParser,XMLSerializer} from '@xmldom/xmldom';
 import JSZip from 'jszip';
-import {inspectMission,readMission,exportMission,transformMission,changeHeight,changeSpeed,editWaypoint,editMappingTemplate,editAreaVertex} from '../dji/mission';
+import {inspectMission,readMission,exportMission,transformMission,changeHeight,changeSpeed,editWaypoint,editMappingTemplate,editAreaVertex,areaVertices,changeAreaTopology} from '../dji/mission';
 Object.assign(globalThis,{DOMParser,XMLSerializer});
 const prefix='<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:wpml="http://www.dji.com/wpmz/1.0.6"><Document>';
 const config='<wpml:missionConfig><wpml:finishAction>goHome</wpml:finishAction><wpml:droneInfo><wpml:droneEnumValue>77</wpml:droneEnumValue></wpml:droneInfo><wpml:payloadInfo><wpml:payloadEnumValue>66</wpml:payloadEnumValue></wpml:payloadInfo><wpml:takeOffSecurityHeight>40</wpml:takeOffSecurityHeight><wpml:startPositionRef>48.1,11.5,40</wpml:startPositionRef></wpml:missionConfig>';
@@ -20,3 +20,15 @@ test('invalid XML, coordinates, DTD and unsafe / empty missions refused',()=>{as
 
 test('area editing preserves ring closure and removes stale execution route',async()=>{const q=editAreaVertex(source(),0,0,{lat:48.11,lon:11.51});assert.equal(q.waylines,null);assert.equal(q.rings[0][0].lat,48.11);assert.deepEqual(q.rings[0][0],q.rings[0][3]);await exportMission(q);});
 test('archive keeps auxiliary KML resources after mission edits',async()=>{const z=new JSZip();z.file('wpmz/template.kml',template);z.file('wpmz/waylines.wpml',waylines);z.file('wpmz/res/auxiliary.kml','auxiliary resource');const b=await z.generateAsync({type:'uint8array'});const m=await readMission({name:'aux.kmz',arrayBuffer:async()=>b.slice().buffer});const out=await JSZip.loadAsync(await exportMission(changeHeight(m,1)));assert.equal(await out.file('wpmz/res/auxiliary.kml')!.async('string'),'auxiliary resource');});
+
+test('insert / delete on a closed ring preserves closure, altitude, resources and original undo snapshot',async()=>{
+ const original=source(),a=changeAreaTopology(original,0,'insert',2,{lat:48.1005,lon:11.5005});
+ assert.equal(areaVertices(a.rings[0]).length,4);assert.equal(a.rings[0].length,5);assert.deepEqual(a.rings[0][0],a.rings[0][4]);assert.equal(a.waylines,null);assert.equal(original.waylines,waylines);assert.equal(areaVertices(original.rings[0]).length,3);
+ const b=changeAreaTopology(a,0,'delete',0);assert.equal(areaVertices(b.rings[0]).length,3);assert.deepEqual(b.rings[0][0],b.rings[0][3]);assert.equal(b.rings[0][0].lon,11.501);
+ const bytes=await exportMission(b),round=await readMission({name:'edited.kmz',arrayBuffer:async()=>bytes.slice().buffer as ArrayBuffer});assert.deepEqual(round.rings,b.rings);assert.throws(()=>changeAreaTopology(b,0,'delete',1),/at least three/);assert.throws(()=>changeAreaTopology(b,0,'insert',-1),/not found/);
+});
+test('open DJI rings expose each vertex once and allow insertions on the closing edge',()=>{
+ const m=inspectMission('open.kmz',template.replace('11.501,48.101,0 11.5,48.1,0','11.501,48.101,0'),waylines);
+ assert.equal(areaVertices(m.rings[0]).length,3);const q=changeAreaTopology(m,0,'insert',2);assert.equal(q.rings[0].length,4);assert.ok(Math.abs(q.rings[0][3].lat-48.1005)<1e-10);assert.ok(Math.abs(q.rings[0][3].lon-11.5005)<1e-10);
+ const r=changeAreaTopology(q,0,'delete',3);assert.deepEqual(r.rings,m.rings);assert.throws(()=>changeAreaTopology(m,0,'insert',0,{lat:Infinity,lon:0}),/Invalid/);
+});

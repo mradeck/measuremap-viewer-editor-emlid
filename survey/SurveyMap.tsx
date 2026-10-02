@@ -9,11 +9,11 @@ import {photoPinSize} from './photo-marker';
 import type {Ortho} from './ortho';
 import OrthoLayer from './OrthoLayer';
 import type {Drawing} from './dxf';
-import type {Mission} from '../dji/mission';
+import {areaVertices,type Mission} from '../dji/mission';
 export const MAX_MAP_ZOOM=26;
 export const ALKIS_URL='https://geoservices.bayern.de/od/wms/alkis/v1/parzellarkarte';
 export const ALKIS_STYLES={farbe:'by_alkis_parzellarkarte_farbe',grau:'by_alkis_parzellarkarte_grau',gelb:'by_alkis_parzellarkarte_umr_gelb',schwarz:'by_alkis_parzellarkarte_umr_schwarz'};
-interface Props {mission:Mission|null;selectedWaypoint:number;editDji:boolean;onSelectWaypoint:(i:number)=>void;onMoveWaypoint:(i:number,p:{lat:number;lon:number})=>void;ortho:Ortho|null;showOrtho:boolean;orthoOpacity:number;previousPoint:boolean;photos:Photo[];points:SurveyPoint[];selected:string|null;onSelect:(id:string)=>void;onPreview:(id:string|null)=>void;onOpen:(id:string)=>void;drawing:Drawing|null;hiddenLayers:string[];showDxf:boolean;labels:boolean;showPoints:boolean;showPhotos:boolean;alkis:boolean;style:keyof typeof ALKIS_STYLES;opacity:number;fit:number;placing:boolean;onPlace:(p:Position)=>void;onError:(s:string)=>void}
+interface Props {editArea:boolean;onEditArea:(ring:number,index:number,op:'move'|'insert'|'delete',p?:{lat:number;lon:number})=>boolean;mission:Mission|null;selectedWaypoint:number;editDji:boolean;onSelectWaypoint:(i:number)=>void;onMoveWaypoint:(i:number,p:{lat:number;lon:number})=>void;ortho:Ortho|null;showOrtho:boolean;orthoOpacity:number;previousPoint:boolean;photos:Photo[];points:SurveyPoint[];selected:string|null;onSelect:(id:string)=>void;onPreview:(id:string|null)=>void;onOpen:(id:string)=>void;drawing:Drawing|null;hiddenLayers:string[];showDxf:boolean;labels:boolean;showPoints:boolean;showPhotos:boolean;alkis:boolean;style:keyof typeof ALKIS_STYLES;opacity:number;fit:number;placing:boolean;onPlace:(p:Position)=>void;onError:(s:string)=>void}
 export default function SurveyMap(props:Props) {
   const {language,theme}=usePreferences();
   const [zoomLevel,setZoomLevel]=useState(18);
@@ -46,7 +46,22 @@ export default function SurveyMap(props:Props) {
   useEffect(()=>{orthoLayer.current?.setOpacity(props.orthoOpacity);},[props.orthoOpacity]);
   useEffect(()=>{
     const g=dji.current!;g.clearLayers();const mission=props.mission;if(!mission)return;
-    for(const ring of mission.rings)L.polygon(ring.map(p=>[p.lat,p.lon] as [number,number]),{color:'#9b5de5',weight:2,fillOpacity:.12,interactive:false}).addTo(g);
+    mission.rings.forEach((ring,ri)=>{
+      const vertices=areaVertices(ring),original=vertices.map(p=>[p.lat,p.lon] as [number,number]);
+      const polygon=L.polygon(original,{color:'#9b5de5',weight:2,fillOpacity:.12,interactive:false}).addTo(g);
+      if(!props.editArea)return;
+      const extras:L.Marker[]=[];
+      vertices.forEach((p,i)=>{
+        const marker=L.marker([p.lat,p.lon],{draggable:true,icon:L.divIcon({className:'dji-area-vertex',html:String(i+1),iconSize:[24,24],iconAnchor:[12,12]}),zIndexOffset:2400}).addTo(g);
+        marker.bindTooltip(language==='de'?`Eckpunkt ${i+1} · ziehen oder anklicken`:`Vertex ${i+1} · drag or click`);
+        const menu=document.createElement('div'),text=document.createElement('strong'),button=document.createElement('button');text.textContent=language==='de'?`Ring ${ri+1} · Eckpunkt ${i+1}`:`Ring ${ri+1} · vertex ${i+1}`;button.textContent=language==='de'?'Eckpunkt löschen':'Delete vertex';button.type='button';button.disabled=vertices.length<=3;button.className='dji-delete-vertex';button.addEventListener('click',()=>{latest.current.onEditArea(ri,i,'delete');map.current!.closePopup();});menu.append(text,button);marker.bindPopup(menu);
+        marker.on('dragstart',()=>{map.current!.closePopup();extras.forEach(m=>g.removeLayer(m));}).on('drag',()=>{const q=marker.getLatLng(),preview=original.slice();preview[i]=[q.lat,q.lng];polygon.setLatLngs(preview);}).on('dragend',()=>{const q=marker.getLatLng();if(!latest.current.onEditArea(ri,i,'move',{lat:q.lat,lon:q.lng})){marker.setLatLng([p.lat,p.lon]);polygon.setLatLngs(original);extras.forEach(m=>g.addLayer(m));}});
+        const next=vertices[(i+1)%vertices.length],mid:[number,number]=[(p.lat+next.lat)/2,(p.lon+next.lon)/2];
+        const add=L.marker(mid,{draggable:true,icon:L.divIcon({className:'dji-area-insert',html:'+',iconSize:[20,20],iconAnchor:[10,10]}),zIndexOffset:2300}).addTo(g);extras.push(add);
+        add.bindTooltip(language==='de'?'Eckpunkt einfügen · klicken oder ziehen':'Insert vertex · click or drag');
+        add.on('click',()=>latest.current.onEditArea(ri,i,'insert')).on('dragstart',()=>map.current!.closePopup()).on('drag',()=>{const q=add.getLatLng(),preview=original.slice();preview.splice(i+1,0,[q.lat,q.lng]);polygon.setLatLngs(preview);}).on('dragend',()=>{const q=add.getLatLng();if(!latest.current.onEditArea(ri,i,'insert',{lat:q.lat,lon:q.lng})){add.setLatLng(mid);polygon.setLatLngs(original);}});
+      });
+    });
     const folders=new Map<number,[number,number][]>();for(const p of mission.points){const list=folders.get(p.folder)||[];list.push([p.lat,p.lon]);folders.set(p.folder,list);}
     for(const line of folders.values())L.polyline(line,{color:'#9b5de5',weight:3,opacity:.8,interactive:false}).addTo(g);
     mission.points.forEach((p,i)=>{
@@ -54,7 +69,7 @@ export default function SurveyMap(props:Props) {
       if(!props.editDji&&!active){L.circleMarker([p.lat,p.lon],{radius:3,color:'#9b5de5',weight:1,fillOpacity:1}).bindTooltip(`WP ${p.index} · ${p.height} m`).on('click',()=>latest.current.onSelectWaypoint(i)).addTo(g);return;}
       L.marker([p.lat,p.lon],{draggable:props.editDji,icon:L.divIcon({className:`dji-waypoint ${active?'selected':''}`,html:String(i+1),iconSize:[22,22],iconAnchor:[11,11]}),zIndexOffset:2100}).bindTooltip(`WP ${p.index} · ${p.height} m · ${p.speed} m/s`).on('click',()=>latest.current.onSelectWaypoint(i)).on('dragend',e=>{const pos=e.target.getLatLng();latest.current.onSelectWaypoint(i);latest.current.onMoveWaypoint(i,{lat:pos.lat,lon:pos.lng});}).addTo(g);
     });
-  },[props.mission,props.selectedWaypoint,props.editDji]);
+  },[props.mission,props.selectedWaypoint,props.editDji,props.editArea,language]);
   useEffect(()=>{
     const g=cad.current!;g.clearLayers();
     const foreground=getComputedStyle(node.current!).getPropertyValue('--s-text').trim();
