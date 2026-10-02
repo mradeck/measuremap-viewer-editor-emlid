@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.15
+# MeasureMap · v2026.10.1.16
 
 [English](README.md) | **Deutsch**
 
@@ -25,7 +25,7 @@ npm run build
 
 Den gesamten Inhalt von `dist/` auf einen statischen Webserver kopieren. Unterverzeichnisse sind unterstützt (`base: './'`). Kein Backend und keine Foto-Uploads nötig. Nicht direkt über `file://` öffnen; zum lokalen Prüfen `npm run preview` verwenden.
 
-Die sichtbare Version entspricht `vJahr.Monat.Version.Subversion`; die npm-Version `2026.10.1-15` bildet dieselbe Version als gültiges SemVer ab.
+Die sichtbare Version entspricht `vJahr.Monat.Version.Subversion`; die npm-Version `2026.10.1-16` bildet dieselbe Version als gültiges SemVer ab.
 
 ## Arbeitsablauf
 
@@ -128,3 +128,9 @@ Eine `.tif`- oder `.tiff`-Datei über **Dateien hinzufügen**, Drag-and-drop, ei
 Das Orthofoto wird in Kartenkacheln umprojiziert und oberhalb von Basiskarte/ALKIS sowie unterhalb von DXF, Messpunkten und Fotos dargestellt. **Alles zeigen** berücksichtigt seine Ausdehnung. Sichtbarkeit, Deckkraft und Entfernen sind einstellbar. RGB/RGBA, Graustufen und Farbpaletten werden unterstützt; Alpha und NoData sind transparent. RGB/RGBA unterstützt ganzzahlige Kanäle mit 8/16 Bit.
 
 Die App verwendet für entfernte Ansichten eine Übersicht und liest beim Hineinzoomen die sichtbaren GeoTIFF-Bereiche in Originalauflösung, auch bei 8K/16K-Dateien. Der Zwischenspeicher für Originalbereiche ist auf 32 MiB begrenzt; maximal zwei Lesevorgänge laufen gleichzeitig. Nicht mehr benötigte Kacheln werden abgebrochen. Bilineare Interpolation berücksichtigt transparente Ränder; hochauflösende Displays werden mit bis zu doppelter Kachelauflösung bedient. Die Originalpixel begrenzen letztlich die Details; darüber hinaus erzeugt Zoomen keine neuen Informationen. Das TIFF bleibt unverändert und gehört nicht zum Foto-Metadatenexport. Ein neues Orthofoto ersetzt die vorhandene Ebene. Dateien bleiben lokal; Neuladen verwirft das Projekt.
+
+## Mehrere DXF-Zeichnungen und CAD-Farben
+
+Weitere DXF-Dateien werden hinzugefügt, auch mehrere Dateien innerhalb eines Imports oder ZIPs. Jede Zeichnung besitzt eigene Schalter für Sichtbarkeit, Entfernen, CRS und Layer; gleichnamige Layer verschiedener Dateien bleiben unabhängig. Der CRS-Wähler für neue Dateien setzt die Importvorgabe; der eigene Wähler einer vorhandenen Zeichnung ändert nur deren Koordinatensystem.
+
+Linien, Punkte und Beschriftungen verwenden DXF-Objektfarben beziehungsweise geerbte Layerfarben. ACI-Farben und 24-Bit-TrueColor werden unterstützt; TrueColor hat Vorrang. Die adaptive CAD-Farbe ACI 7 verwendet für die Lesbarkeit die Vordergrundfarbe des Interfaces. Einzelne BYBLOCK-Objekte verwenden ersatzweise die Layerfarbe; INSERT-Blockgeometrie bleibt nicht unterstützt. Private DXF-Dateien werden nicht ins Repository aufgenommen.

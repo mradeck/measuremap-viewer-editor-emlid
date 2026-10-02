@@ -2,6 +2,12 @@ export type Language = 'de' | 'en';
 let activeLanguage:Language='de';
 export const setActiveLanguage=(language:Language)=>{activeLanguage=language;};
 export const english:Record<string,string>={
+"{count} DXF-Dateien":"{count} DXF files",
+"DXF-CRS für neue Dateien":"DXF CRS for new files",
+"DXF anzeigen: {name}":"Show DXF: {name}",
+"DXF entfernen: {name}":"Remove DXF: {name}",
+"DXF-Koordinatensystem: {name}":"DXF coordinate system: {name}",
+"{count} Elemente":"{count} entities",
 "Detailansicht in Originalauflösung. Bildbereiche werden beim Zoomen lokal nachgeladen.":"Full-resolution detail view. Image regions are loaded locally as you zoom.",
 "Orthofoto konnte nicht nachgeladen werden.":"Could not load orthophoto detail.",
 "Fotos, Emlid-CSV, DXF, GeoTIFF oder ZIP":"Photos, Emlid CSV, DXF, GeoTIFF or ZIP",

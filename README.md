@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.15
+# MeasureMap · v2026.10.1.16
 
 **English** | [Deutsch](README.de.md)
 
@@ -25,7 +25,7 @@ npm run build
 
 Copy the entire contents of `dist/` to a static web server. Subdirectory hosting is supported (`base: './'`). No backend or photo uploads are required. Do not open the app directly through `file://`; use `npm run preview` for local testing.
 
-The displayed version follows `vYear.Month.Version.Subversion`; the npm version `2026.10.1-15` represents the same version as valid SemVer.
+The displayed version follows `vYear.Month.Version.Subversion`; the npm version `2026.10.1-16` represents the same version as valid SemVer.
 
 ## Workflow
 
@@ -136,3 +136,9 @@ Load one `.tif` or `.tiff` through **Add files**, drag and drop, a folder, or a 
 The orthophoto is reprojected into map tiles above the basemap/ALKIS and below DXF, survey points and photos. **Show all** includes its extent. The layer has visibility, opacity and removal controls. RGB/RGBA, grayscale and palette TIFFs are supported; alpha and NoData are transparent. RGB/RGBA supports 8/16-bit integer channels.
 
 The app uses an overview for distant views and reads the visible GeoTIFF windows at native resolution when zoomed in, including 8K/16K images. Native windows are cached with a 32 MiB limit and at most two concurrent reads. Obsolete tile reads are cancelled when changing views. Bilinear interpolation preserves transparent edges, and high-DPI displays render up to twice the tile resolution. Original pixel resolution is the final detail limit; further zoom cannot add information. The TIFF stays unchanged and is not part of the photo metadata export. Loading another orthophoto replaces the current layer. Files remain local; reload discards the project.
+
+## Multiple DXF drawings and CAD colors
+
+DXF imports are additive, including multiple files in one import or ZIP. Each drawing has its own visibility, removal, CRS and layer controls; identically named layers in different drawings remain independent. The CRS selector for new files sets the import default; an existing drawing's own selector only changes that drawing.
+
+Map lines, points and labels use DXF object colors or inherited layer colors. ACI colors and 24-bit TrueColor are supported; TrueColor takes precedence. CAD's adaptive ACI color 7 uses the interface foreground color for readability. Standalone BYBLOCK objects fall back to the layer color; block INSERT geometry remains unsupported. No private DXF files are included in the repository.

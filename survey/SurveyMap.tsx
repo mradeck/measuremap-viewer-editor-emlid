@@ -47,9 +47,9 @@ export default function SurveyMap(props:Props) {
     const g=overlay.current!;g.clearLayers();photoMarkers.current.clear();hoveredPhoto.current=null;latest.current.onPreview(null);
     if(props.showDxf && props.drawing) for(const f of props.drawing.features) {
       if(props.hiddenLayers.includes(f.layer))continue;
-      if(f.kind==='line')L.polyline(f.coords,{color:'#f1b954',weight:2,opacity:.9}).addTo(g);
-      else if(f.kind==='point')L.circleMarker(f.coords[0],{radius:2,color:'#f1b954',weight:1}).addTo(g);
-      else if(props.labels) {const el=document.createElement('span');el.textContent=f.text||'';L.marker(f.coords[0],{interactive:false,icon:L.divIcon({className:'dxf-label',html:el,iconSize:[110,20]})}).addTo(g);}
+      if(f.kind==='line')L.polyline(f.coords,{color:f.color,weight:2,opacity:.9}).addTo(g);
+      else if(f.kind==='point')L.circleMarker(f.coords[0],{radius:2,color:f.color,weight:1}).addTo(g);
+      else if(props.labels) {const el=document.createElement('span');el.textContent=f.text||'';el.style.color=f.color;L.marker(f.coords[0],{interactive:false,icon:L.divIcon({className:'dxf-label',html:el,iconSize:[110,20]})}).addTo(g);}
     }
     if(props.showPoints)for(const p of props.points)L.circleMarker([p.lat,p.lon],{radius:3,color:'#74cfca',weight:1,fillOpacity:.55}).bindTooltip(t('PUNKT {name}',{name:p.name})).addTo(g);
     // Small screen-space stacks reveal at most five slots at any zoom.
