@@ -5,16 +5,17 @@ import {usePreferences} from '../ui/preferences';
 import 'leaflet/dist/leaflet.css';
 import type {Photo,SurveyPoint,Position} from './model';
 import {effectivePosition,matchPhoto} from './model';
+import {photoPinSize} from './photo-marker';
 import type {Drawing} from './dxf';
 export const MAX_MAP_ZOOM=26;
 export const ALKIS_URL='https://geoservices.bayern.de/od/wms/alkis/v1/parzellarkarte';
 export const ALKIS_STYLES={farbe:'by_alkis_parzellarkarte_farbe',grau:'by_alkis_parzellarkarte_grau',gelb:'by_alkis_parzellarkarte_umr_gelb',schwarz:'by_alkis_parzellarkarte_umr_schwarz'};
-interface Props {previousPoint:boolean;photos:Photo[];points:SurveyPoint[];selected:string|null;onSelect:(id:string)=>void;onPreview:(id:string)=>void;onOpen:(id:string)=>void;drawing:Drawing|null;hiddenLayers:string[];showDxf:boolean;labels:boolean;showPoints:boolean;showPhotos:boolean;alkis:boolean;style:keyof typeof ALKIS_STYLES;opacity:number;fit:number;placing:boolean;onPlace:(p:Position)=>void;onError:(s:string)=>void}
+interface Props {previousPoint:boolean;photos:Photo[];points:SurveyPoint[];selected:string|null;onSelect:(id:string)=>void;onPreview:(id:string|null)=>void;onOpen:(id:string)=>void;drawing:Drawing|null;hiddenLayers:string[];showDxf:boolean;labels:boolean;showPoints:boolean;showPhotos:boolean;alkis:boolean;style:keyof typeof ALKIS_STYLES;opacity:number;fit:number;placing:boolean;onPlace:(p:Position)=>void;onError:(s:string)=>void}
 export default function SurveyMap(props:Props) {
   const {language}=usePreferences();
   const [zoomLevel,setZoomLevel]=useState(18);
   const zoom=useRef<L.Control.Zoom>(),skipPan=useRef(false);
-  const photoMarkers=useRef(new Map<string,L.Marker>());
+  const photoMarkers=useRef(new Map<string,L.Marker>()),hoveredPhoto=useRef<string|null>(null);
   const node=useRef<HTMLDivElement>(null),map=useRef<L.Map>(),overlay=useRef<L.LayerGroup>(),wms=useRef<L.TileLayer.WMS>();
   const latest=useRef(props);latest.current=props;
   useEffect(()=>{
@@ -35,7 +36,7 @@ export default function SurveyMap(props:Props) {
     layer.addTo(m);wms.current=layer;
   },[props.alkis,props.style,props.opacity]);
   useEffect(()=>{
-    const g=overlay.current!;g.clearLayers();photoMarkers.current.clear();
+    const g=overlay.current!;g.clearLayers();photoMarkers.current.clear();hoveredPhoto.current=null;latest.current.onPreview(null);
     if(props.showDxf && props.drawing) for(const f of props.drawing.features) {
       if(props.hiddenLayers.includes(f.layer))continue;
       if(f.kind==='line')L.polyline(f.coords,{color:'#f1b954',weight:2,opacity:.9}).addTo(g);
@@ -50,18 +51,33 @@ export default function SurveyMap(props:Props) {
       const pos=effectivePosition(p,props.points,props.previousPoint);if(!pos)continue;
       const pixel=map.current!.project([pos.lat,pos.lon]);
       const key=`${Math.round(pixel.x/36)},${Math.round(pixel.y/36)}`,n=groups.get(key)||0;groups.set(key,n+1);
-      const div=document.createElement('div');div.className=`photo-pin ${p.id===props.selected?'selected':''} ${p.excluded?'excluded':''}`;
-      const img=document.createElement('img');img.src=p.url;img.alt=p.file.name;div.appendChild(img);
+      const hitbox=document.createElement('div');hitbox.className='photo-pin-hitbox';
+      const div=document.createElement('div');hitbox.appendChild(div);div.className=`photo-pin ${p.id===props.selected?'selected':''} ${p.excluded?'excluded':''}`;
+      const img=document.createElement('img');img.alt=p.file.name;img.draggable=false;div.appendChild(img);
       const badge=document.createElement('b');badge.textContent=matchPhoto(p,props.points,props.previousPoint).point?.name||'GPS';div.appendChild(badge);
-      div.style.transform=`translate(${(n%5)*9}px,${-(n%5)*5}px)`;
-      const marker=L.marker([pos.lat,pos.lon],{icon:L.divIcon({html:div,className:'photo-marker',iconSize:[44,52],iconAnchor:[22,52]}),zIndexOffset:p.id===props.selected?1000:100}).on('click',()=>{if(p.id!==latest.current.selected)skipPan.current=true;latest.current.onSelect(p.id);}).on('dblclick',e=>{L.DomEvent.stopPropagation(e.originalEvent);latest.current.onOpen(p.id);}).on('mouseover',()=>latest.current.onPreview(p.id)).addTo(g);
+      const sizePin=()=>{
+        const size=photoPinSize(img.naturalWidth,img.naturalHeight);
+        hitbox.style.width=`${size.width}px`;hitbox.style.height=`${size.height}px`;
+        hitbox.style.left=`${-size.width/2+(n%5)*9}px`;hitbox.style.top=`${-size.height-8-(n%5)*5}px`;
+      };
+      sizePin();img.onload=sizePin;img.src=p.url;
+      const marker=L.marker([pos.lat,pos.lon],{icon:L.divIcon({html:hitbox,className:'photo-marker',iconSize:[0,0],iconAnchor:[0,0]}),zIndexOffset:p.id===props.selected?1000:100}).on('click',()=>{if(p.id!==latest.current.selected)skipPan.current=true;latest.current.onSelect(p.id);}).on('dblclick',e=>{L.DomEvent.stopPropagation(e.originalEvent);latest.current.onOpen(p.id);}).addTo(g);
+      // Only the unscaled hitbox receives pointer events. Enlarged cards cannot
+      // steal the pointer from their neighbours or keep hover alive outside it.
+      hitbox.addEventListener('mouseenter',()=>{
+        hoveredPhoto.current=p.id;div.classList.add('is-hovered');marker.setZIndexOffset(2000);latest.current.onPreview(p.id);
+      });
+      hitbox.addEventListener('mouseleave',()=>{
+        div.classList.remove('is-hovered');marker.setZIndexOffset(p.id===latest.current.selected?1000:100);
+        if(hoveredPhoto.current===p.id){hoveredPhoto.current=null;latest.current.onPreview(null);}
+      });
       photoMarkers.current.set(p.id,marker);
     }
   },[props.photos,props.points,props.drawing,props.hiddenLayers,props.showDxf,props.labels,props.showPoints,props.showPhotos,props.previousPoint,language,zoomLevel]);
   useEffect(()=>{
     for(const [id,marker] of photoMarkers.current){
       marker.getElement()?.querySelector('.photo-pin')?.classList.toggle('selected',id===props.selected);
-      marker.setZIndexOffset(id===props.selected?1000:100);
+      marker.setZIndexOffset(id===hoveredPhoto.current?2000:id===props.selected?1000:100);
     }
   },[props.selected,props.photos,props.points,zoomLevel,props.drawing,props.hiddenLayers,props.showDxf,props.labels,props.showPoints,props.showPhotos,props.previousPoint,language]);
   useEffect(()=>{
