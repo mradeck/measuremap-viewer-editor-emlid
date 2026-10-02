@@ -2,6 +2,22 @@ export type Language = 'de' | 'en';
 let activeLanguage:Language='de';
 export const setActiveLanguage=(language:Language)=>{activeLanguage=language;};
 export const english:Record<string,string>={
+"Fotos, Emlid-CSV, DXF, GeoTIFF oder ZIP":"Photos, Emlid CSV, DXF, GeoTIFF or ZIP",
+"Orthofoto · GeoTIFF":"Orthophoto · GeoTIFF",
+"Georeferenziertes TIFF hinzufügen":"Add a georeferenced TIFF",
+"Orthofoto":"Orthophoto",
+"Orthofoto-Deckkraft":"Orthophoto opacity",
+"Orthofoto entfernen":"Remove orthophoto",
+"Orthofoto einlesen …":"Reading orthophoto …",
+"Bitte nur ein Orthofoto pro Import auswählen.":"Please select only one orthophoto per import.",
+"Kartenvorschau: bis zu 4096 Pixel an der längsten Seite. Original unverändert.":"Map preview: up to 4096 pixels on the longest side. Original unchanged.",
+"GeoTIFF: ungültige Georeferenzierung.":"GeoTIFF: invalid georeferencing.",
+"GeoTIFF: keine eingebettete Georeferenzierung.":"GeoTIFF: no embedded georeferencing.",
+"GeoTIFF: leeres Raster.":"GeoTIFF: empty raster.",
+"GeoTIFF: Position außerhalb der unterstützten Karte.":"GeoTIFF: location outside the supported map.",
+"GeoTIFF: unterstützt werden RGB/RGBA mit 8 oder 16 Bit, Graustufen und Farbindizes.":"GeoTIFF: supported formats are 8/16-bit RGB/RGBA, grayscale and indexed color.",
+"GeoTIFF: fehlendes oder nicht unterstütztes CRS ({crs}). Bitte als ETRS89/UTM, WGS84/UTM, EPSG:4326 oder EPSG:3857 exportieren.":"GeoTIFF: missing or unsupported CRS ({crs}). Please export as ETRS89/UTM, WGS84/UTM, EPSG:4326 or EPSG:3857.",
+
 "Emlid: einen Messpunkt zurück":"Emlid: shift back one point",
 "Info zur Emlid-Korrektur":"Emlid correction info",
 "An":"On",

@@ -9,6 +9,7 @@ import {chronologicalPhotos} from './chronology';
 import {VERSION,CRS_OPTIONS,parseSurveyCsv,readPhoto,matchPhoto,effectivePosition,number,validPosition,type Photo,type SurveyPoint,type Position} from './model';
 import {parseDrawing,type Drawing} from './dxf';
 import {geotagJpeg} from './jpeg';
+import {readOrtho,type Ortho} from './ortho';
 import './survey.css';
 import {AppearanceControls,usePreferences} from '../ui/preferences';
 import Footer from '../ui/Footer';
@@ -25,6 +26,7 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
   const [dockPreview,setDockPreview]=useState<string|null>(null);
   function selectPhoto(id:string){setDockPreview(null);setSelected(id);}
   useEffect(()=>setDockPreview(null),[selected]);
+  const [ortho,setOrtho]=useState<Ortho|null>(null),[showOrtho,setShowOrtho]=useState(true),[orthoOpacity,setOrthoOpacity]=useState(1);
   const [drawing,setDrawing]=useState<Drawing|null>(null),[dxfSource,setDxfSource]=useState<{text:string;name:string}|null>(null),[crs,setCrs]=useState('EPSG:25832');
   const [hiddenLayers,setHiddenLayers]=useState<string[]>([]),[showDxf,setShowDxf]=useState(true),[labels,setLabels]=useState(false),[showPoints,setShowPoints]=useState(true);
   const [alkis,setAlkis]=useState(false),[style,setStyle]=useState<keyof typeof ALKIS_STYLES>('farbe'),[opacity,setOpacity]=useState(.75);
@@ -63,7 +65,7 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
       for(const f of input) {
         if(/\.zip$/i.test(f.name)) {
           const zip=await JSZip.loadAsync(f);
-          for(const entry of Object.values(zip.files))if(!entry.dir&&!entry.name.includes('__MACOSX')&&/\.(csv|dxf|jpe?g|png|webp|heic|heif)$/i.test(entry.name)) {
+          for(const entry of Object.values(zip.files))if(!entry.dir&&!entry.name.includes('__MACOSX')&&/\.(csv|dxf|tiff?|jpe?g|png|webp|heic|heif)$/i.test(entry.name)) {
             expanded.push(new File([new Uint8Array(await entry.async('uint8array')).buffer],entry.name.split('/').pop()!,{type:/\.jpe?g$/i.test(entry.name)?'image/jpeg':'',lastModified:entry.date.getTime()}));
           }
         } else expanded.push(f);
@@ -74,6 +76,9 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
       const dxfs=expanded.filter(f=>/\.dxf$/i.test(f.name));
       if(dxfs.length>1)throw new Error(t("Bitte nur eine DXF pro Import auswählen."));
       if(dxfs[0]) {const source={text:await dxfs[0].text(),name:dxfs[0].name};const d=parseDrawing(source.text,source.name,crs);setDrawing(d);setDxfSource(source);setHiddenLayers([]);}
+      const orthos=expanded.filter(f=>/\.tiff?$/i.test(f.name));
+      if(orthos.length>1)throw new Error(t('Bitte nur ein Orthofoto pro Import auswählen.'));
+      if(orthos[0]){setBusy(t('Orthofoto einlesen …'));const result=await readOrtho(orthos[0]);setOrtho(result);setShowOrtho(true);}
       const images=expanded.filter(f=>/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name));
       const seen=new Set(photos.map(p=>`${p.file.name}:${p.file.size}:${p.file.lastModified}`));
       for(let i=0;i<images.length;i++) {
@@ -83,7 +88,7 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
         try {incoming.push(await readPhoto(file));}catch(e){errors.push(`${file.name}: ${String(e)}`);}
       }
       if(incoming.length){setPhotos(old=>[...old,...incoming]);if(!selected)setSelected(chronologicalPhotos(incoming)[0].id);}
-      if(!incoming.length&&!csvs.length&&!dxfs.length&&!errors.length)warnings.push(t("Keine neuen unterstützten Dateien gefunden."));
+      if(!incoming.length&&!csvs.length&&!dxfs.length&&!orthos.length&&!errors.length)warnings.push(t("Keine neuen unterstützten Dateien gefunden."));
       setNotice(warnings.join(' · '));if(errors.length)setError(errors.join('\n'));setFit(n=>n+1);
     }catch(e){setError(e instanceof Error?e.message:String(e));}finally{setBusy('');}
   }
@@ -133,18 +138,20 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
     <div className="survey-titlebar"><div><div className="eyebrow">{t("VERMESSUNG & FOTODOKUMENTATION")}</div><h1>{t("Fotos. Präzise verortet.")}</h1><p>{t("Messpunkte zuordnen, auf der Karte prüfen und Positionsdaten ins Originalformat schreiben.")}</p></div><button className="primary-button" disabled={!!busy||!exportable.length} onClick={()=>void exportZip()}><Download size={17}/> {t("Fotos exportieren ")}<span>{exportable.length}</span></button></div>
     <main className="workspace-grid">
       <aside className="import-panel"><div className="panel-title"><span>{t("Projektdateien")}</span><span className="step">01</span></div>
-        <input ref={filesInput} type="file" aria-label={t("Projektdateien auswählen")} multiple accept=".csv,.dxf,.zip,.jpg,.jpeg,.png,.webp,.heic,.heif" hidden onChange={e=>{if(e.target.files)void importFiles(Array.from(e.target.files));e.target.value='';}}/>
+        <input ref={filesInput} type="file" aria-label={t("Projektdateien auswählen")} multiple accept=".csv,.dxf,.tif,.tiff,.zip,.jpg,.jpeg,.png,.webp,.heic,.heif" hidden onChange={e=>{if(e.target.files)void importFiles(Array.from(e.target.files));e.target.value='';}}/>
         <input ref={folderInput} type="file" aria-label={t("Fotoordner auswählen")} multiple {...({webkitdirectory:'',directory:''} as any)} hidden onChange={e=>{if(e.target.files)void importFiles(Array.from(e.target.files));e.target.value='';}}/>
-        <button className="drop-zone" disabled={!!busy} onClick={()=>filesInput.current?.click()}><div className="upload-symbol"><Upload size={23}/></div><strong>{t("Dateien hinzufügen")}</strong><span>{t("Fotos, Emlid-CSV, DXF oder ZIP")}</span><small>{t("Hier ablegen oder auswählen")}</small></button>
+        <button className="drop-zone" disabled={!!busy} onClick={()=>filesInput.current?.click()}><div className="upload-symbol"><Upload size={23}/></div><strong>{t("Dateien hinzufügen")}</strong><span>{t("Fotos, Emlid-CSV, DXF, GeoTIFF oder ZIP")}</span><small>{t("Hier ablegen oder auswählen")}</small></button>
         <button className="secondary-button full" disabled={!!busy} onClick={()=>folderInput.current?.click()}><Camera size={16}/> {t("Fotoordner öffnen")}</button>
         <div className="source-row"><FileSpreadsheet size={18}/><div><strong>{csvName||'Emlid CSV'}</strong><small>{points.length?t('{count} Messpunkte',{count:points.length})+' · '+(points[0]?.crs||t('CRS unbekannt')):t("Noch keine Messpunkte geladen")}</small></div><span className={`source-dot ${points.length?'loaded':''}`}/></div>
         <div className="emlid-fix-controls"><button className={`secondary-button emlid-fix-button ${previousPoint?'active':''}`} disabled={!!busy||!points.length} aria-pressed={previousPoint} onClick={()=>{setPreviousPoint(old=>!old);setDockPreview(null);}}>{t('Emlid: einen Messpunkt zurück')}<span>{t(previousPoint?'An':'Aus')}</span></button><button className="icon-button" aria-label={t('Info zur Emlid-Korrektur')} title={t('Info zur Emlid-Korrektur')} aria-expanded={emlidFixInfo} onClick={()=>setEmlidFixInfo(old=>!old)}><Info size={18}/></button></div>
         {emlidFixInfo&&<section className="emlid-fix-info" aria-label={t('Info zur Emlid-Korrektur')}><p>{t('Beobachteter Emlid-Versatz: Ein Foto des gerade gespeicherten Messpunkts kann im Export beim nächsten Messpunkt stehen. Diese Option ordnet automatisch verknüpfte Fotos stattdessen dem vorherigen Messpunkt zu.')}</p><p>{t('Maßgeblich ist die Reihenfolge der CSV-Zeilen, nicht die Punktnummer minus eins. Manuelle Punktzuordnungen, manuelle Positionen und reine GPS-Fotos bleiben unverändert.')}</p><p>{t('Ohne gültige vorherige CSV-Zeile wird keine Position übernommen. Ausschalten stellt die ursprüngliche automatische Zuordnung wieder her. Bei neuer CSV ist die Korrektur standardmäßig aktiv.')}</p><p>{t('Karte, RTK-Messwerte und JPEG-Export verwenden dieselbe korrigierte Zuordnung. Die ursprüngliche Zuordnung wird im Exportprotokoll festgehalten.')}</p></section>}
         <div className="source-row"><Layers size={18}/><div><strong>{drawing?.name||t("DXF-Zeichnung")}</strong><small>{drawing?t('{count} Elemente · {layers} Layer',{count:drawing.features.length,layers:layerNames.length}):t("Optionaler Vermessungsplan")}</small></div><span className={`source-dot ${drawing?'loaded':''}`}/></div>
+        <div className="source-row"><ImageIcon size={18}/><div><strong>{ortho?.name||t("Orthofoto · GeoTIFF")}</strong><small>{ortho?`${ortho.width} × ${ortho.height} · ${ortho.crs}`:t("Georeferenziertes TIFF hinzufügen")}</small></div><span className={`source-dot ${ortho?'loaded':''}`}/></div>
         <div className="divider"/><div className="panel-title"><span>{t("Kartenebenen")}</span><span className="step">02</span></div>
         <label className="toggle-row"><span>OpenStreetMap</span><span className="always-on">{t("AKTIV")}</span></label>
         <label className="toggle-row"><span>{t("ALKIS Bayern")}</span><input type="checkbox" checked={alkis} onChange={e=>setAlkis(e.target.checked)}/></label>
         {alkis&&<div className="layer-options"><label>{t("Darstellung")}<select aria-label={t("ALKIS-Darstellung")} value={style} onChange={e=>setStyle(e.target.value as keyof typeof ALKIS_STYLES)}><option value="farbe">{t("Farbe")}</option><option value="grau">{t("Grau")}</option><option value="gelb">{t("Umriss gelb")}</option><option value="schwarz">{t("Umriss schwarz")}</option></select></label><label>{t("Deckkraft ")}<span>{Math.round(opacity*100)} %</span><input aria-label={t("ALKIS-Deckkraft")} type="range" min="0" max="1" step=".05" value={opacity} onChange={e=>setOpacity(Number(e.target.value))}/></label><small>{t("Flurstücke in Bayern · LDBV")}</small></div>}
+        {ortho&&<><label className="toggle-row"><span>{t("Orthofoto")}</span><input type="checkbox" checked={showOrtho} onChange={e=>setShowOrtho(e.target.checked)}/></label><div className="layer-options"><label>{t("Deckkraft ")}<span>{Math.round(orthoOpacity*100)} %</span><input aria-label={t("Orthofoto-Deckkraft")} type="range" min="0" max="1" step=".05" value={orthoOpacity} onChange={e=>setOrthoOpacity(Number(e.target.value))}/></label><small>{t("Kartenvorschau: bis zu 4096 Pixel an der längsten Seite. Original unverändert.")}</small><button className="quiet-button" onClick={()=>setOrtho(null)}>{t("Orthofoto entfernen")}</button></div></>}
         <label className="toggle-row"><span>{t("Messpunkte ")}<small>{points.length}</small></span><input type="checkbox" checked={showPoints} onChange={e=>setShowPoints(e.target.checked)}/></label>
         <label className="toggle-row"><span>{t("DXF-Overlay")}</span><input type="checkbox" checked={showDxf} onChange={e=>setShowDxf(e.target.checked)}/></label>
         <label className="field-label">{t("DXF-Koordinatensystem")}<select aria-label={t("DXF-Koordinatensystem")} value={crs} onChange={e=>changeCrs(e.target.value)}>{CRS_OPTIONS.map(c=><option key={c}>{c}</option>)}</select></label>
@@ -152,10 +159,10 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
         <div className="privacy-note"><LocateFixed size={16}/><p>{t("Fotos und Messdaten bleiben auf diesem Gerät. Die Karte lädt OSM- und optionale ALKIS-Kacheln.")}</p></div>
       </aside>
       <section className="map-panel"><div className="map-toolbar"><div><span className="status-dot"/> {t("Positionsübersicht ")}<small>{assigned} {t("mit Messpunkt · ")}{without} {t("ohne Position")}</small></div><div className="map-toolbar-actions"><button className="icon-button" aria-label={t(showPhotos?"Foto-Thumbnails ausblenden":"Foto-Thumbnails einblenden")} title={t(showPhotos?"Foto-Thumbnails ausblenden":"Foto-Thumbnails einblenden")} aria-pressed={!showPhotos} onClick={()=>{setShowPhotos(old=>!old);setDockPreview(null);}}>{showPhotos?<Eye size={18}/>:<EyeOff size={18}/>}</button><button className="quiet-button" onClick={()=>setFit(n=>n+1)}><LocateFixed size={15}/> {t("Alles zeigen")}</button></div></div>
-        <SurveyMap photos={photos} points={points} selected={selected} previousPoint={previousPoint} onSelect={selectPhoto} onPreview={setDockPreview} onOpen={openPhoto} drawing={drawing} hiddenLayers={hiddenLayers} showDxf={showDxf} labels={labels} showPoints={showPoints} showPhotos={showPhotos} alkis={alkis} style={style} opacity={opacity} fit={fit} placing={placing} onPlace={onPlace} onError={setError}/>
+        <SurveyMap ortho={ortho} showOrtho={showOrtho} orthoOpacity={orthoOpacity} photos={photos} points={points} selected={selected} previousPoint={previousPoint} onSelect={selectPhoto} onPreview={setDockPreview} onOpen={openPhoto} drawing={drawing} hiddenLayers={hiddenLayers} showDxf={showDxf} labels={labels} showPoints={showPoints} showPhotos={showPhotos} alkis={alkis} style={style} opacity={opacity} fit={fit} placing={placing} onPlace={onPlace} onError={setError}/>
         <PhotoExperience photos={orderedPhotos} selected={selected} previewId={dockPreview} onSelect={selectPhoto} opened={imageView} onOpen={openPhoto} onClose={()=>setImageView(false)}/>
         {placing&&<div className="map-message">{t("Auf die gewünschte Position klicken.")}<button onClick={()=>setPlacing(false)}>{t("Abbrechen")}</button></div>}
-        {!photos.length&&!points.length&&<div className="map-empty"><MapPin size={25}/><strong>{t("Dein Projekt auf der Karte")}</strong><span>{t("Fotos und die zugehörige CSV hinzufügen.")}</span></div>}
+        {!photos.length&&!points.length&&!drawing&&!ortho&&<div className="map-empty"><MapPin size={25}/><strong>{t("Dein Projekt auf der Karte")}</strong><span>{t("Fotos und die zugehörige CSV hinzufügen.")}</span></div>}
         <div className="map-legend"><span><i className="mint-dot"/> {t("Messpunkt")}</span><span><i className="amber-line"/> DXF</span><span><ImageIcon size={12}/> {t("Foto")}</span></div>
       </section>
       <aside className="detail-panel"><div className="panel-title"><span>{t("Foto & Position")}</span><span className="step">03</span></div>

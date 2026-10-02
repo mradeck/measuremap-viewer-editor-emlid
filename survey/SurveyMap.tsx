@@ -6,15 +6,18 @@ import 'leaflet/dist/leaflet.css';
 import type {Photo,SurveyPoint,Position} from './model';
 import {effectivePosition,matchPhoto} from './model';
 import {photoPinSize} from './photo-marker';
+import type {Ortho} from './ortho';
+import OrthoLayer from './OrthoLayer';
 import type {Drawing} from './dxf';
 export const MAX_MAP_ZOOM=26;
 export const ALKIS_URL='https://geoservices.bayern.de/od/wms/alkis/v1/parzellarkarte';
 export const ALKIS_STYLES={farbe:'by_alkis_parzellarkarte_farbe',grau:'by_alkis_parzellarkarte_grau',gelb:'by_alkis_parzellarkarte_umr_gelb',schwarz:'by_alkis_parzellarkarte_umr_schwarz'};
-interface Props {previousPoint:boolean;photos:Photo[];points:SurveyPoint[];selected:string|null;onSelect:(id:string)=>void;onPreview:(id:string|null)=>void;onOpen:(id:string)=>void;drawing:Drawing|null;hiddenLayers:string[];showDxf:boolean;labels:boolean;showPoints:boolean;showPhotos:boolean;alkis:boolean;style:keyof typeof ALKIS_STYLES;opacity:number;fit:number;placing:boolean;onPlace:(p:Position)=>void;onError:(s:string)=>void}
+interface Props {ortho:Ortho|null;showOrtho:boolean;orthoOpacity:number;previousPoint:boolean;photos:Photo[];points:SurveyPoint[];selected:string|null;onSelect:(id:string)=>void;onPreview:(id:string|null)=>void;onOpen:(id:string)=>void;drawing:Drawing|null;hiddenLayers:string[];showDxf:boolean;labels:boolean;showPoints:boolean;showPhotos:boolean;alkis:boolean;style:keyof typeof ALKIS_STYLES;opacity:number;fit:number;placing:boolean;onPlace:(p:Position)=>void;onError:(s:string)=>void}
 export default function SurveyMap(props:Props) {
   const {language}=usePreferences();
   const [zoomLevel,setZoomLevel]=useState(18);
   const zoom=useRef<L.Control.Zoom>(),skipPan=useRef(false);
+  const orthoLayer=useRef<OrthoLayer>();
   const photoMarkers=useRef(new Map<string,L.Marker>()),hoveredPhoto=useRef<string|null>(null);
   const node=useRef<HTMLDivElement>(null),map=useRef<L.Map>(),overlay=useRef<L.LayerGroup>(),wms=useRef<L.TileLayer.WMS>();
   const latest=useRef(props);latest.current=props;
@@ -35,6 +38,11 @@ export default function SurveyMap(props:Props) {
     layer.on('tileerror',()=>latest.current.onError(t("ALKIS konnte nicht geladen werden. Internetverbindung bzw. Dienst prüfen.")));
     layer.addTo(m);wms.current=layer;
   },[props.alkis,props.style,props.opacity]);
+  useEffect(()=>{
+    const m=map.current!;if(orthoLayer.current){m.removeLayer(orthoLayer.current);orthoLayer.current=undefined;}
+    if(props.ortho&&props.showOrtho){const layer=new OrthoLayer(props.ortho,props.orthoOpacity);layer.addTo(m);orthoLayer.current=layer;}
+  },[props.ortho,props.showOrtho]);
+  useEffect(()=>{orthoLayer.current?.setOpacity(props.orthoOpacity);},[props.orthoOpacity]);
   useEffect(()=>{
     const g=overlay.current!;g.clearLayers();photoMarkers.current.clear();hoveredPhoto.current=null;latest.current.onPreview(null);
     if(props.showDxf && props.drawing) for(const f of props.drawing.features) {
@@ -85,6 +93,7 @@ export default function SurveyMap(props:Props) {
     for(const p of props.photos){const pos=effectivePosition(p,props.points,props.previousPoint);if(pos)coords.push([pos.lat,pos.lon]);}
     if(!coords.length)for(const p of props.points)coords.push([p.lat,p.lon]);
     if(props.drawing)for(const f of props.drawing.features)coords.push(...f.coords);
+    if(props.ortho&&props.showOrtho)coords.push(...props.ortho.bounds);
     if(coords.length)map.current!.fitBounds(L.latLngBounds(coords).pad(.2),{maxZoom:20});
   },[props.fit]);
   useEffect(()=>{

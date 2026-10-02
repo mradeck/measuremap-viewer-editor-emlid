@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.13
+# MeasureMap · v2026.10.1.14
 
 [English](README.md) | **Deutsch**
 
@@ -25,7 +25,7 @@ npm run build
 
 Den gesamten Inhalt von `dist/` auf einen statischen Webserver kopieren. Unterverzeichnisse sind unterstützt (`base: './'`). Kein Backend und keine Foto-Uploads nötig. Nicht direkt über `file://` öffnen; zum lokalen Prüfen `npm run preview` verwenden.
 
-Die sichtbare Version entspricht `vJahr.Monat.Version.Subversion`; die npm-Version `2026.10.1-13` bildet dieselbe Version als gültiges SemVer ab.
+Die sichtbare Version entspricht `vJahr.Monat.Version.Subversion`; die npm-Version `2026.10.1-14` bildet dieselbe Version als gültiges SemVer ab.
 
 ## Arbeitsablauf
 
@@ -120,3 +120,11 @@ Große Fotoansicht: Strg + Mausrad zoomt um die Zeigerposition bis 16×; Ziehen 
 Optionale Emlid-Versatzkorrektur: „Emlid: einen Messpunkt zurück“ verschiebt automatisch zugeordnete Fotos auf die unmittelbar vorherige CSV-Zeile. Die CSV-Reihenfolge gilt auch bei nicht numerischen Punktnamen; ungültige Vorgänger und erste Zeilen erhalten keine Ersatzposition. Manuelle Zuordnungen und GPS-Fotos bleiben unverändert. Die Option ist standardmäßig aktiv, bei neuer CSV wieder aktiv und ohne Datenänderung umschaltbar. Anzeige und Export verwenden dieselbe Auflösung; positions.json/positions.csv protokollieren die ursprüngliche Zuordnung und den verwendeten Versatz.
 
 Karten-Thumbnails: Rahmen folgen dem tatsächlichen Bildseitenverhältnis (einschließlich angezeigter EXIF-Orientierung). Beim Hover vergrößert sich die komplette Karte mit Rahmen und Punktlabel; die Mausfläche bleibt unverändert. Vergrößerte Vorschauen fangen keine Mausereignisse benachbarter Marker ab und werden beim Verlassen zurückgesetzt.
+
+## Georeferenzierte Orthofotos (GeoTIFF)
+
+Eine `.tif`- oder `.tiff`-Datei über **Dateien hinzufügen**, Drag-and-drop, einen Ordner oder ZIP laden. Eingebettete Georeferenzierung und CRS sind erforderlich; externe Worldfiles werden nicht gelesen. Unterstützt werden ETRS89 / UTM Zonen 28–38, WGS84 / UTM Nord/Süd, EPSG:4326 und EPSG:3857. Fehlendes oder unbekanntes CRS wird gemeldet und nicht geraten. Affine Rotation und PixelIsPoint werden berücksichtigt.
+
+Das Orthofoto wird in Kartenkacheln umprojiziert und oberhalb von Basiskarte/ALKIS sowie unterhalb von DXF, Messpunkten und Fotos dargestellt. **Alles zeigen** berücksichtigt seine Ausdehnung. Sichtbarkeit, Deckkraft und Entfernen sind einstellbar. RGB/RGBA, Graustufen und Farbpaletten werden unterstützt; Alpha und NoData sind transparent. RGB/RGBA unterstützt ganzzahlige Kanäle mit 8/16 Bit.
+
+Die App erzeugt lokal eine Vorschau mit maximal 4096 Pixeln an der längsten Seite und liest begrenzte Quellfenster für eine begrenzte Speichernutzung. Weiteres Zoomen vergrößert diese Vorschau, nicht das vollständige Originalraster. Das TIFF bleibt unverändert und gehört nicht zum Foto-Metadatenexport. Ein neues Orthofoto ersetzt die vorhandene Ebene. Dateien bleiben lokal; Neuladen verwirft das Projekt.

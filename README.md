@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.13
+# MeasureMap · v2026.10.1.14
 
 **English** | [Deutsch](README.de.md)
 
@@ -25,7 +25,7 @@ npm run build
 
 Copy the entire contents of `dist/` to a static web server. Subdirectory hosting is supported (`base: './'`). No backend or photo uploads are required. Do not open the app directly through `file://`; use `npm run preview` for local testing.
 
-The displayed version follows `vYear.Month.Version.Subversion`; the npm version `2026.10.1-13` represents the same version as valid SemVer.
+The displayed version follows `vYear.Month.Version.Subversion`; the npm version `2026.10.1-14` represents the same version as valid SemVer.
 
 ## Workflow
 
@@ -128,3 +128,11 @@ Display and export use the same assignment resolution. `positions.json`/`positio
 - Repository: <https://github.com/mradeck/measuremap-viewer-editor-emlid>
 - Netlify build: `npm run typecheck && npm test && npm run build`, output `dist`, Node.js 22.
 - `netlify.toml` contains the SPA fallback and cache headers. No tokens or private photos are included in the repository.
+
+## Georeferenced orthophotos (GeoTIFF)
+
+Load one `.tif` or `.tiff` through **Add files**, drag and drop, a folder, or a ZIP archive. Embedded georeferencing and CRS are required; external world files are not read. Supported coordinate systems include ETRS89 / UTM zones 28–38, WGS84 / UTM north/south, EPSG:4326 and EPSG:3857. Unsupported or missing CRS is reported instead of guessing. Affine rotation and PixelIsPoint are handled.
+
+The orthophoto is reprojected into map tiles above the basemap/ALKIS and below DXF, survey points and photos. **Show all** includes its extent. The layer has visibility, opacity and removal controls. RGB/RGBA, grayscale and palette TIFFs are supported; alpha and NoData are transparent. RGB/RGBA supports 8/16-bit integer channels.
+
+The app builds a local preview capped at 4096 pixels on the longest side, reading bounded source windows to limit memory use. Zooming further magnifies this preview, not the full native raster. The TIFF stays unchanged and is not part of the photo metadata export. Loading another orthophoto replaces the current layer. Files remain local; reload discards the project.
