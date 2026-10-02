@@ -137,3 +137,8 @@ export function changeAreaTopology(m:Mission,ring:number,operation:'insert'|'del
 }
 
 export const missionXml={xml,all,val,numeric,set,coordText,updateMetrics};
+
+export function setShootingHeight(m:Mission,height:number):Mission{
+ if(!Number.isFinite(height)||height<=0)throw new Error('Shooting height must be positive.');
+ return rewrite(m,(d,execution)=>{if(execution)return;const e=all(d,'globalShootHeight')[0];if(!e)throw new Error('Missing DJI shooting height.');set(e,height);});
+}

@@ -1,10 +1,22 @@
-# MeasureMap · v2026.10.1.22
+# MeasureMap · v2026.10.1.23
 
 **English** | [Deutsch](README.de.md)
 
 A standalone React/TypeScript SPA for locally georeferencing Emlid survey photos. Repository and Netlify project: `measuremap-viewer-editor-emlid`. The existing MetaLens metadata inspector remains available through **Metadata inspector**. Switching views preserves the loaded survey project.
 
 [Open MeasureMap](https://measuremap-viewer-editor-emlid.netlify.app/)
+
+## Local terrain following and launch-height calculator · v2026.10.1.23
+
+Open **DJI → Recalculate route → Terrain following · local DEM / DSM**, enable the model, and load a georeferenced single-band elevation GeoTIFF. RGB orthophotos are refused. Confirm that values are elevations in metres. Supported horizontal CRS are ETRS89/WGS84 UTM, EPSG:4326 and EPSG:3857; rotated raster transforms and PixelIsPoint are handled. Elevations are read as numeric values in small cached windows, preserving fractional metre data without loading the full raster.
+
+Enter the actual launch latitude/longitude (prefilled from `startPositionRef` when available), desired clearance above the model, and launch height above that model surface (e.g. 2 m for a hand launch from ground). A DEM/DTM represents ground; a DSM includes roofs and vegetation, so account for the actual model surface at launch. Choose the sampling step (1–50 m, default 5 m) and the climb/descent limit (default 2 m/s). Click **Recalculate route**. The same camera clearance drives automatic lane/photo spacing and the GSD estimate.
+
+The generated route uses `relativeToStartPoint` and explicit per-waypoint `executeHeight`: **model elevation at route − model elevation at launch + desired clearance − launch offset**. A consistent model provides both elevations; no guessed EGM96/DHHN/WGS84 vertical conversion is performed. Absolute and live-sensor height modes are not supported by this local planner. Terrain profiles are sampled along survey lanes and transfers, capture-action endpoints are remapped, and intermediate straight-line support points use pass-through turns. The result displays a height profile and range; export retains the numeric heights. NoData, missing coverage, excessive climb/descent, or more than 2,000 points stop calculation and retain the previous mission. Terrain, oblique and proprietary optimizations are not silently enabled.
+
+This is precomputed model-based following, not live sensor terrain control. Changing the boundary requires recalculation with the loaded model. Pilot 2 raster recalculation can replace the exported height profile; verify the imported waypoint heights and actual launch reference before executing it. Model accuracy/resolution and sampling limit clearance accuracy; no obstacle guarantee is made between samples or during launch, approach, return or landing. Takeoff safety and RTH settings remain independent. Controller execution has not yet been validated. See [DJI terrain-following guidance](https://enterprise-insights.dji.com/blog/geospatial-solutions-faq) and [DJI WPML height references](https://developer.dji.com/doc/cloud-api-tutorial/en/api-reference/dji-wpml/waylines-wpml.html).
+
+**Calculator · hand launch / elevated launch** handles a fixed ground or subject plane: **required relative height = desired clearance + subject level above launch ground − launch elevation above launch ground**. On level ground, 30 m clearance and a 2 m launch offset require 28 m relative; an unchanged 30 m relative would instead place the aircraft approximately 32 m above ground. A subject 10 m above launch ground requires 38 m relative. This assumes the actual elevated launch is the controller's altitude reference; verify the reference for the particular workflow. Apply updates route heights and the separate shooting height together. For varying terrain use the model controls rather than a single plane correction.
 
 ## Overlap, photo density, GSD and retained flight height · v2026.10.1.22
 

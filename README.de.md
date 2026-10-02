@@ -1,10 +1,22 @@
-# MeasureMap · v2026.10.1.22
+# MeasureMap · v2026.10.1.23
 
 [English](README.md) | **Deutsch**
 
 Eigenständige React/TypeScript-SPA zur lokalen Georeferenzierung von Emlid-Fotos. Repository und Netlify-Projekt: `measuremap-viewer-editor-emlid`. Die vorhandene MetaLens-Metadatenansicht bleibt unter „Metadaten-Inspektor“ erreichbar. Beim Wechsel bleibt das geladene Vermessungsprojekt erhalten.
 
 [MeasureMap öffnen](https://measuremap-viewer-editor-emlid.netlify.app/)
+
+## Lokale Geländefolge und Start-Höhenrechenhilfe · v2026.10.1.23
+
+Unter **DJI → Route neu berechnen → Geländefolge · lokales DEM / DSM** das Modell aktivieren und ein georeferenziertes, einbandiges Höhen-GeoTIFF laden. RGB-Orthofotos werden abgelehnt. Bestätigen, dass die Rasterwerte Höhen in Metern sind. Unterstützte horizontale CRS: ETRS89/WGS84 UTM, EPSG:4326 und EPSG:3857; auch gedrehte Raster und PixelIsPoint. Kleine zwischengespeicherte Rasterfenster erhalten die numerischen Höhen samt Nachkommastellen, ohne das gesamte Modell in den Speicher zu laden.
+
+Tatsächliche Startkoordinaten eingeben (`startPositionRef` wird, soweit vorhanden, vorgefüllt), Abstand über dem Modell und Startversatz über der Modelloberfläche setzen; z. B. 2 m bei Handstart vom Boden. DEM/DTM bildet den Boden ab, DSM auch Dächer und Vegetation: die Modelloberfläche am Start berücksichtigen. Abtastabstand (1–50 m, Vorgabe 5 m) und zulässiges Steigen/Sinken (Vorgabe 2 m/s) wählen. **Route neu berechnen** klicken. Der Modellabstand fließt auch in automatische Bahn-/Fotoabstände und die GSD-Schätzung ein.
+
+Die Route verwendet `relativeToStartPoint` und explizite Wegpunkthöhen `executeHeight`: **Modellhöhe an der Route − Modellhöhe am Start + gewünschter Abstand − Startversatz**. Beide Modellhöhen stammen aus derselben Datei; es wird keine unbekannte EGM96-/DHHN-/WGS84-Höhenumrechnung geraten. Absolute Höhenmodi und Echtzeit-Sensormodi werden hier nicht berechnet. Bahnen und Verbindungen werden mit Höhenstützpunkten verdichtet, Fotoaktionsgrenzen passend neu indiziert; zusätzliche Stützpunkte auf Geraden verwenden Durchflug. Anzeige mit Höhenprofil und Höhenbereich, Export mit numerischer Höhenfolge. NoData, fehlende Abdeckung, übermäßige Steig-/Sinkraten und mehr als 2.000 Punkte stoppen die Berechnung; der bisherige Flugplan bleibt bestehen. Gelände-/Schrägflug- und proprietäre Optimierungen werden nicht stillschweigend aktiviert.
+
+Dies ist vorab berechnete Modellfolge, keine Echtzeit-Sensorregelung. Nach Umrissänderungen mit geladenem Modell neu berechnen. Eine Rasterneuberechnung in Pilot 2 kann die exportierte Höhenfolge ersetzen: importierte Wegpunkthöhen und tatsächliche Startreferenz vor der Ausführung prüfen. Modellgenauigkeit, Auflösung und Abtastung begrenzen die Abstandstreue; keine Hindernisgarantie zwischen Stützpunkten oder bei Start, Anflug, Rückkehr und Landung. Sicherheitsstart-/RTH-Einstellungen bleiben unabhängig. Die tatsächliche Controller-Ausführung ist noch nicht validiert. Siehe [DJI-Geländefolge](https://enterprise-insights.dji.com/blog/geospatial-solutions-faq) und [DJI-WPML-Höhenbezüge](https://developer.dji.com/doc/cloud-api-tutorial/en/api-reference/dji-wpml/waylines-wpml.html).
+
+**Rechenhilfe · Handstart / erhöhter Start** für eine feste Boden-/Motivebene: **relative Flughöhe = gewünschter Abstand + Motivniveau gegenüber Startboden − Startversatz über Startboden**. Bei gleich hohem Boden, 30 m gewünschtem Abstand und 2 m erhöhtem Start sind 28 m relativ einzustellen. Unverändert 30 m relativ ergeben etwa 32 m über Boden. Ein 10 m höheres Motivniveau benötigt 38 m relativ. Voraussetzung: die tatsächliche erhöhte Startposition ist die Höhenreferenz des Controllers; den Bezug im jeweiligen Arbeitsablauf prüfen. Übernehmen passt Routen- und separate Aufnahmehöhe gemeinsam an. Für wechselndes Gelände die Modelleinstellungen verwenden.
 
 ## Überlappung, Fotodichte, GSD und erhaltene Flughöhe · v2026.10.1.22
 
