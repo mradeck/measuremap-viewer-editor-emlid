@@ -1,17 +1,21 @@
 # MeasureMap · v2026.10.1.13
 
-Eigenständige React/TypeScript-SPA zur lokalen Georeferenzierung von Emlid-Fotos. Repository und Netlify-Projekt: `measuremap-viewer-editor-emlid`. Die vorhandene MetaLens-Metadatenansicht bleibt unter „Metadaten-Inspektor“ erreichbar. Beim Wechsel bleibt das geladene Vermessungsprojekt erhalten.
+**English** | [Deutsch](README.de.md)
 
-## Start und Bereitstellung
+A standalone React/TypeScript SPA for locally georeferencing Emlid survey photos. Repository and Netlify project: `measuremap-viewer-editor-emlid`. The existing MetaLens metadata inspector remains available through **Metadata inspector**. Switching views preserves the loaded survey project.
 
-Node.js ab 20.19 (oder ab 22.12) verwenden.
+[Open MeasureMap](https://measuremap-viewer-editor-emlid.netlify.app/)
+
+## Getting started and deployment
+
+Use Node.js 20.19 or later, or 22.12 or later.
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Für den eigenen Webserver:
+To build for your own web server:
 
 ```sh
 npm run typecheck
@@ -19,100 +23,108 @@ npm test
 npm run build
 ```
 
-Den gesamten Inhalt von `dist/` auf einen statischen Webserver kopieren. Unterverzeichnisse sind unterstützt (`base: './'`). Kein Backend und keine Foto-Uploads nötig. Nicht direkt über `file://` öffnen; zum lokalen Prüfen `npm run preview` verwenden.
+Copy the entire contents of `dist/` to a static web server. Subdirectory hosting is supported (`base: './'`). No backend or photo uploads are required. Do not open the app directly through `file://`; use `npm run preview` for local testing.
 
-Die sichtbare Version entspricht `vJahr.Monat.Version.Subversion`; die npm-Version `2026.10.1-1` bildet dieselbe Version als gültiges SemVer ab.
+The displayed version follows `vYear.Month.Version.Subversion`; the npm version `2026.10.1-13` represents the same version as valid SemVer.
 
-## Arbeitsablauf
+## Workflow
 
-1. Emlid-Fotoordner, einzelne Dateien oder ZIP laden. CSV und Fotos dürfen gemeinsam oder nacheinander geladen werden.
-2. CSV benötigt `Latitude` und `Longitude`; der Emlid-Export wird anhand seiner englischen Spaltenüberschriften eingelesen. Komma, Semikolon, Tab und zitierte Felder werden unterstützt.
-3. Zuordnung erfolgt zuerst exakt über `Point photos`, dann über einen eindeutigen Emlid-Punktnamen im Dateinamen. Mehrdeutige Treffer werden nicht automatisch zugeordnet. Alternativ im Fotodetail einen Vermessungspunkt wählen.
-4. DXF importieren. Das Koordinatensystem muss angegeben werden, da DXF in der Regel kein zuverlässiges CRS enthält. Vorgabe: EPSG:25832, ETRS89 / UTM 32N. Außerdem verfügbar: 25833, 32632, 32633 und 4326. Lokale CAD-Koordinaten benötigen eine vorherige Georeferenzierung.
-5. OSM und optional ALKIS Bayern einblenden. Fotos, Messpunkte und DXF kontrollieren; einzelne DXF-Layer und Beschriftungen ein-/ausblenden.
-6. Fotos einzeln oder gemeinsam als ZIP exportieren. Fotos ohne Position, ausgeschlossene Fotos und Nicht-JPEGs werden ausgelassen; Fehler werden angezeigt und im Protokoll dokumentiert.
+1. Load an Emlid photo folder, individual files or a ZIP archive. CSV and photos can be loaded together or separately.
+2. The CSV must contain `Latitude` and `Longitude`. Emlid exports are parsed using their English column headers. Comma, semicolon and tab delimiters, as well as quoted fields, are supported.
+3. Photos are matched first by exact filenames in `Point photos`, then by an unambiguous Emlid point name in the filename. Ambiguous matches are not assigned automatically. You can also select a survey point in the photo detail panel. The Emlid offset correction is **enabled by default**; see below for its effect on automatic assignments.
+4. Import a DXF drawing. Specify its coordinate reference system, since DXF generally does not contain a reliable CRS. The default is EPSG:25832, ETRS89 / UTM 32N. Also supported: 25833, 32632, 32633 and 4326. Local CAD coordinates require prior georeferencing.
+5. Display OSM and optional Bavarian ALKIS layers. Check photos, survey points and DXF geometry; toggle individual DXF layers and labels.
+6. Export individual photos or a ZIP archive. Photos without a position, excluded photos and non-JPEG files are omitted. Errors are displayed and recorded in the export report.
 
-Dateien bleiben im Arbeitsspeicher des Browsers. Ein Neuladen verwirft das Projekt; vor dem Schließen exportieren. Die Karte lädt externe OSM- und optionale ALKIS-Kacheln für den sichtbaren Ausschnitt.
+Files remain in browser memory. Reloading discards the project; export before closing. The map loads external OSM and optional ALKIS tiles for the visible area.
 
-## Metadaten und Höhen
+## Metadata and elevations
 
-Die JPEG-Bilddaten werden **nicht neu komprimiert**. EXIF wird über piexifjs aktualisiert; ICC- und andere JPEG-Segmente bleiben erhalten. Standard-XMP wird zusammengeführt, vorhandene Panorama-, Copyright- und Drohneninformationen bleiben erhalten. Unlesbares EXIF/XMP führt zu einem Exportfehler für die betreffende Datei, nicht zu einem Ersatz durch leere Metadaten. Herstellerspezifische MakerNote-Strukturen können absolute Offsets verwenden; deren interne Gültigkeit ist mit piexifjs nicht für jedes Kameramodell garantiert.
+JPEG image data is **not recompressed**. EXIF is updated with piexifjs; ICC profiles and other JPEG segments are preserved. Standard XMP is merged, preserving existing panorama, copyright and drone information. Unreadable EXIF/XMP causes an export error for that file rather than replacement with empty metadata. Manufacturer-specific MakerNote structures can use absolute offsets; piexifjs cannot guarantee their internal validity for every camera model.
 
-| Bereich | Inhalt |
+| Field | Contents |
 | --- | --- |
-| EXIF GPSLatitude / GPSLongitude | CSV Latitude / Longitude, DMS-Rationale mit 1e-6 Bogensekundenauflösung |
-| EXIF GPSAltitude | CSV `Elevation`, bei Neufahrn DHHN2016 / NHN; keine Mischung mit Ellipsoidhöhe |
-| EXIF GPSHPositioningError | `Lateral RMS`, sofern vorhanden |
-| EXIF GPSProcessingMethod | Herkunft „Emlid RTK FIX; surveyed point“, abhängig vom tatsächlichen CSV-Status |
-| MetaLens Survey XMP | UTM Easting/Northing, CRS, Ellipsoid- und orthometrische Höhe, RTK-Status, Messzeit, vollständiger Original-CSV-Datensatz |
-| ZIP positions.csv / positions.json | Zuordnung, Position, Datenherkunft, ursprüngliche GPS-Position, Fehlerprotokoll |
+| EXIF GPSLatitude / GPSLongitude | CSV Latitude / Longitude, DMS rationals with 1e-6 arcsecond resolution |
+| EXIF GPSAltitude | CSV `Elevation`, DHHN2016 / NHN for the Neufahrn dataset; not mixed with ellipsoidal height |
+| EXIF GPSHPositioningError | `Lateral RMS`, when available |
+| EXIF GPSProcessingMethod | Origin such as “Emlid RTK FIX; surveyed point”, based on the actual CSV status |
+| MetaLens Survey XMP | UTM Easting/Northing, CRS, ellipsoidal and orthometric heights, RTK status, measurement time and the complete original CSV record |
+| ZIP positions.csv / positions.json | Assignment, position, data source, original GPS position and error report |
 
-XMP-Namensraum: `https://michael-radeck.de/ns/metalens/survey/1.0/`, Präfix `mls`. ExifTool zeigt die Felder unter `XMP-mls` an. Der CSV-Originaldatensatz bewahrt unter anderem RMS-Werte, Antennenhöhe, Empfänger, Korrekturquelle, Datum und Höhenbezug.
+XMP namespace: `https://michael-radeck.de/ns/metalens/survey/1.0/`, prefix `mls`. ExifTool displays these fields under `XMP-mls`. The original CSV record preserves RMS values, antenna height, receiver, correction source, date and height reference, among other fields.
 
-**Die Emlid-Position ist der vermessene Punkt, nicht automatisch die Kameraposition.** Kameraversatz, Orientierung und relative Flughöhe werden nicht erfunden. DJI-RTK-Tags werden nicht für Emlid-Aufnahmen erzeugt. Manuell gesetzte Positionen erhalten keine RTK-Qualität und entfernen vorherige MetaLens-UTM-/RTK-Daten. Vorhandene Hersteller-XMP bleibt als Originalinformation erhalten.
+**The Emlid position is the surveyed point, not automatically the camera position.** Camera offsets, orientation and relative flight altitude are not invented. DJI RTK tags are not generated for Emlid photos. Manually assigned positions receive no RTK quality information and remove previous MetaLens UTM/RTK data. Existing manufacturer XMP remains as original information.
 
-Der Pointcloudmanager liest Handyfoto-Positionen über Standard-EXIF (`src/io/phonePhotoImport.ts`). Seine Drohnenposen stammen aus Photogrammetrie-Kameradaten (`src/io/droneCameraImport.ts`), nicht aus einem universellen UTM-EXIF-Tag. Exportierte JPEGs können dort über den Handyfoto-/GPS-Import verwendet werden. Der zusätzliche MetaLens-XMP-Bereich ist gespeichert, wird vom derzeitigen Pointcloudmanager aber nicht automatisch als Kamerapose ausgewertet.
+Pointcloudmanager reads phone photo positions from standard EXIF (`src/io/phonePhotoImport.ts`). Its drone poses come from photogrammetry camera data (`src/io/droneCameraImport.ts`), not a universal UTM EXIF tag. Exported JPEGs can be used there through the phone photo/GPS import. The additional MetaLens XMP section is stored, but the current Pointcloudmanager does not automatically interpret it as a camera pose.
 
-## Formate
+## Formats
 
-- JPEG: Import, Vorschau, GPS lesen und schreiben.
-- PNG, WebP, HEIC/HEIF: Import und gegebenenfalls GPS lesen; Vorschau abhängig von Browser/Codec. Metadatenexport unterstützt JPEG-Originale. Es findet keine stillschweigende Konvertierung statt.
-- DXF: POINT, LINE, LWPOLYLINE, POLYLINE einschließlich Bulge-Bögen, CIRCLE, ARC, TEXT und MTEXT als Kartenoverlay. Weitere Elementtypen, z. B. INSERT und SPLINE, werden gemeldet und nicht dargestellt. Keine vollständige CAD-Engine.
-- Fotos mit vorhandenem GPS und ohne neue Zuordnung werden im ZIP unverändert übernommen.
+- JPEG: import, preview, GPS reading and writing.
+- PNG, WebP, HEIC/HEIF: import and GPS reading when available; preview depends on browser/codec support. Metadata export supports original JPEG files. No silent format conversion takes place.
+- DXF: POINT, LINE, LWPOLYLINE, POLYLINE including bulge arcs, CIRCLE, ARC, TEXT and MTEXT as map overlays. Other entity types, such as INSERT and SPLINE, are reported and not displayed. This is not a full CAD engine.
+- Photos with existing GPS and no new assignment are included unchanged in the ZIP archive.
 
-## ALKIS Bayern
+## Bavarian ALKIS
 
-Dienst: <https://geoservices.bayern.de/od/wms/alkis/v1/parzellarkarte>
+Service: <https://geoservices.bayern.de/od/wms/alkis/v1/parzellarkarte>
 
-WMS 1.1.1 im Karten-CRS EPSG:3857, das laut GetCapabilities unterstützt wird. Vier Darstellungen: Farbe, Grau, Umriss gelb, Umriss schwarz. Deckkraft einstellbar. Daten nur in Bayern. Quellenhinweis direkt in der Karte: Bayerische Vermessungsverwaltung / LDBV, Datenlizenz Deutschland – Namensnennung 2.0. OSM-Quellenhinweis ebenfalls direkt in der Karte.
+WMS 1.1.1 in map CRS EPSG:3857, supported according to GetCapabilities. Four styles: color, gray, yellow outlines and black outlines. Adjustable opacity. Data coverage is limited to Bavaria. Attribution appears directly on the map: Bayerische Vermessungsverwaltung / LDBV, Datenlizenz Deutschland – Namensnennung 2.0. OSM attribution also appears directly on the map.
 
-## Google Fotos
+## Google Photos
 
-Eine Verbindung ist grundsätzlich über die [Google Photos Picker API](https://developers.google.com/photos/picker/guides/get-started-picker) möglich: Nutzer meldet sich an, wählt Fotos aus, die App liest diese Auswahl. Dafür müssen Google-Cloud-Projekt, aktivierte API, OAuth-Client-ID und freigegebene Webadresse eingerichtet werden. Diese Version enthält **keine aktive Google-Verknüpfung**.
+A connection is possible in principle through the [Google Photos Picker API](https://developers.google.com/photos/picker/guides/get-started-picker): the user signs in and selects photos, which the app can then read. This requires a Google Cloud project, an enabled API, an OAuth client ID and an authorized web origin. This version contains **no active Google integration**.
 
-Ein beliebiges vorhandenes Album lässt sich nicht über die Library API dauerhaft auslesen; ihr Lesezugriff beschränkt sich auf app-erstellte Inhalte. [Google API-Änderungen](https://developers.googleblog.com/en/google-photos-picker-api-launch-and-library-api-updates/).
+The Library API cannot continuously read arbitrary existing albums; its read access is limited to app-created content. See [Google API changes](https://developers.googleblog.com/en/google-photos-picker-api-launch-and-library-api-updates/).
 
-Google entfernt beim API-Download mit `=d` die Standortmetadaten. Die Picker-Verknüpfung würde daher nicht zuverlässig die vorhandenen Handy-GPS-Daten liefern. [Offizielle Download-Dokumentation](https://developers.google.com/photos/picker/guides/media-items). Lokale Originaldateien sind für diesen Anwendungsfall die erste Wahl; alternativ ist eine gesonderte Takeout-JSON-Auswertung denkbar.
+Google removes location metadata from API downloads using `=d`. A Picker integration would therefore not reliably provide existing phone GPS data. See the [official download documentation](https://developers.google.com/photos/picker/guides/media-items). Local original files are the preferred option for this use case; separate processing of Takeout JSON is another possible approach.
 
-## Prüfung
+## Verification
 
-`npm test` prüft CSV-Parsing, eindeutige/mehrdeutige Zuordnung, Positionspriorität, EXIF-Präzision, JPEG-Bilddaten-Erhaltung, bestehende EXIF-Felder und XMP-Merging. Der mitgelieferte JPEG-Test ist ein synthetisches 2×2-Bild ohne private Informationen.
+`npm test` checks CSV parsing, unambiguous/ambiguous assignments, position precedence, EXIF precision, JPEG image data preservation, existing EXIF fields and XMP merging. Additional tests cover chronological ordering, image zoom/pan, Emlid offset correction and map thumbnail proportions. The included JPEG fixture is a synthetic 2×2 image without private information.
 
-Integrationstest mit lokal vorhandenem Neufahrn-Datensatz:
+Integration testing with a locally available Neufahrn dataset:
 
 ```sh
-EMLID_TEST_SOURCE='/Pfad/zum/emlid-app/neufahrn' npm test
+EMLID_TEST_SOURCE='/path/to/emlid-app/neufahrn' npm test
 ```
 
-Die Vermessungsdaten und Fotos werden nicht ins Repository aufgenommen. Geprüft: 107 Punkte, 11 eindeutige Fotozuordnungen und 441 unterstützte DXF-Elemente; Bytegleichheit der JPEG-Bilddaten und ICC-Profile, GPS-/Höhenwerte, manuelle Position ohne alte RTK-Angaben. Browserprüfung: ZIP-/DXF-Import, ALKIS, Export, schmale Ansicht und Erhalt des Projekts beim Wechsel zum Inspektor.
+Survey data and photos are not included in the repository. Verified: 107 points, 11 unambiguous photo matches and 441 supported DXF entities; byte-identical JPEG image data and ICC profiles, GPS/elevation values and manual positions without stale RTK information. Browser checks include ZIP/DXF import, ALKIS, export, narrow layouts and project preservation when switching to the inspector.
 
-## Bestehender Inspektor
+## Existing inspector
 
-Die bisherigen Funktionen für Panorama-, HDR- und Copyright-Metadaten bleiben erhalten. Für den optionalen JXL-Decoder können `jxl.min.js` und `jxl.wasm` in `public/` abgelegt werden. Der Inspektor nutzt weiterhin das bestehende Tailwind-CDN; die neue Vermessungsansicht hat lokal gebündelte CSS-Dateien.
+The existing panorama, HDR and copyright metadata features remain available. For the optional JXL decoder, place `jxl.min.js` and `jxl.wasm` in `public/`. The inspector still uses the existing Tailwind CDN; the survey view uses locally bundled CSS.
 
-## Erscheinungsbild, Sprache und Footer
+## Appearance, language and footer
 
-Über die Kopfzeile lassen sich helles/dunkles Interface sowie Deutsch/Englisch umschalten. Das gilt auch für den Metadaten-Inspektor, Hilfe, Fotozuordnung, Zahlenformate und Statusmeldungen. Nur Sprache und Darstellungspräferenz werden in `localStorage` gespeichert; Fotos und Vermessungsdaten bleiben temporär im Arbeitsspeicher. Technische CSV-Spalten, EXIF-/XMP-Schlüssel und exportierte Zahlen werden nicht übersetzt.
+The header lets you switch between light/dark mode and German/English. These settings also apply to the metadata inspector, help, photo assignments, number formatting and status messages. Only language and appearance preferences are stored in `localStorage`; photos and survey data remain temporarily in memory. Technical CSV column names, EXIF/XMP keys and exported numbers are not translated.
 
-Der Footer folgt den Link-Pills von SkyCheck: OpenStreetMap, ALKIS/LDBV und Datenlizenz, Pointcloudmanager, SkyCheck, Impressum, michael-radeck.de, GitHub und Ko-fi. Der Datenschutz-/Formate-Button öffnet die lokalen Verarbeitungshinweise.
+The footer follows SkyCheck's link pills: OpenStreetMap, ALKIS/LDBV and the data license, Pointcloudmanager, SkyCheck, legal notice, michael-radeck.de, GitHub and Ko-fi. The privacy/formats button opens the local processing information.
 
-## Veröffentlichung
+## Photo navigation and map controls
 
-- Website: https://measuremap-viewer-editor-emlid.netlify.app
-- Repository: https://github.com/mradeck/measuremap-viewer-editor-emlid
-- Netlify-Build: `npm run typecheck && npm test && npm run build`, Ausgabe `dist`, Node.js 22.
-- `netlify.toml` enthält SPA-Fallback und Cache-Header. Keine Tokens oder private Fotos im Repository.
+The centered photo strip displays five chronologically adjacent photos. Hover enlarges the preview and changes the selection; previous/next buttons and arrow keys navigate the entire series. The map follows the selection. Sorting uses EXIF capture time, then an Emlid timestamp in the filename, falling back to the file date (visibly identified).
 
-Die mittige Fotoleiste zeigt fünf chronologisch benachbarte Fotos. Hover vergrößert die Vorschau und wechselt die Auswahl; Vor-/Zurück-Buttons und Pfeiltasten führen durch die gesamte Serie. Die Karte folgt der Auswahl. Sortierung: EXIF-Aufnahmezeit, Emlid-Zeitstempel im Dateinamen, ersatzweise Dateidatum (sichtbar gekennzeichnet).
+Double-clicking a thumbnail, map marker or image preview opens the photo in place of the map. The strip can be collapsed while arrow keys and horizontal mouse-wheel navigation (including Shift + wheel) remain available. Escape or **Back to map** exits photo view. Home/End jump to the beginning/end. At either boundary, navigation in the opposite direction remains available; keyboard shortcuts do not interfere with input fields.
 
-Doppelklick auf Thumbnail, Kartenmarker oder Bildvorschau öffnet das Foto anstelle der Karte. Die Leiste lässt sich einklappen, während Pfeiltasten und horizontales Mausrad (auch Shift + Mausrad) weiter funktionieren. Escape oder „Zurück zur Karte“ beendet die Bildansicht. Home/End springen zum Anfang/Ende. An den Grenzen bleibt die Navigation in Gegenrichtung erreichbar; Eingabefelder werden nicht durch Tastenkürzel gestört.
+The gallery below the map scrolls horizontally with the selection and keeps the active photo centered where the gallery boundaries allow. This also works after changing filters or resizing the window.
 
-Die Fotogalerie unter der Karte scrollt horizontal mit der Auswahl und hält das aktive Foto mittig, soweit die Ränder der Galerie dies erlauben. Das gilt auch nach Filterwechsel und bei geänderter Fensterbreite.
+Maximum map zoom: 26. OSM tiles are enlarged above level 19, and ALKIS tiles above level 22; extra zoom levels do not add background map detail. DXF geometry and survey points remain georeferenced. The eye button temporarily removes complete photo markers (image, frame, background and label) from the map. The floating photo strip and gallery below the map remain usable.
 
-Maximale Zoomstufe: 26. OSM-Kacheln werden oberhalb von Stufe 19, ALKIS-Kacheln oberhalb von Stufe 22 vergrößert; die zusätzlichen Zoomstufen erzeugen keine neuen Details der Hintergrundkarten. DXF und Messpunkte bleiben georeferenziert. Der Auge-Button entfernt ausschließlich die vollständigen Fotomarker (Bild, Rahmen, Hintergrund und Beschriftung) vorübergehend von der Karte. Schwebende Fotoleiste und Galerie unter der Karte bleiben nutzbar.
+In large photo view, Ctrl + wheel zooms around the pointer up to 16×; dragging with the left mouse button pans the enlarged image. Plus/minus and fit buttons are also available. Changing photos resets the view; image boundaries limit panning.
 
-Große Fotoansicht: Strg + Mausrad zoomt um die Zeigerposition bis 16×; Ziehen mit der linken Maustaste verschiebt den vergrößerten Ausschnitt. Plus/Minus und Einpassen stehen zusätzlich als Buttons zur Verfügung. Ein Foto-Wechsel setzt den Ausschnitt zurück; Bildränder begrenzen das Verschieben.
+Map thumbnail frames follow the actual image aspect ratio, including displayed EXIF orientation. Hover enlarges the whole thumbnail together with its frame and point label, while the pointer target remains unchanged. Enlarged previews do not intercept pointer events intended for neighboring markers and reset when the pointer leaves.
 
-Optionale Emlid-Versatzkorrektur: „Emlid: einen Messpunkt zurück“ verschiebt automatisch zugeordnete Fotos auf die unmittelbar vorherige CSV-Zeile. Die CSV-Reihenfolge gilt auch bei nicht numerischen Punktnamen; ungültige Vorgänger und erste Zeilen erhalten keine Ersatzposition. Manuelle Zuordnungen und GPS-Fotos bleiben unverändert. Die Option ist standardmäßig aktiv, bei neuer CSV wieder aktiv und ohne Datenänderung umschaltbar. Anzeige und Export verwenden dieselbe Auflösung; positions.json/positions.csv protokollieren die ursprüngliche Zuordnung und den verwendeten Versatz.
+## Emlid assignment offset correction
 
-Karten-Thumbnails: Rahmen folgen dem tatsächlichen Bildseitenverhältnis (einschließlich angezeigter EXIF-Orientierung). Beim Hover vergrößert sich die komplette Karte mit Rahmen und Punktlabel; die Mausfläche bleibt unverändert. Vergrößerte Vorschauen fangen keine Mausereignisse benachbarter Marker ab und werden beim Verlassen zurückgesetzt.
+**Enabled by default**, including after loading a new CSV. The **Emlid: one survey point back** button shifts automatically assigned photos to the immediately preceding CSV row. This addresses the observed case where a photo of the point just saved appears under the next point in the Emlid export.
+
+CSV row order is used, including for nonnumeric point names; this is not point number minus one. First rows and invalid predecessors receive no substitute position. Manual assignments and GPS-only photos remain unchanged. The option can be turned off without changing the input data, restoring the original automatic assignments.
+
+Display and export use the same assignment resolution. `positions.json`/`positions.csv` record the original assignment and applied offset.
+
+## Published project
+
+- Website: <https://measuremap-viewer-editor-emlid.netlify.app>
+- Repository: <https://github.com/mradeck/measuremap-viewer-editor-emlid>
+- Netlify build: `npm run typecheck && npm test && npm run build`, output `dist`, Node.js 22.
+- `netlify.toml` contains the SPA fallback and cache headers. No tokens or private photos are included in the repository.
