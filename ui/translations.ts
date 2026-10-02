@@ -2,6 +2,7 @@ export type Language = 'de' | 'en';
 let activeLanguage:Language='de';
 export const setActiveLanguage=(language:Language)=>{activeLanguage=language;};
 export const english:Record<string,string>={
+"Fotos, Emlid-CSV, DXF, GeoTIFF, DJI-KMZ oder ZIP":"Photos, Emlid CSV, DXF, GeoTIFF, DJI KMZ or ZIP",
 "{count} DXF-Dateien":"{count} DXF files",
 "DXF-CRS für neue Dateien":"DXF CRS for new files",
 "DXF anzeigen: {name}":"Show DXF: {name}",

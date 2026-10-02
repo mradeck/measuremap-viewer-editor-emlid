@@ -9,22 +9,23 @@ import {photoPinSize} from './photo-marker';
 import type {Ortho} from './ortho';
 import OrthoLayer from './OrthoLayer';
 import type {Drawing} from './dxf';
+import type {Mission} from '../dji/mission';
 export const MAX_MAP_ZOOM=26;
 export const ALKIS_URL='https://geoservices.bayern.de/od/wms/alkis/v1/parzellarkarte';
 export const ALKIS_STYLES={farbe:'by_alkis_parzellarkarte_farbe',grau:'by_alkis_parzellarkarte_grau',gelb:'by_alkis_parzellarkarte_umr_gelb',schwarz:'by_alkis_parzellarkarte_umr_schwarz'};
-interface Props {ortho:Ortho|null;showOrtho:boolean;orthoOpacity:number;previousPoint:boolean;photos:Photo[];points:SurveyPoint[];selected:string|null;onSelect:(id:string)=>void;onPreview:(id:string|null)=>void;onOpen:(id:string)=>void;drawing:Drawing|null;hiddenLayers:string[];showDxf:boolean;labels:boolean;showPoints:boolean;showPhotos:boolean;alkis:boolean;style:keyof typeof ALKIS_STYLES;opacity:number;fit:number;placing:boolean;onPlace:(p:Position)=>void;onError:(s:string)=>void}
+interface Props {mission:Mission|null;selectedWaypoint:number;editDji:boolean;onSelectWaypoint:(i:number)=>void;onMoveWaypoint:(i:number,p:{lat:number;lon:number})=>void;ortho:Ortho|null;showOrtho:boolean;orthoOpacity:number;previousPoint:boolean;photos:Photo[];points:SurveyPoint[];selected:string|null;onSelect:(id:string)=>void;onPreview:(id:string|null)=>void;onOpen:(id:string)=>void;drawing:Drawing|null;hiddenLayers:string[];showDxf:boolean;labels:boolean;showPoints:boolean;showPhotos:boolean;alkis:boolean;style:keyof typeof ALKIS_STYLES;opacity:number;fit:number;placing:boolean;onPlace:(p:Position)=>void;onError:(s:string)=>void}
 export default function SurveyMap(props:Props) {
   const {language,theme}=usePreferences();
   const [zoomLevel,setZoomLevel]=useState(18);
   const zoom=useRef<L.Control.Zoom>(),skipPan=useRef(false);
   const orthoLayer=useRef<OrthoLayer>();
   const photoMarkers=useRef(new Map<string,L.Marker>()),hoveredPhoto=useRef<string|null>(null);
-  const node=useRef<HTMLDivElement>(null),map=useRef<L.Map>(),overlay=useRef<L.LayerGroup>(),cad=useRef<L.LayerGroup>(),surveyPoints=useRef<L.LayerGroup>(),wms=useRef<L.TileLayer.WMS>();
+  const node=useRef<HTMLDivElement>(null),map=useRef<L.Map>(),overlay=useRef<L.LayerGroup>(),cad=useRef<L.LayerGroup>(),surveyPoints=useRef<L.LayerGroup>(),dji=useRef<L.LayerGroup>(),wms=useRef<L.TileLayer.WMS>();
   const latest=useRef(props);latest.current=props;
   useEffect(()=>{
     const m=L.map(node.current!,{maxZoom:MAX_MAP_ZOOM,zoomControl:false,preferCanvas:true}).setView([48.30723,11.65589],18);map.current=m;
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxNativeZoom:19,maxZoom:MAX_MAP_ZOOM,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(m);
-    overlay.current=L.layerGroup().addTo(m);cad.current=L.layerGroup().addTo(m);surveyPoints.current=L.layerGroup().addTo(m);
+    overlay.current=L.layerGroup().addTo(m);cad.current=L.layerGroup().addTo(m);surveyPoints.current=L.layerGroup().addTo(m);dji.current=L.layerGroup().addTo(m);
     m.on('zoomend',()=>setZoomLevel(m.getZoom()));
     m.on('click',e=>{if(latest.current.placing)latest.current.onPlace({lat:e.latlng.lat,lon:e.latlng.lng,altitude:null});});
     const observer=new ResizeObserver(()=>m.invalidateSize());observer.observe(node.current!);
@@ -43,6 +44,17 @@ export default function SurveyMap(props:Props) {
     if(props.ortho&&props.showOrtho){const layer=new OrthoLayer(props.ortho,props.orthoOpacity);layer.on('tileerror',()=>latest.current.onError(t('Orthofoto konnte nicht nachgeladen werden.')));layer.addTo(m);orthoLayer.current=layer;}
   },[props.ortho,props.showOrtho]);
   useEffect(()=>{orthoLayer.current?.setOpacity(props.orthoOpacity);},[props.orthoOpacity]);
+  useEffect(()=>{
+    const g=dji.current!;g.clearLayers();const mission=props.mission;if(!mission)return;
+    for(const ring of mission.rings)L.polygon(ring.map(p=>[p.lat,p.lon] as [number,number]),{color:'#9b5de5',weight:2,fillOpacity:.12,interactive:false}).addTo(g);
+    const folders=new Map<number,[number,number][]>();for(const p of mission.points){const list=folders.get(p.folder)||[];list.push([p.lat,p.lon]);folders.set(p.folder,list);}
+    for(const line of folders.values())L.polyline(line,{color:'#9b5de5',weight:3,opacity:.8,interactive:false}).addTo(g);
+    mission.points.forEach((p,i)=>{
+      const active=i===props.selectedWaypoint;
+      if(!props.editDji&&!active){L.circleMarker([p.lat,p.lon],{radius:3,color:'#9b5de5',weight:1,fillOpacity:1}).bindTooltip(`WP ${p.index} · ${p.height} m`).on('click',()=>latest.current.onSelectWaypoint(i)).addTo(g);return;}
+      L.marker([p.lat,p.lon],{draggable:props.editDji,icon:L.divIcon({className:`dji-waypoint ${active?'selected':''}`,html:String(i+1),iconSize:[22,22],iconAnchor:[11,11]}),zIndexOffset:2100}).bindTooltip(`WP ${p.index} · ${p.height} m · ${p.speed} m/s`).on('click',()=>latest.current.onSelectWaypoint(i)).on('dragend',e=>{const pos=e.target.getLatLng();latest.current.onSelectWaypoint(i);latest.current.onMoveWaypoint(i,{lat:pos.lat,lon:pos.lng});}).addTo(g);
+    });
+  },[props.mission,props.selectedWaypoint,props.editDji]);
   useEffect(()=>{
     const g=cad.current!;g.clearLayers();
     const foreground=getComputedStyle(node.current!).getPropertyValue('--s-text').trim();
@@ -103,6 +115,7 @@ export default function SurveyMap(props:Props) {
     if(!coords.length)for(const p of props.points)coords.push([p.lat,p.lon]);
     if(props.drawing)for(const f of props.drawing.features)coords.push(...f.coords);
     if(props.ortho&&props.showOrtho)coords.push(...props.ortho.bounds);
+    if(props.mission){coords.push(...props.mission.rings.flat().map(p=>[p.lat,p.lon] as [number,number]),...props.mission.points.map(p=>[p.lat,p.lon] as [number,number]));}
     if(coords.length)map.current!.fitBounds(L.latLngBounds(coords).pad(.2),{maxZoom:20});
   },[props.fit]);
   useEffect(()=>{

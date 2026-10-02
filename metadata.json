@@ -1,5 +1,5 @@
 {
   "name": "MeasureMap",
-  "description": "Emlid survey photo mapping, DXF/ALKIS overlays and local GPS/RTK metadata editing. German and English; light and dark interface.",
+  "description": "Local Emlid photo georeferencing, DJI Pilot 2 flight-plan editing and KMZ export, DXF/ALKIS/GeoTIFF overlays and GPS/RTK metadata editing. German and English; light and dark interface.",
   "requestFramePermissions": []
 }

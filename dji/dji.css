@@ -1,0 +1,9 @@
+.dji-panel{margin:16px 0;border:1px solid var(--s-border);border-radius:12px;background:var(--s-panel)}
+.dji-panel summary{cursor:pointer;padding:12px;display:flex;align-items:center;gap:8px;font-size:12px;list-style:none}
+.dji-panel summary:after{content:'⌄';margin-left:auto}.dji-panel:not([open])>summary:after{content:'›'}
+.dji-content .full{white-space:normal;text-align:center;justify-content:center}.dji-content{padding:0 12px 12px;display:grid;gap:10px}.dji-content details{border-top:1px solid var(--s-border)}.dji-content details summary{padding:10px 0}
+.dji-name{font-size:12px;overflow:hidden;text-overflow:ellipsis}.dji-note{font-size:11px;line-height:1.65;color:var(--s-muted);margin:0}
+.dji-warning{font-size:11px;line-height:1.65;border-left:3px solid #dd9c36;padding:7px 9px;background:rgba(221,156,54,.08);margin:0}
+.dji-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}.dji-field,.dji-fields label{display:grid;gap:5px;font-size:11px;margin-bottom:8px;min-width:0}
+.dji-content input[type=number],.dji-content select{width:100%;min-width:0;border:1px solid var(--s-border);border-radius:6px;padding:7px;background:var(--s-card);color:var(--s-text);font-size:12px}
+.dji-actions{display:flex;gap:5px;align-items:center}.dji-waypoint{border:0!important;border-radius:50%;background:#fff!important;color:#7635dc!important;box-shadow:0 1px 5px #0006;text-align:center;font-weight:700;font-size:10px;line-height:22px!important}.dji-waypoint.selected{background:#7635dc!important;color:#fff!important}

@@ -1,10 +1,26 @@
-# MeasureMap · v2026.10.1.18
+# MeasureMap · v2026.10.1.19
 
 [English](README.md) | **Deutsch**
 
 Eigenständige React/TypeScript-SPA zur lokalen Georeferenzierung von Emlid-Fotos. Repository und Netlify-Projekt: `measuremap-viewer-editor-emlid`. Die vorhandene MetaLens-Metadatenansicht bleibt unter „Metadaten-Inspektor“ erreichbar. Beim Wechsel bleibt das geladene Vermessungsprojekt erhalten.
 
 [MeasureMap öffnen](https://measuremap-viewer-editor-emlid.netlify.app/)
+
+## DJI-Pilot-2-Flugpläne
+
+**v2026.10.1.19** ergänzt die Gruppe **DJI · Pilot 2**. KML/KMZ über diese Gruppe, die Projektdateiauswahl oder Drag-and-drop laden. Flächenumriss und ausführbare Routen erscheinen violett auf der vorhandenen Foto-/CAD-/Orthofotokarte.
+
+- Gesamte Mission in Metern verschieben oder im Uhrzeigersinn drehen. Fläche, Route, Startreferenz und gesetzte POI werden gemeinsam geändert. Drehpunkt ist das Mittel der Flächeneckpunkte; die Transformation nutzt einen lokalen metrischen Rahmen.
+- Flughöhen um einen Betrag versetzen; Höhenbezug und Geländeprofil bleiben erhalten. Die separate Sicherheits-/Startflughöhe wird nicht geändert.
+- Fluggeschwindigkeit setzen. Zeitbasierte Fotoauslöser bleiben unverändert; dadurch verändert eine andere Geschwindigkeit die Überlappung.
+- Wegpunkte auswählen und Koordinaten, Höhe oder Geschwindigkeit ändern. Mit **Auf Karte ziehen** direkt verschieben. Indizes, Kameraaktionen, Aktionsgruppen, Kurveneinstellungen und unbekannte DJI-Felder bleiben erhalten.
+- Flächeneckpunkte, Flugrichtung, Kameraüberlappung und Rand ändern. Dafür wird die bisherige ausführbare Route entfernt: Die exportierte **Planungsvorlage** in Pilot 2 neu berechnen und speichern. Rückgängig stellt die vorherige Route wieder her.
+- Bis zu 29 Änderungen zurücknehmen oder den Importstand wiederherstellen. Ein weiterer Flugplan ersetzt die aktive DJI-Mission; Fotos und Kartenebenen bleiben geladen.
+- Als neue KMZ exportieren. WPML-Version, Geräteparameter und Zusatzressourcen bleiben erhalten. Ohne Bearbeitung bleiben beide XML-Dateien exakt erhalten; vor dem Download wird der Export erneut eingelesen. Aktualisierte Distanz-/Dauerfelder sind geometrische Schätzungen ohne Aktionswartezeiten und Kurvendynamik.
+
+Die [DJI-WPML-Dokumentation](https://developer.dji.com/doc/cloud-api-tutorial/en/api-reference/dji-wpml/overview.html) unterscheidet Planungsvorlage (`wpmz/template.kml`) und ausführbare Route (`wpmz/waylines.wpml`). Eine einzelne DJI-Vorlagen-KML wird als Planungsvorlage verpackt. Allgemeine Geometrie-KML ohne DJI-Geräte-/Missionsparameter ist darstellbar und bearbeitbar, aber nicht als ausführbare DJI-Mission exportierbar. Ein Flugrastergenerator und angenommene Drohnen-/Kameramodelle werden nicht eingesetzt.
+
+Vor dem Flug in Pilot 2 importieren und Route, Höhenbezug, Startpunkt und Aktionen prüfen. Originaldateien bleiben unverändert. Struktur- und Exporttests einschließlich eines ausschließlich lokal geprüften Pilot-2-Beispiels mit 51 Wegpunkten bestanden; **der Importtest auf einem echten DJI-Controller steht noch aus**. Private Flugpläne werden nicht in GitHub oder die Website aufgenommen.
 
 ## Start und Bereitstellung
 
@@ -25,7 +41,7 @@ npm run build
 
 Den gesamten Inhalt von `dist/` auf einen statischen Webserver kopieren. Unterverzeichnisse sind unterstützt (`base: './'`). Kein Backend und keine Foto-Uploads nötig. Nicht direkt über `file://` öffnen; zum lokalen Prüfen `npm run preview` verwenden.
 
-Die sichtbare Version entspricht `vJahr.Monat.Version.Subversion`; die npm-Version `2026.10.1-18` bildet dieselbe Version als gültiges SemVer ab.
+Die sichtbare Version entspricht `vJahr.Monat.Version.Subversion`; die npm-Version `2026.10.1-19` bildet dieselbe Version als gültiges SemVer ab.
 
 ## Arbeitsablauf
 
