@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.26
+# MeasureMap · v2026.10.1.27
 
 [English](README.md) | **Deutsch**
 
@@ -211,3 +211,7 @@ Gemeinsame Footer-Links mit Geodata Inspector & Cleaner abgeglichen: Geoid Forge
 ## v2026.10.1.26 · 2026-10-04
 
 Das Interface startet jetzt standardmäßig hell, auch bei fehlenden oder nicht lesbaren Einstellungen. Eine ausdrücklich gespeicherte dunkle Darstellung bleibt erhalten; der Theme-Button schaltet weiterhin in beide Richtungen.
+
+## v2026.10.1.27 · 2026-10-04
+
+Die Fußleiste zeigt „Weitere Apps“ oberhalb einer Trennlinie. Darunter stehen MeasureMap-Version, lokale Verarbeitungshinweise, Quellen, rechtliche Links und App-Aktionen. Die abgerundeten Link-Buttons bleiben erhalten.
