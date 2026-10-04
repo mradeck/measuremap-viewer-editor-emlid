@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.24
+# MeasureMap · v2026.10.1.26
 
 **English** | [Deutsch](README.de.md)
 
@@ -211,3 +211,11 @@ Native GeoTIFF reads share fixed 512-pixel source blocks across neighbouring til
 The footer also links to [Geodata Inspector & Cleaner](https://geodata-inspector-cleaner.netlify.app/).
 
 The language button follows Geodata Inspector & Cleaner: the current German or British flag and DE/EN code toggle between German and English. Flags are inline SVGs for consistent rendering, including Chrome on Windows. The Pointcloudmanager footer link opens its public website at https://pointcloud-manager.com/.
+
+## v2026.10.1.25 · 2026-10-04
+
+Shared footer links synchronized with Geodata Inspector & Cleaner: Geoid Forge, DXF Coordinate Forge and GPS / UTM Converter added. Rounded link buttons and English “Imprint” retained.
+
+## v2026.10.1.26 · 2026-10-04
+
+The default interface is now light, including when preferences are missing or unreadable. An explicitly saved dark theme remains respected; the theme button still switches both ways.

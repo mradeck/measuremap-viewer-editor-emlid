@@ -6,10 +6,10 @@ import {setActiveLanguage,translate as t,type Language} from './translations';
 export type Theme='dark'|'light';
 const storageKey='measuremap.preferences';
 function readPreferences():{language:Language;theme:Theme}{
-  try{const saved=JSON.parse(localStorage.getItem(storageKey)||'{}');return {language:saved.language==='en'?'en':'de',theme:saved.theme==='light'?'light':'dark'};}
-  catch{return {language:'de',theme:'dark'};}
+  try{const saved=JSON.parse(localStorage.getItem(storageKey)||'{}');return {language:saved.language==='en'?'en':'de',theme:saved.theme==='dark'?'dark':'light'};}
+  catch{return {language:'de',theme:'light'};}
 }
-const Context=createContext<{language:Language;theme:Theme;toggleLanguage:()=>void;toggleTheme:()=>void}>({language:'de',theme:'dark',toggleLanguage:()=>{},toggleTheme:()=>{}});
+const Context=createContext<{language:Language;theme:Theme;toggleLanguage:()=>void;toggleTheme:()=>void}>({language:'de',theme:'light',toggleLanguage:()=>{},toggleTheme:()=>{}});
 export function PreferencesProvider({children}:{children:React.ReactNode}){
   const [preferences,setPreferences]=useState(readPreferences);
   setActiveLanguage(preferences.language);
