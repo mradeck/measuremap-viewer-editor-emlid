@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.27
+# MeasureMap · v2026.10.1.28
 
 [English](README.md) | **Deutsch**
 
@@ -215,3 +215,7 @@ Das Interface startet jetzt standardmäßig hell, auch bei fehlenden oder nicht 
 ## v2026.10.1.27 · 2026-10-04
 
 Die Fußleiste zeigt „Weitere Apps“ oberhalb einer Trennlinie. Darunter stehen MeasureMap-Version, lokale Verarbeitungshinweise, Quellen, rechtliche Links und App-Aktionen. Die abgerundeten Link-Buttons bleiben erhalten.
+
+## Vollbild für Karte und Fotos · v2026.10.1.28 · 2026-10-08
+
+Das Vollbildsymbol oben in der **Positionsübersicht** maximiert die Karte oder das gerade geöffnete große Foto. Unterstützte Browser verwenden echtes Vollbild, andernfalls füllt die Ansicht das Browserfenster. Mit demselben Button oder Escape zurück zur normalen Ansicht. Fotoauswahl, Navigation, Zoom und Kartenlayer bleiben verfügbar. Escape verlässt zuerst das Vollbild; ein weiterer Druck schließt das große Foto. Die schwebende Fotoleiste lässt sich für freie Bildsicht einklappen. Karte und Bild passen ihre Größe ohne Neuladen des Projekts an.

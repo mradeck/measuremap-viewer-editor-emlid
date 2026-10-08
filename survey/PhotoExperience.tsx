@@ -18,6 +18,7 @@ export default function PhotoExperience(props:Props) {
     function key(e:KeyboardEvent){
       const target=e.target as HTMLElement;
       if(!active()||e.ctrlKey||e.metaKey||e.altKey||target.closest('input,textarea,select,[contenteditable="true"]'))return;
+      if(e.key==='Escape'&&document.fullscreenElement)return;
       if(e.key==='Escape'&&latest.current.opened){e.preventDefault();latest.current.onClose();return;}
       if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
       e.preventDefault();e.stopPropagation();

@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.27
+# MeasureMap · v2026.10.1.28
 
 **English** | [Deutsch](README.de.md)
 
@@ -223,3 +223,7 @@ The default interface is now light, including when preferences are missing or un
 ## v2026.10.1.27 · 2026-10-04
 
 The footer groups “More apps” above a divider. MeasureMap version, local processing information, sources, legal links and app actions appear below it. Existing rounded link buttons are retained.
+
+## Viewer fullscreen · v2026.10.1.28 · 2026-10-08
+
+Use the fullscreen icon in the **Location overview** toolbar to maximize the map or the currently opened large photo. The viewer uses browser fullscreen where supported, with a window-filling fallback otherwise. The same button or Escape returns to the normal layout; photo selection, navigation, zoom and map layers remain available. Escape first leaves fullscreen; press it again to close the large photo. Collapse the floating photo strip for an unobstructed image. The map and image resize without reloading the project.

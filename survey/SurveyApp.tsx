@@ -1,10 +1,11 @@
 import {translate as t} from '../ui/translations';
 import React,{useState,useRef,useEffect,useMemo} from 'react';
-import {Camera,MapPin,Upload,Download,Layers,FileSpreadsheet,ScanLine,LocateFixed,CheckCircle2,AlertTriangle,X,ChevronRight,Image as ImageIcon,Trash2,Info,Eye,EyeOff} from 'lucide-react';
+import {Camera,MapPin,Upload,Download,Layers,FileSpreadsheet,ScanLine,LocateFixed,CheckCircle2,AlertTriangle,X,ChevronRight,Image as ImageIcon,Trash2,Info,Eye,EyeOff,Maximize,Minimize} from 'lucide-react';
 import JSZip from 'jszip';
 import Papa from 'papaparse';
 import SurveyMap,{ALKIS_STYLES} from './SurveyMap';
 import PhotoExperience from './PhotoExperience';
+import {useViewerFullscreen} from './useViewerFullscreen';
 import {chronologicalPhotos} from './chronology';
 import {VERSION,CRS_OPTIONS,parseSurveyCsv,readPhoto,matchPhoto,effectivePosition,number,validPosition,type Photo,type SurveyPoint,type Position} from './model';
 import {parseDrawing,visibleDrawing,type DrawingDocument} from './dxf';
@@ -20,6 +21,7 @@ const methodLabel={csv:t("CSV-Dateiname"),name:t("Emlid-Punktname"),manual:t("Ma
 function save(blob:Blob,name:string){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);}
 export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
   const {language}=usePreferences();
+  const viewerFullscreen=useViewerFullscreen();
   const [missionHistory,setMissionHistory]=useState<Mission[]>([]),[selectedWaypoint,setSelectedWaypoint]=useState(0),[editDji,setEditDji]=useState(false),[editArea,setEditArea]=useState(false);
   const originalMission=useRef<Mission|null>(null),mission=missionHistory[missionHistory.length-1]||null;
   function changeMission(m:Mission){setMissionHistory(old=>[...old.slice(-29),m]);setSelectedWaypoint(i=>Math.min(i,Math.max(0,m.points.length-1)));}
@@ -174,7 +176,7 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
 
         <div className="privacy-note"><LocateFixed size={16}/><p>{t("Fotos und Messdaten bleiben auf diesem Gerät. Die Karte lädt OSM- und optionale ALKIS-Kacheln.")}</p></div>
       </aside>
-      <section className="map-panel"><div className="map-toolbar"><div><span className="status-dot"/> {t("Positionsübersicht ")}<small>{assigned} {t("mit Messpunkt · ")}{without} {t("ohne Position")}</small></div><div className="map-toolbar-actions">{!!mission?.rings.length&&<button className={`quiet-button ${editArea?'dji-edit-active':''}`} aria-pressed={editArea} onClick={()=>{setEditArea(v=>!v);setEditDji(false);}}>{language==='de'?(editArea?'Umriss fertig':'Umriss bearbeiten'):(editArea?'Finish boundary':'Edit boundary')}</button>}<button className="icon-button" aria-label={t(showPhotos?"Foto-Thumbnails ausblenden":"Foto-Thumbnails einblenden")} title={t(showPhotos?"Foto-Thumbnails ausblenden":"Foto-Thumbnails einblenden")} aria-pressed={!showPhotos} onClick={()=>{setShowPhotos(old=>!old);setDockPreview(null);}}>{showPhotos?<Eye size={18}/>:<EyeOff size={18}/>}</button><button className="quiet-button" onClick={()=>setFit(n=>n+1)}><LocateFixed size={15}/> {t("Alles zeigen")}</button></div></div>
+      <section ref={viewerFullscreen.ref} className={`map-panel ${viewerFullscreen.expanded?'viewer-expanded':''}`}><div className="map-toolbar"><div><span className="status-dot"/> {t("Positionsübersicht ")}<small>{assigned} {t("mit Messpunkt · ")}{without} {t("ohne Position")}</small></div><div className="map-toolbar-actions"><button className="icon-button" aria-label={t(viewerFullscreen.active?'Vollbild verlassen':'Karte / Foto im Vollbild')} title={t(viewerFullscreen.active?'Vollbild verlassen':'Karte / Foto im Vollbild')} aria-pressed={viewerFullscreen.active} onClick={()=>void viewerFullscreen.toggle()}>{viewerFullscreen.active?<Minimize size={18}/>:<Maximize size={18}/>}</button>{!!mission?.rings.length&&<button className={`quiet-button ${editArea?'dji-edit-active':''}`} aria-pressed={editArea} onClick={()=>{setEditArea(v=>!v);setEditDji(false);}}>{language==='de'?(editArea?'Umriss fertig':'Umriss bearbeiten'):(editArea?'Finish boundary':'Edit boundary')}</button>}<button className="icon-button" aria-label={t(showPhotos?"Foto-Thumbnails ausblenden":"Foto-Thumbnails einblenden")} title={t(showPhotos?"Foto-Thumbnails ausblenden":"Foto-Thumbnails einblenden")} aria-pressed={!showPhotos} onClick={()=>{setShowPhotos(old=>!old);setDockPreview(null);}}>{showPhotos?<Eye size={18}/>:<EyeOff size={18}/>}</button><button className="quiet-button" onClick={()=>setFit(n=>n+1)}><LocateFixed size={15}/> {t("Alles zeigen")}</button></div></div>
         <SurveyMap editArea={editArea} onEditArea={editMissionArea} mission={mission} selectedWaypoint={selectedWaypoint} editDji={editDji} onSelectWaypoint={setSelectedWaypoint} onMoveWaypoint={(i,p)=>{if(mission){try{changeMission(editWaypoint(mission,i,{...mission.points[i],...p}));setError('');}catch(e){setError(String(e));}}}} ortho={ortho} showOrtho={showOrtho} orthoOpacity={orthoOpacity} photos={photos} points={points} selected={selected} previousPoint={previousPoint} onSelect={selectPhoto} onPreview={setDockPreview} onOpen={openPhoto} drawing={drawing} hiddenLayers={hiddenLayers} showDxf={showDxf} labels={labels} showPoints={showPoints} showPhotos={showPhotos} alkis={alkis} style={style} opacity={opacity} fit={fit} placing={placing} onPlace={onPlace} onError={setError}/>
         <PhotoExperience photos={orderedPhotos} selected={selected} previewId={dockPreview} onSelect={selectPhoto} opened={imageView} onOpen={openPhoto} onClose={()=>setImageView(false)}/>
         {placing&&<div className="map-message">{t("Auf die gewünschte Position klicken.")}<button onClick={()=>setPlacing(false)}>{t("Abbrechen")}</button></div>}
