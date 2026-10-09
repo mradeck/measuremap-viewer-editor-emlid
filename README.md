@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.28
+# MeasureMap · v2026.10.1.30
 
 **English** | [Deutsch](README.de.md)
 
@@ -227,3 +227,11 @@ The footer groups “More apps” above a divider. MeasureMap version, local pro
 ## Viewer fullscreen · v2026.10.1.28 · 2026-10-08
 
 Use the fullscreen icon in the **Location overview** toolbar to maximize the map or the currently opened large photo. The viewer uses browser fullscreen where supported, with a window-filling fallback otherwise. The same button or Escape returns to the normal layout; photo selection, navigation, zoom and map layers remain available. Escape first leaves fullscreen; press it again to close the large photo. Collapse the floating photo strip for an unobstructed image. The map and image resize without reloading the project.
+
+## Local folder picker · v2026.10.1.29 · 2026-10-09
+
+**Open photo folder** uses `showDirectoryPicker` in supporting browsers (Chrome/Edge), requesting read-only access. It recursively reads supported project files, skipping hidden entries and macOS metadata, without network uploads or saving folder handles. Cancellation leaves the project unchanged. Browser access prompts remain under browser control. Unsupported browsers retain the directory input: its “Upload files to this site?” wording means exposing files to the page, not an actual MeasureMap server upload. A note below the button explains local processing. **Add files** remains an alternative. Read errors stop the import rather than switching pickers automatically.
+
+## Local import explanation · v2026.10.1.30 · 2026-10-09
+
+An **(i)** button beside **Open photo folder** explains that no photos or project files are uploaded to an internet server. Hover or focus the button to show the information; clicking also opens it for touch users. Escape dismisses it. The text clarifies the browser’s “Upload” wording and recommends **Add files** for selecting a batch of images directly. The explanation is available in German and English and uses the current theme.

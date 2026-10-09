@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.28
+# MeasureMap · v2026.10.1.30
 
 [English](README.md) | **Deutsch**
 
@@ -219,3 +219,11 @@ Die Fußleiste zeigt „Weitere Apps“ oberhalb einer Trennlinie. Darunter steh
 ## Vollbild für Karte und Fotos · v2026.10.1.28 · 2026-10-08
 
 Das Vollbildsymbol oben in der **Positionsübersicht** maximiert die Karte oder das gerade geöffnete große Foto. Unterstützte Browser verwenden echtes Vollbild, andernfalls füllt die Ansicht das Browserfenster. Mit demselben Button oder Escape zurück zur normalen Ansicht. Fotoauswahl, Navigation, Zoom und Kartenlayer bleiben verfügbar. Escape verlässt zuerst das Vollbild; ein weiterer Druck schließt das große Foto. Die schwebende Fotoleiste lässt sich für freie Bildsicht einklappen. Karte und Bild passen ihre Größe ohne Neuladen des Projekts an.
+
+## Lokale Ordnerauswahl · v2026.10.1.29 · 2026-10-09
+
+**Fotoordner öffnen** verwendet in unterstützten Browsern (Chrome/Edge) `showDirectoryPicker` mit reinem Lesezugriff. Unterstützte Projektdateien werden einschließlich Unterordnern lokal eingelesen, versteckte Einträge und macOS-Metadaten ausgelassen. Kein Server-Upload, keine gespeicherten Ordnerhandles. Abbrechen verändert das Projekt nicht. Zugriffsbestätigungen bleiben unter Kontrolle des Browsers. Ohne diese API bleibt die bisherige Ordnerauswahl: „Upload files to this site?“ meint die Bereitstellung an die Webseite, keinen tatsächlichen Server-Upload durch MeasureMap. Ein Hinweis unter dem Button erläutert das. Alternativ **Dateien hinzufügen** verwenden. Lesefehler stoppen den Import; kein automatischer Wechsel zu einem anderen Picker.
+
+## Hinweis zur lokalen Fotoauswahl · v2026.10.1.30 · 2026-10-09
+
+Neben **Fotoordner öffnen** erläutert ein **(i)**-Button, dass keine Bilder oder Projektdateien ins Internet hochgeladen werden. Hover oder Tastaturfokus zeigt den Hinweis; für Touch lässt er sich auch anklicken. Escape schließt ihn. Der Text erklärt die Browserformulierung „Upload“ und nennt **Dateien hinzufügen** als Alternative zur direkten Stapelauswahl. Deutsch/Englisch sowie helles/dunkles Design werden berücksichtigt.

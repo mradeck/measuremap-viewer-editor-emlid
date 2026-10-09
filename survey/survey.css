@@ -37,3 +37,12 @@
 .map-panel:fullscreen .survey-map,.map-panel.viewer-expanded .survey-map{flex:1 1 0;min-height:0;height:auto;width:100%}
 .map-panel:fullscreen .map-legend,.map-panel.viewer-expanded .map-legend{flex:0 0 34px;height:34px}
 .map-panel:fullscreen::backdrop{background:var(--s-panel)}
+
+.local-folder-controls{position:relative;display:flex;align-items:center;gap:6px;margin-bottom:14px}
+.local-folder-controls>.secondary-button{flex:1;min-width:0;width:auto}
+.local-import-info{position:static;flex-shrink:0}
+.local-import-info>.icon-button{display:grid;place-items:center;width:32px;height:32px;border:1px solid var(--s-border);border-radius:7px;background:var(--s-card);color:var(--s-muted);cursor:pointer}
+.local-import-info>.icon-button:hover,.local-import-info>.icon-button[aria-expanded="true"]{color:var(--s-mint);border-color:var(--s-mint)}
+.local-import-info>.icon-button:focus-visible{outline:2px solid var(--s-mint);outline-offset:3px}
+.local-import-tooltip{position:absolute;right:0;top:100%;z-index:900;width:100%;box-sizing:border-box;padding:12px;background:var(--s-panel);color:var(--s-text);border:1px solid var(--s-border);border-radius:8px;box-shadow:0 8px 24px #0003;font-size:11px;line-height:1.7}
+.local-import-tooltip[hidden]{display:none}

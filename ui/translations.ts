@@ -2,6 +2,13 @@ export type Language = 'de' | 'en';
 let activeLanguage:Language='de';
 export const setActiveLanguage=(language:Language)=>{activeLanguage=language;};
 export const english:Record<string,string>={
+"Info zur lokalen Fotoauswahl":"About local photo selection",
+"Hier werden keine Bilder ins Internet hochgeladen. MeasureMap liest Fotos und Projektdateien ausschließlich lokal im Browser. Die Browsermeldung „Upload“ bezeichnet die Freigabe zum Lesen der ausgewählten Dateien. Alternativ kannst du über „Dateien hinzufügen“ mehrere Bilder direkt markieren.":"No images are uploaded to the internet here. MeasureMap reads photos and project files locally in your browser only. The browser’s “Upload” message refers to granting read access to the selected files. Alternatively, select multiple images directly using “Add files”.",
+"Lokalen Ordner einlesen …":"Reading local folder …",
+"Keine unterstützten Projektdateien im Ordner gefunden.":"No supported project files found in the folder.",
+"Ordner konnte nicht gelesen werden. Bitte erneut auswählen oder „Dateien hinzufügen“ verwenden.":"Could not read the folder. Select it again or use “Add files”.",
+"Nur lokaler Lesezugriff · kein Server-Upload.":"Local read-only access · no server upload.",
+"Nur lokal: Der Browser nennt die Ordnerfreigabe „Upload“. MeasureMap sendet diese Dateien nicht an einen Server.":"Local only: the browser calls folder access “Upload”. MeasureMap does not send these files to a server.",
 "Vollbild verlassen":"Exit fullscreen",
 "Karte / Foto im Vollbild":"Fullscreen map / photo",
 "Fotos, Emlid-CSV, DXF, GeoTIFF, DJI-KMZ oder ZIP":"Photos, Emlid CSV, DXF, GeoTIFF, DJI KMZ or ZIP",

@@ -5,7 +5,9 @@ import JSZip from 'jszip';
 import Papa from 'papaparse';
 import SurveyMap,{ALKIS_STYLES} from './SurveyMap';
 import PhotoExperience from './PhotoExperience';
+import LocalImportInfo from './LocalImportInfo';
 import {useViewerFullscreen} from './useViewerFullscreen';
+import {chooseLocalFolder,type DirectoryPicker} from './localFolder';
 import {chronologicalPhotos} from './chronology';
 import {VERSION,CRS_OPTIONS,parseSurveyCsv,readPhoto,matchPhoto,effectivePosition,number,validPosition,type Photo,type SurveyPoint,type Position} from './model';
 import {parseDrawing,visibleDrawing,type DrawingDocument} from './dxf';
@@ -67,6 +69,18 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
   },[selected,photos,points,filter,search,previousPoint]);
   const layerNames=useMemo(()=>[...new Set(drawing?.features.map(f=>f.layer)||[])],[drawing]);
   useEffect(()=>{setPlacing(false);setManualLat(pos?String(pos.lat):'');setManualLon(pos?String(pos.lon):'');setManualAlt(pos?.altitude!=null?String(pos.altitude):'');},[selected,points,photos,previousPoint]);
+  const directoryPicker=(window as Window & {showDirectoryPicker?:DirectoryPicker}).showDirectoryPicker;
+  async function openLocalFolder(){
+    if(!directoryPicker){folderInput.current?.click();return;}
+    setError('');setBusy(t('Lokalen Ordner einlesen …'));
+    try{
+      const files=await chooseLocalFolder(options=>directoryPicker.call(window,options));
+      if(files===null)return;
+      if(!files.length){setError(t('Keine unterstützten Projektdateien im Ordner gefunden.'));return;}
+      await importFiles(files);
+    }catch(error){setError(t('Ordner konnte nicht gelesen werden. Bitte erneut auswählen oder „Dateien hinzufügen“ verwenden.')+' '+(error instanceof Error?error.message:String(error)));}
+    finally{setBusy('');}
+  }
   async function importFiles(input:File[]) {
     setBusy(t("Dateien einlesen …"));setError('');setNotice('');
     const warnings:string[]=[],errors:string[]=[],incoming:Photo[]=[];
@@ -156,7 +170,7 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
         <input ref={filesInput} type="file" aria-label={t("Projektdateien auswählen")} multiple accept=".kml,.kmz,.csv,.dxf,.tif,.tiff,.zip,.jpg,.jpeg,.png,.webp,.heic,.heif" hidden onChange={e=>{if(e.target.files)void importFiles(Array.from(e.target.files));e.target.value='';}}/>
         <input ref={folderInput} type="file" aria-label={t("Fotoordner auswählen")} multiple {...({webkitdirectory:'',directory:''} as any)} hidden onChange={e=>{if(e.target.files)void importFiles(Array.from(e.target.files));e.target.value='';}}/>
         <button className="drop-zone" disabled={!!busy} onClick={()=>filesInput.current?.click()}><div className="upload-symbol"><Upload size={23}/></div><strong>{t("Dateien hinzufügen")}</strong><span>{t("Fotos, Emlid-CSV, DXF, GeoTIFF, DJI-KMZ oder ZIP")}</span><small>{t("Hier ablegen oder auswählen")}</small></button>
-        <button className="secondary-button full" disabled={!!busy} onClick={()=>folderInput.current?.click()}><Camera size={16}/> {t("Fotoordner öffnen")}</button>
+        <div className="local-folder-controls"><button className="secondary-button full" disabled={!!busy} onClick={()=>void openLocalFolder()}><Camera size={16}/> {t("Fotoordner öffnen")}</button><LocalImportInfo/></div>
         <DjiPanel mission={mission} onImport={f=>void importMission(f)} onChange={changeMission} onUndo={()=>setMissionHistory(old=>old.slice(0,-1))} canUndo={missionHistory.length>1} onReset={()=>{if(originalMission.current)setMissionHistory([originalMission.current]);setSelectedWaypoint(0);}} onRemove={()=>{setMissionHistory([]);originalMission.current=null;}} onFit={()=>setFit(n=>n+1)} selected={selectedWaypoint} onSelect={setSelectedWaypoint} editing={editDji} onEditing={v=>{setEditDji(v);if(v)setEditArea(false);}} areaEditing={editArea} onAreaEditing={v=>{setEditArea(v);if(v)setEditDji(false);}}/>
         <div className="source-row"><FileSpreadsheet size={18}/><div><strong>{csvName||'Emlid CSV'}</strong><small>{points.length?t('{count} Messpunkte',{count:points.length})+' · '+(points[0]?.crs||t('CRS unbekannt')):t("Noch keine Messpunkte geladen")}</small></div><span className={`source-dot ${points.length?'loaded':''}`}/></div>
         <div className="emlid-fix-controls"><button className={`secondary-button emlid-fix-button ${previousPoint?'active':''}`} disabled={!!busy||!points.length} aria-pressed={previousPoint} onClick={()=>{setPreviousPoint(old=>!old);setDockPreview(null);}}>{t('Emlid: einen Messpunkt zurück')}<span>{t(previousPoint?'An':'Aus')}</span></button><button className="icon-button" aria-label={t('Info zur Emlid-Korrektur')} title={t('Info zur Emlid-Korrektur')} aria-expanded={emlidFixInfo} onClick={()=>setEmlidFixInfo(old=>!old)}><Info size={18}/></button></div>
