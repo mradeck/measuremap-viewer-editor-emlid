@@ -1,14 +1,8 @@
-import React from 'react';
+import React,{useId} from 'react';
 import type {Language} from './translations';
-/** Vector flags avoid OS-dependent emoji support, especially on Windows. */
+/** Vector flags (identical to the shared public-app design) avoid OS-dependent emoji support, especially on Windows. */
 export default function LanguageFlag({language}:{language:Language}){
-  return <svg className="language-flag" viewBox="0 0 30 20" aria-hidden="true" focusable="false" data-country={language==='de'?'DE':'GB'}>
-    {language==='de'?<><path fill="#000" d="M0 0h30v7H0z"/><path fill="#dd0000" d="M0 6.667h30v6.666H0z"/><path fill="#ffce00" d="M0 13.333h30V20H0z"/></>:<>
-      <path fill="#012169" d="M0 0h30v20H0z"/>
-      <path stroke="#fff" strokeWidth="4" d="m0 0 30 20M30 0 0 20"/>
-      <path fill="#c8102e" d="M0 0v1.49L12.765 10H15L0 0Zm30 0h-2.235L15 8.51V10L30 0ZM0 20h2.235L15 11.49V10L0 20Zm30 0v-1.49L17.235 10H15l15 10Z"/>
-      <path stroke="#fff" strokeWidth="6" d="M15 0v20M0 10h30"/>
-      <path stroke="#c8102e" strokeWidth="4" d="M15 0v20M0 10h30"/>
-    </>}
-  </svg>;
+  const clip=`gb-clip-${useId().replace(/[^a-zA-Z0-9_-]/g,'')}`;
+  if(language==='de')return <svg className="language-flag" viewBox="0 0 30 20" aria-hidden="true" focusable="false" data-country="DE"><path fill="#000" d="M0 0h30v7H0z"/><path fill="#d00" d="M0 7h30v6H0z"/><path fill="#ffce00" d="M0 13h30v7H0z"/></svg>;
+  return <svg className="language-flag" viewBox="0 0 60 40" aria-hidden="true" focusable="false" data-country="GB"><defs><clipPath id={clip}><path d="M0 0h60v40H0z"/></clipPath></defs><g clipPath={`url(#${clip})`}><path fill="#012169" d="M0 0h60v40H0z"/><path stroke="#fff" strokeWidth="8" d="m0 0 60 40M0 40 60 0"/><path stroke="#c8102e" strokeWidth="3" d="m0 0 60 40M0 40 60 0"/><path stroke="#fff" strokeWidth="13" d="M30 0v40M0 20h60"/><path stroke="#c8102e" strokeWidth="8" d="M30 0v40M0 20h60"/></g></svg>;
 }

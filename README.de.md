@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.30
+# MeasureMap · v2026.10.1.31
 
 [English](README.md) | **Deutsch**
 
@@ -84,7 +84,7 @@ npm run build
 
 Den gesamten Inhalt von `dist/` auf einen statischen Webserver kopieren. Unterverzeichnisse sind unterstützt (`base: './'`). Kein Backend und keine Foto-Uploads nötig. Nicht direkt über `file://` öffnen; zum lokalen Prüfen `npm run preview` verwenden.
 
-Die sichtbare Version entspricht `vJahr.Monat.Version.Subversion`; die npm-Version `2026.10.1-21` bildet dieselbe Version als gültiges SemVer ab.
+Die sichtbare Version entspricht `vJahr.Monat.Version.Subversion`; die npm-Version `2026.10.1-31` bildet dieselbe Version als gültiges SemVer ab.
 
 ## Arbeitsablauf
 
@@ -155,75 +155,16 @@ Die bisherigen Funktionen für Panorama-, HDR- und Copyright-Metadaten bleiben e
 
 ## Erscheinungsbild, Sprache und Footer
 
-Über die Kopfzeile lassen sich helles/dunkles Interface sowie Deutsch/Englisch umschalten. Das gilt auch für den Metadaten-Inspektor, Hilfe, Fotozuordnung, Zahlenformate und Statusmeldungen. Nur Sprache und Darstellungspräferenz werden in `localStorage` gespeichert; Fotos und Vermessungsdaten bleiben temporär im Arbeitsspeicher. Technische CSV-Spalten, EXIF-/XMP-Schlüssel und exportierte Zahlen werden nicht übersetzt.
+Über die Kopfzeile lässt sich das Interface der Reihe nach auf **automatisch** (folgt der Systemeinstellung `prefers-color-scheme`, Halbkreis-Symbol), **hell** (Sonne) und **dunkel** (Mond) schalten; der Sprachknopf zeigt eine Vektorfahne mit dem Kürzel **DE** bzw. **EN**. Ohne gespeicherte Wahl gelten „automatisch“ und die Browsersprache. Interface und Sprache werden bereits vor dem ersten Zeichnen gesetzt, damit nichts aufblitzt. Das gilt auch für den Metadaten-Inspektor, Hilfe, Fotozuordnung, Zahlenformate und Statusmeldungen. Nur Sprache und Darstellungspräferenz werden in `localStorage` gespeichert; Fotos und Vermessungsdaten bleiben temporär im Arbeitsspeicher. Technische CSV-Spalten, EXIF-/XMP-Schlüssel und exportierte Zahlen werden nicht übersetzt.
 
-Der Footer folgt den Link-Pills von SkyCheck: OpenStreetMap, ALKIS/LDBV und Datenlizenz, Pointcloudmanager, SkyCheck, Impressum, michael-radeck.de, GitHub und Ko-fi. Der Datenschutz-/Formate-Button öffnet die lokalen Verarbeitungshinweise.
-
-## Veröffentlichung
-
-- Website: https://measuremap-viewer-editor-emlid.netlify.app
-- Repository: https://github.com/mradeck/measuremap-viewer-editor-emlid
-- Netlify-Build: `npm run typecheck && npm test && npm run build`, Ausgabe `dist`, Node.js 22.
-- `netlify.toml` enthält SPA-Fallback und Cache-Header. Keine Tokens oder private Fotos im Repository.
-
-Die mittige Fotoleiste zeigt fünf chronologisch benachbarte Fotos. Hover vergrößert die Vorschau und wechselt die Auswahl; Vor-/Zurück-Buttons und Pfeiltasten führen durch die gesamte Serie. Die Karte folgt der Auswahl. Sortierung: EXIF-Aufnahmezeit, Emlid-Zeitstempel im Dateinamen, ersatzweise Dateidatum (sichtbar gekennzeichnet).
-
-Doppelklick auf Thumbnail, Kartenmarker oder Bildvorschau öffnet das Foto anstelle der Karte. Die Leiste lässt sich einklappen, während Pfeiltasten und horizontales Mausrad (auch Shift + Mausrad) weiter funktionieren. Escape oder „Zurück zur Karte“ beendet die Bildansicht. Home/End springen zum Anfang/Ende. An den Grenzen bleibt die Navigation in Gegenrichtung erreichbar; Eingabefelder werden nicht durch Tastenkürzel gestört.
-
-Die Fotogalerie unter der Karte scrollt horizontal mit der Auswahl und hält das aktive Foto mittig, soweit die Ränder der Galerie dies erlauben. Das gilt auch nach Filterwechsel und bei geänderter Fensterbreite.
-
-Maximale Zoomstufe: 26. OSM-Kacheln werden oberhalb von Stufe 19, ALKIS-Kacheln oberhalb von Stufe 22 vergrößert; die zusätzlichen Zoomstufen erzeugen keine neuen Details der Hintergrundkarten. DXF und Messpunkte bleiben georeferenziert. Der Auge-Button entfernt ausschließlich die vollständigen Fotomarker (Bild, Rahmen, Hintergrund und Beschriftung) vorübergehend von der Karte. Schwebende Fotoleiste und Galerie unter der Karte bleiben nutzbar.
-
-Große Fotoansicht: Strg + Mausrad zoomt um die Zeigerposition bis 16×; Ziehen mit der linken Maustaste verschiebt den vergrößerten Ausschnitt. Plus/Minus und Einpassen stehen zusätzlich als Buttons zur Verfügung. Ein Foto-Wechsel setzt den Ausschnitt zurück; Bildränder begrenzen das Verschieben.
-
-Optionale Emlid-Versatzkorrektur: „Emlid: einen Messpunkt zurück“ verschiebt automatisch zugeordnete Fotos auf die unmittelbar vorherige CSV-Zeile. Die CSV-Reihenfolge gilt auch bei nicht numerischen Punktnamen; ungültige Vorgänger und erste Zeilen erhalten keine Ersatzposition. Manuelle Zuordnungen und GPS-Fotos bleiben unverändert. Die Option ist standardmäßig aktiv, bei neuer CSV wieder aktiv und ohne Datenänderung umschaltbar. Anzeige und Export verwenden dieselbe Auflösung; positions.json/positions.csv protokollieren die ursprüngliche Zuordnung und den verwendeten Versatz.
-
-Karten-Thumbnails: Rahmen folgen dem tatsächlichen Bildseitenverhältnis (einschließlich angezeigter EXIF-Orientierung). Beim Hover vergrößert sich die komplette Karte mit Rahmen und Punktlabel; die Mausfläche bleibt unverändert. Vergrößerte Vorschauen fangen keine Mausereignisse benachbarter Marker ab und werden beim Verlassen zurückgesetzt.
-
-## Georeferenzierte Orthofotos (GeoTIFF)
-
-Eine `.tif`- oder `.tiff`-Datei über **Dateien hinzufügen**, Drag-and-drop, einen Ordner oder ZIP laden. Eingebettete Georeferenzierung und CRS sind erforderlich; externe Worldfiles werden nicht gelesen. Unterstützt werden ETRS89 / UTM Zonen 28–38, WGS84 / UTM Nord/Süd, EPSG:4326 und EPSG:3857. Fehlendes oder unbekanntes CRS wird gemeldet und nicht geraten. Affine Rotation und PixelIsPoint werden berücksichtigt.
-
-Das Orthofoto wird in Kartenkacheln umprojiziert und oberhalb von Basiskarte/ALKIS sowie unterhalb von DXF, Messpunkten und Fotos dargestellt. **Alles zeigen** berücksichtigt seine Ausdehnung. Sichtbarkeit, Deckkraft und Entfernen sind einstellbar. RGB/RGBA, Graustufen und Farbpaletten werden unterstützt; Alpha und NoData sind transparent. RGB/RGBA unterstützt ganzzahlige Kanäle mit 8/16 Bit.
-
-Die App verwendet für entfernte Ansichten eine Übersicht und liest beim Hineinzoomen die sichtbaren GeoTIFF-Bereiche in Originalauflösung, auch bei 8K/16K-Dateien. Der Zwischenspeicher für Originalbereiche ist auf 32 MiB begrenzt; maximal zwei Lesevorgänge laufen gleichzeitig. Nicht mehr benötigte Kacheln werden abgebrochen. Bilineare Interpolation berücksichtigt transparente Ränder; hochauflösende Displays werden mit bis zu doppelter Kachelauflösung bedient. Die Originalpixel begrenzen letztlich die Details; darüber hinaus erzeugt Zoomen keine neuen Informationen. Das TIFF bleibt unverändert und gehört nicht zum Foto-Metadatenexport. Ein neues Orthofoto ersetzt die vorhandene Ebene. Dateien bleiben lokal; Neuladen verwirft das Projekt.
-
-## Mehrere DXF-Zeichnungen und CAD-Farben
-
-Weitere DXF-Dateien werden hinzugefügt, auch mehrere Dateien innerhalb eines Imports oder ZIPs. Jede Zeichnung besitzt eigene Schalter für Sichtbarkeit, Entfernen, CRS und Layer; gleichnamige Layer verschiedener Dateien bleiben unabhängig. Der CRS-Wähler für neue Dateien setzt die Importvorgabe; der eigene Wähler einer vorhandenen Zeichnung ändert nur deren Koordinatensystem.
-
-Linien, Punkte und Beschriftungen verwenden DXF-Objektfarben beziehungsweise geerbte Layerfarben. ACI-Farben und 24-Bit-TrueColor werden unterstützt; TrueColor hat Vorrang. Die adaptive CAD-Farbe ACI 7 verwendet für die Lesbarkeit die Vordergrundfarbe des Interfaces. Einzelne BYBLOCK-Objekte verwenden ersatzweise die Layerfarbe; INSERT-Blockgeometrie bleibt nicht unterstützt. Private DXF-Dateien werden nicht ins Repository aufgenommen.
-
-## Leistung der Kartendarstellung
-
-CAD-Geometrie und Messpunkte nutzen einen gemeinsamen Canvas-Renderer. DXF, Messpunkte und Fotomarker sind getrennte Ebenen; die zoomabhängigen Fotostapel bauen die CAD-Geometrie nicht mehr neu auf. Die Rasterumprojektion interpoliert ein geprüftes Koordinatengitter, statt für jeden Bildschirmpixel eine vollständige Projektion auszuführen. Die Genauigkeitsprüfung nutzt eine Toleranz von 0,1 Originalpixeln und unterteilt Zellen bei Bedarf weiter. Originaldetails und bilineare Interpolation transparenter Ränder bleiben erhalten.
-
-Originalbereiche des GeoTIFFs werden in festen 512-Pixel-Blöcken über benachbarte Kacheln und Zoomstufen hinweg wiederverwendet. Der LRU-Cache ist auf 32 MiB begrenzt; maximal zwei Lesevorgänge laufen gleichzeitig. Überlappende Anfragen teilen die Dekodierung. Das Abbrechen einer Kachel beendet keine noch benötigte gemeinsame Anfrage; überholte Warteschlangenaufträge überspringen die Dekodierung. Zwei Browser-Worker dekomprimieren TIFF-Blöcke, und die Pixelberechnung gibt regelmäßig Rechenzeit für die Kartenbedienung frei. Beim ersten Laden muss weiterhin die Übersicht erstellt werden; die Geschwindigkeit hängt auch von Kompression und Speicheraufbau des TIFFs ab.
-
-Der Footer verlinkt zusätzlich den [Geodata Inspector & Cleaner](https://geodata-inspector-cleaner.netlify.app/).
-
-Der Sprachbutton folgt dem Geodata Inspector & Cleaner: Die aktuelle deutsche beziehungsweise britische Flagge mit DE/EN-Kürzel schaltet zwischen Deutsch und Englisch um. Inline-SVGs gewährleisten eine einheitliche Darstellung, auch in Chrome unter Windows. Der Pointcloudmanager-Link im Footer öffnet die öffentliche Website https://pointcloud-manager.com/.
-
-## v2026.10.1.25 · 2026-10-04
-
-Gemeinsame Footer-Links mit Geodata Inspector & Cleaner abgeglichen: Geoid Forge, DXF Coordinate Forge und GPS / UTM Converter ergänzt. Link-Buttons und englisches „Imprint“ beibehalten.
-
-## v2026.10.1.26 · 2026-10-04
-
-Das Interface startet jetzt standardmäßig hell, auch bei fehlenden oder nicht lesbaren Einstellungen. Eine ausdrücklich gespeicherte dunkle Darstellung bleibt erhalten; der Theme-Button schaltet weiterhin in beide Richtungen.
-
-## v2026.10.1.27 · 2026-10-04
-
-Die Fußleiste zeigt „Weitere Apps“ oberhalb einer Trennlinie. Darunter stehen MeasureMap-Version, lokale Verarbeitungshinweise, Quellen, rechtliche Links und App-Aktionen. Die abgerundeten Link-Buttons bleiben erhalten.
-
-## Vollbild für Karte und Fotos · v2026.10.1.28 · 2026-10-08
-
-Das Vollbildsymbol oben in der **Positionsübersicht** maximiert die Karte oder das gerade geöffnete große Foto. Unterstützte Browser verwenden echtes Vollbild, andernfalls füllt die Ansicht das Browserfenster. Mit demselben Button oder Escape zurück zur normalen Ansicht. Fotoauswahl, Navigation, Zoom und Kartenlayer bleiben verfügbar. Escape verlässt zuerst das Vollbild; ein weiterer Druck schließt das große Foto. Die schwebende Fotoleiste lässt sich für freie Bildsicht einklappen. Karte und Bild passen ihre Größe ohne Neuladen des Projekts an.
-
-## Lokale Ordnerauswahl · v2026.10.1.29 · 2026-10-09
+Das Farbschema ist neutral Grau/Blau wie in den übrigen öffentlichen Apps von Michael Radeck; Statusfarben (OK grün, Warnung bernstein, Fehler rot) bleiben semantisch. Zwei Fußleisten: oben **Weitere Apps** (Geodata Inspector & Cleaner, GeoTIFF Inspector, Geoid Forge, DXF Coordinate Forge, PointCloud Manager, GPS / UTM Converter, SkyCheck, michael-radeck.de), darunter „Ein Werkzeug von Michael Radeck · © Jahr · Version“ sowie OpenStreetMap, ALKIS/LDBV, Datenlizenz, Formate/Datenschutz, Quellcode, **Hilfe / Bugreport / Kontakt** (Dialog mit E-Mail-Links, Version im Betreff), **Lizenzen / Copyright** (Dialog), Impressum und Ko-fi.
 
 **Fotoordner öffnen** verwendet in unterstützten Browsern (Chrome/Edge) `showDirectoryPicker` mit reinem Lesezugriff. Unterstützte Projektdateien werden einschließlich Unterordnern lokal eingelesen, versteckte Einträge und macOS-Metadaten ausgelassen. Kein Server-Upload, keine gespeicherten Ordnerhandles. Abbrechen verändert das Projekt nicht. Zugriffsbestätigungen bleiben unter Kontrolle des Browsers. Ohne diese API bleibt die bisherige Ordnerauswahl: „Upload files to this site?“ meint die Bereitstellung an die Webseite, keinen tatsächlichen Server-Upload durch MeasureMap. Ein Hinweis unter dem Button erläutert das. Alternativ **Dateien hinzufügen** verwenden. Lesefehler stoppen den Import; kein automatischer Wechsel zu einem anderen Picker.
 
 ## Hinweis zur lokalen Fotoauswahl · v2026.10.1.30 · 2026-10-09
 
 Neben **Fotoordner öffnen** erläutert ein **(i)**-Button, dass keine Bilder oder Projektdateien ins Internet hochgeladen werden. Hover oder Tastaturfokus zeigt den Hinweis; für Touch lässt er sich auch anklicken. Escape schließt ihn. Der Text erklärt die Browserformulierung „Upload“ und nennt **Dateien hinzufügen** als Alternative zur direkten Stapelauswahl. Deutsch/Englisch sowie helles/dunkles Design werden berücksichtigt.
+
+## Einheitliches Erscheinungsbild · v2026.10.1.31 · 2026-11-02
+
+Neutrales Grau/Blau-Farbschema statt des bisherigen Mint-/Petrol-Schemas, hell und dunkel, auch im Metadaten-Inspektor. Interface-Knopf jetzt mit drei Stufen automatisch → hell → dunkel; ohne gespeicherte Wahl gilt „automatisch“ (bisher hell) und die Browsersprache (bisher Deutsch). Sprachknopf mit den gemeinsamen Vektorfahnen. Fußleisten nach dem gemeinsamen Muster mit neuen Dialogen **Hilfe / Bugreport / Kontakt** und **Lizenzen / Copyright**; die doppelten Impressum-Links im Inspektor entfallen. Funktionen unverändert.

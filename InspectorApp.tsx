@@ -560,10 +560,6 @@ const App: React.FC = () => {
                     </div>
                     <ImageUploader onFileSelect={handleFileSelect} />
 
-                    <div className="flex gap-2 flex-wrap justify-center mt-6">
-                        <a href="https://www.multikopterschule.de/Kontakt-Impressum/IMPRESSUM/" target="_blank" rel="noreferrer" className="px-3 py-1 text-xs text-gray-500 bg-gray-900 border border-gray-700 rounded-full hover:text-gray-300 hover:border-gray-500 transition-colors tracking-wide">{t("Impressum")}</a>
-                        <a href="https://www.michael-radeck.de" target="_blank" rel="noreferrer" className="px-3 py-1 text-xs text-gray-500 bg-gray-900 border border-gray-700 rounded-full hover:text-gray-300 hover:border-gray-500 transition-colors tracking-wide">michael-radeck.de</a>
-                    </div>
                 </div>
 
                 {status === AnalysisStatus.PROCESSING && (
@@ -1029,10 +1025,6 @@ const App: React.FC = () => {
 
                         <MetadataViewer metadata={currentImage.metadata} />
 
-                        <div className="flex gap-2 flex-wrap justify-center pt-6">
-                            <a href="https://www.multikopterschule.de/Kontakt-Impressum/IMPRESSUM/" target="_blank" rel="noreferrer" className="px-3 py-1 text-xs text-gray-500 bg-gray-900 border border-gray-700 rounded-full hover:text-gray-300 hover:border-gray-500 transition-colors tracking-wide">{t("Impressum")}</a>
-                            <a href="https://www.michael-radeck.de" target="_blank" rel="noreferrer" className="px-3 py-1 text-xs text-gray-500 bg-gray-900 border border-gray-700 rounded-full hover:text-gray-300 hover:border-gray-500 transition-colors tracking-wide">michael-radeck.de</a>
-                        </div>
                     </div>
 
                 </div>

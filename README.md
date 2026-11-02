@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.30
+# MeasureMap · v2026.10.1.31
 
 **English** | [Deutsch](README.de.md)
 
@@ -84,7 +84,7 @@ npm run build
 
 Copy the entire contents of `dist/` to a static web server. Subdirectory hosting is supported (`base: './'`). No backend or photo uploads are required. Do not open the app directly through `file://`; use `npm run preview` for local testing.
 
-The displayed version follows `vYear.Month.Version.Subversion`; the npm version `2026.10.1-21` represents the same version as valid SemVer.
+The displayed version follows `vYear.Month.Version.Subversion`; the npm version `2026.10.1-31` represents the same version as valid SemVer.
 
 ## Workflow
 
@@ -155,9 +155,9 @@ The existing panorama, HDR and copyright metadata features remain available. For
 
 ## Appearance, language and footer
 
-The header lets you switch between light/dark mode and German/English. These settings also apply to the metadata inspector, help, photo assignments, number formatting and status messages. Only language and appearance preferences are stored in `localStorage`; photos and survey data remain temporarily in memory. Technical CSV column names, EXIF/XMP keys and exported numbers are not translated.
+The header button cycles the interface through **automatic** (follows the system setting `prefers-color-scheme`, half-circle icon), **light** (sun) and **dark** (moon); the language button shows a vector flag with the code **DE** or **EN**. Without a saved choice, automatic mode and the browser language apply. Interface and language are set before the first paint, so nothing flashes. These settings also apply to the metadata inspector, help, photo assignments, number formatting and status messages. Only language and appearance preferences are stored in `localStorage`; photos and survey data remain temporarily in memory. Technical CSV column names, EXIF/XMP keys and exported numbers are not translated.
 
-The footer follows SkyCheck's link pills: OpenStreetMap, ALKIS/LDBV and the data license, Pointcloudmanager, SkyCheck, legal notice, michael-radeck.de, GitHub and Ko-fi. The privacy/formats button opens the local processing information.
+The color scheme is neutral gray/blue, shared with Michael Radeck's other public apps; status colors (OK green, warning amber, error red) remain semantic. Two footer bars: **More apps** (Geodata Inspector & Cleaner, GeoTIFF Inspector, Geoid Forge, DXF Coordinate Forge, PointCloud Manager, GPS / UTM Converter, SkyCheck, michael-radeck.de), then “A tool by Michael Radeck · © year · version” with OpenStreetMap, ALKIS/LDBV, data license, formats/privacy, source code, **Help / bug report / contact** (dialog with email links, version in the subject), **Licenses / copyright** (dialog), imprint and Ko-fi.
 
 ## Photo navigation and map controls
 
@@ -235,3 +235,7 @@ Use the fullscreen icon in the **Location overview** toolbar to maximize the map
 ## Local import explanation · v2026.10.1.30 · 2026-10-09
 
 An **(i)** button beside **Open photo folder** explains that no photos or project files are uploaded to an internet server. Hover or focus the button to show the information; clicking also opens it for touch users. Escape dismisses it. The text clarifies the browser’s “Upload” wording and recommends **Add files** for selecting a batch of images directly. The explanation is available in German and English and uses the current theme.
+
+## Shared appearance · v2026.10.1.31 · 2026-11-02
+
+Neutral gray/blue color scheme replaces the previous mint/teal scheme, in light and dark mode, including the metadata inspector. The interface button now cycles automatic → light → dark; without a saved choice, automatic mode (previously light) and the browser language (previously German) apply. The language button uses the shared vector flags. Footers follow the shared pattern with new **Help / bug report / contact** and **Licenses / copyright** dialogs; the duplicate imprint links inside the inspector were removed. Features are unchanged.
