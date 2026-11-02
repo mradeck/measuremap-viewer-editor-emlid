@@ -1,0 +1,4 @@
+/* Tailwind für den Metadaten-Inspektor, lokal gebündelt statt vom CDN (keine externe Anfrage). */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

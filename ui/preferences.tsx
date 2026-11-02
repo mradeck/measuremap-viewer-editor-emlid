@@ -43,7 +43,7 @@ export function AppearanceControls(){
   const {themeMode,language,toggleTheme,toggleLanguage}=usePreferences();
   const languageLabel=t('Sprache: Deutsch — zu Englisch wechseln');
   return <div className="appearance-controls">
-    <button type="button" className="appearance-button theme-button" data-theme-mode={themeMode} aria-label={themeLabel(themeMode)} title={themeLabel(themeMode)} onClick={toggleTheme}><ThemeIcon mode={themeMode}/></button>
-    <button type="button" className="appearance-button language-button" aria-label={languageLabel} title={languageLabel} onClick={toggleLanguage}><LanguageFlag language={language}/><span className="language-code">{language.toUpperCase()}</span></button>
+    <button type="button" className="app-button app-button-quiet appearance-button theme-button" data-theme-mode={themeMode} aria-label={themeLabel(themeMode)} title={themeLabel(themeMode)} onClick={toggleTheme}><ThemeIcon mode={themeMode}/></button>
+    <button type="button" className="app-button app-button-quiet appearance-button language-button" aria-label={languageLabel} title={languageLabel} onClick={toggleLanguage}><LanguageFlag language={language}/><span className="language-code">{language.toUpperCase()}</span></button>
   </div>;
 }

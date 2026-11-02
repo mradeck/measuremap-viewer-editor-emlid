@@ -1,14 +1,14 @@
-.theme-root{--s-bg:#14171c;--s-panel:#1d2229;--s-card:#232a33;--s-border:#333c48;--s-text:#e6ebf1;--s-muted:#93a0af;--s-mint:#4da3ff;--s-accent-fill:#4da3ff;--s-on-accent:#0b1726;--s-inset:#171b21;--s-ok:#46c07a;--s-warn:#e0a13c;--s-err:#e05c5c;min-height:100vh;background:var(--s-bg);color:var(--s-text);color-scheme:dark}.theme-root[data-theme=light],.theme-root[data-theme=light] .survey-shell{--s-bg:#f3f5f8;--s-panel:#fff;--s-card:#eef1f5;--s-border:#d4dae2;--s-text:#1b2430;--s-muted:#5d6a79;--s-mint:#1f6fd1;--s-accent-fill:#1f6fd1;--s-on-accent:#fff;--s-inset:#f7f8fa;--s-ok:#23824f;--s-warn:#a86400;--s-err:#c0392b;color-scheme:light}.appearance-controls{display:flex;align-items:center;gap:6px}.appearance-button:focus-visible,.app-footer a:focus-visible,.app-footer button:focus-visible{outline:2px solid var(--s-mint);outline-offset:3px}.survey-header .local-badge{margin-right:5px}.survey-header .primary-button,.survey-shell .primary-button,.survey-shell .brand-mark{background:var(--s-accent-fill)}.inspector-toolbar{display:flex;justify-content:space-between;align-items:center;padding:12px 26px;border-bottom:1px solid var(--s-border);background:var(--s-panel)}.inspector-back{border:0;background:none;color:var(--s-text);font:12px system-ui;display:flex;align-items:center;gap:8px;cursor:pointer}.inspector-footer{padding:0 26px}.theme-root[data-theme=light] .survey-shell .icon-button,.theme-root[data-theme=light] .survey-shell .secondary-button{background:var(--s-card);color:var(--s-text)}.theme-root[data-theme=light] .survey-shell select,.theme-root[data-theme=light] .survey-shell input:not([type=checkbox]):not([type=range]):not([type=file]),.theme-root[data-theme=light] .coordinate-card,.theme-root[data-theme=light] .layer-options{background:var(--s-inset);color:var(--s-text)}.theme-root[data-theme=light] .detail-empty,.theme-root[data-theme=light] .detail-empty div,.theme-root[data-theme=light] .detail-empty div span,.theme-root[data-theme=light] .privacy-note,.theme-root[data-theme=light] .point-note,.theme-root[data-theme=light] .match-method,.theme-root[data-theme=light] .filter-buttons button,.theme-root[data-theme=light] .drop-zone small{color:var(--s-muted)}.theme-root[data-theme=light] .map-empty{background:#ffffffee;box-shadow:0 8px 30px #1b243017}.theme-root[data-theme=light] .tile-badge.good{color:#bcf0d9}.theme-root[data-theme=light] .tile-badge.warning{color:#fbd397}.theme-root[data-theme=light] .legacy-inspector{background:#f3f5f8;color:#1b2430}.theme-root[data-theme=light] .legacy-inspector .bg-gray-950,.theme-root[data-theme=light] .legacy-inspector .bg-gray-900,.theme-root[data-theme=light] .legacy-inspector .bg-gray-850{background-color:#f3f5f8}.theme-root[data-theme=light] .legacy-inspector .bg-gray-800,.theme-root[data-theme=light] .legacy-inspector .bg-gray-750{background-color:#fff}.theme-root[data-theme=light] .legacy-inspector .bg-gray-700{background-color:#e4e8ee}.theme-root[data-theme=light] .legacy-inspector .text-white,.theme-root[data-theme=light] .legacy-inspector .text-gray-100,.theme-root[data-theme=light] .legacy-inspector .text-gray-200,.theme-root[data-theme=light] .legacy-inspector .text-gray-300{color:#1b2430}.theme-root[data-theme=light] .legacy-inspector .text-gray-400,.theme-root[data-theme=light] .legacy-inspector .text-gray-500{color:#5d6a79}.theme-root[data-theme=light] .legacy-inspector [class*="border-gray-"]{border-color:#d4dae2}.theme-root[data-theme=light] .legacy-inspector .text-brand-300,.theme-root[data-theme=light] .legacy-inspector .text-brand-400,.theme-root[data-theme=light] .legacy-inspector .text-brand-500{color:#1f6fd1}.theme-root[data-theme=light] .legacy-inspector .text-green-400{color:#23824f}.theme-root[data-theme=light] .legacy-inspector .text-yellow-500,.theme-root[data-theme=light] .legacy-inspector .text-orange-300{color:#a86400}.theme-root[data-theme=light] .legacy-inspector .bg-black\/90{background-color:#1b2430d9}.theme-root[data-theme=light] .legacy-inspector .bg-black\/50{background-color:#1b243080}.theme-root[data-theme=light] .legacy-inspector .bg-gray-900\/80{background-color:#f3f5f8ed}@media(max-width:900px){.survey-header{gap:8px;flex-wrap:wrap;height:auto;min-height:76px;padding:12px 0}.survey-header .local-badge{display:none}.survey-header .brand-word{font-size:20px}.survey-header .header-spacer{min-width:0}.survey-header .quiet-button{font-size:10px}.inspector-toolbar{padding:10px 16px}.inspector-footer{padding:0 16px}}@media(max-width:550px){.survey-header .brand-word{font-size:19px}.survey-header .brand-word span{font-size:7px;letter-spacing:1px}.survey-header .version{font-size:8px;padding:4px}.survey-header .quiet-button{order:5;max-width:none!important;width:100%;justify-content:flex-end;padding:0}.survey-header .icon-button{padding:7px}.survey-header .brand-mark{width:32px;height:32px}.survey-header .header-spacer{flex:1}}
+.theme-root{--s-bg:#14171c;--s-panel:#1d2229;--s-card:#232a33;--s-border:#333c48;--s-text:#e6ebf1;--s-muted:#93a0af;--s-mint:#4da3ff;--s-accent-fill:#4da3ff;--s-on-accent:#0b1726;--s-inset:#171b21;--s-ok:#46c07a;--s-warn:#e0a13c;--s-err:#e05c5c;min-height:100vh;background:var(--s-bg);color:var(--s-text);color-scheme:dark}.theme-root[data-theme=light],.theme-root[data-theme=light] .survey-shell{--s-bg:#f3f5f8;--s-panel:#fff;--s-card:#eef1f5;--s-border:#d4dae2;--s-text:#1b2430;--s-muted:#5d6a79;--s-mint:#1f6fd1;--s-accent-fill:#1f6fd1;--s-on-accent:#fff;--s-inset:#f7f8fa;--s-ok:#23824f;--s-warn:#a86400;--s-err:#c0392b;color-scheme:light}.appearance-controls{display:flex;align-items:center;gap:6px}.appearance-button:focus-visible,.app-footer a:focus-visible,.app-footer button:focus-visible{outline:2px solid var(--s-mint);outline-offset:3px}.survey-header .local-badge{margin-right:5px}.survey-header .primary-button,.survey-shell .primary-button,.survey-shell .brand-mark{background:var(--s-accent-fill)}.inspector-toolbar{display:flex;justify-content:space-between;align-items:center;padding:12px 26px;border-bottom:1px solid var(--s-border);background:var(--s-panel)}.inspector-back{border:0;background:none;color:var(--s-text);font:12px var(--font-ui);display:flex;align-items:center;gap:8px;cursor:pointer}.inspector-footer{padding:0 26px}.theme-root[data-theme=light] .survey-shell .icon-button,.theme-root[data-theme=light] .survey-shell .secondary-button{background:var(--s-card);color:var(--s-text)}.theme-root[data-theme=light] .survey-shell select,.theme-root[data-theme=light] .survey-shell input:not([type=checkbox]):not([type=range]):not([type=file]),.theme-root[data-theme=light] .coordinate-card,.theme-root[data-theme=light] .layer-options{background:var(--s-inset);color:var(--s-text)}.theme-root[data-theme=light] .detail-empty,.theme-root[data-theme=light] .detail-empty div,.theme-root[data-theme=light] .detail-empty div span,.theme-root[data-theme=light] .privacy-note,.theme-root[data-theme=light] .point-note,.theme-root[data-theme=light] .match-method,.theme-root[data-theme=light] .filter-buttons button,.theme-root[data-theme=light] .drop-zone small{color:var(--s-muted)}.theme-root[data-theme=light] .map-empty{background:#ffffffee;box-shadow:0 8px 30px #1b243017}.theme-root[data-theme=light] .tile-badge.good{color:#bcf0d9}.theme-root[data-theme=light] .tile-badge.warning{color:#fbd397}.theme-root[data-theme=light] .legacy-inspector{background:#f3f5f8;color:#1b2430}.theme-root[data-theme=light] .legacy-inspector .bg-gray-950,.theme-root[data-theme=light] .legacy-inspector .bg-gray-900,.theme-root[data-theme=light] .legacy-inspector .bg-gray-850{background-color:#f3f5f8}.theme-root[data-theme=light] .legacy-inspector .bg-gray-800,.theme-root[data-theme=light] .legacy-inspector .bg-gray-750{background-color:#fff}.theme-root[data-theme=light] .legacy-inspector .bg-gray-700{background-color:#e4e8ee}.theme-root[data-theme=light] .legacy-inspector .text-white,.theme-root[data-theme=light] .legacy-inspector .text-gray-100,.theme-root[data-theme=light] .legacy-inspector .text-gray-200,.theme-root[data-theme=light] .legacy-inspector .text-gray-300{color:#1b2430}.theme-root[data-theme=light] .legacy-inspector .text-gray-400,.theme-root[data-theme=light] .legacy-inspector .text-gray-500{color:#5d6a79}.theme-root[data-theme=light] .legacy-inspector [class*="border-gray-"]{border-color:#d4dae2}.theme-root[data-theme=light] .legacy-inspector .text-brand-300,.theme-root[data-theme=light] .legacy-inspector .text-brand-400,.theme-root[data-theme=light] .legacy-inspector .text-brand-500{color:#1f6fd1}.theme-root[data-theme=light] .legacy-inspector .text-green-400{color:#23824f}.theme-root[data-theme=light] .legacy-inspector .text-yellow-500,.theme-root[data-theme=light] .legacy-inspector .text-orange-300{color:#a86400}.theme-root[data-theme=light] .legacy-inspector .bg-black\/90{background-color:#1b2430d9}.theme-root[data-theme=light] .legacy-inspector .bg-black\/50{background-color:#1b243080}.theme-root[data-theme=light] .legacy-inspector .bg-gray-900\/80{background-color:#f3f5f8ed}@media(max-width:900px){.survey-header{gap:8px;flex-wrap:wrap;height:auto;min-height:76px;padding:12px 0}.survey-header .local-badge{display:none}.survey-header .brand-word{font-size:20px}.survey-header .header-spacer{min-width:0}.survey-header .quiet-button{font-size:10px}.inspector-toolbar{padding:10px 16px}.inspector-footer{padding:0 16px}}@media(max-width:550px){.survey-header .brand-word{font-size:19px}.survey-header .brand-word span{font-size:7px;letter-spacing:1px}.survey-header .version{font-size:8px;padding:4px}.survey-header .quiet-button{order:5;max-width:none!important;width:100%;justify-content:flex-end;padding:0}.survey-header .icon-button{padding:7px}.survey-header .brand-mark{width:32px;height:32px}.survey-header .header-spacer{flex:1}}
 
 /* Kopfzeilen-Knöpfe wie in den übrigen öffentlichen Apps (Vorbild: GeoTIFF-Inspektor). */
 .appearance-controls{display:flex;align-items:center;gap:6px}
-.appearance-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;min-width:32px;padding:0 10px;background:var(--s-card);border:1px solid var(--s-border);border-radius:6px;color:var(--s-text);cursor:pointer;font:500 12px/1 system-ui,-apple-system,'Segoe UI',sans-serif;white-space:nowrap}
+.appearance-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;min-width:32px;padding:0 10px;background:var(--s-card);border:1px solid var(--s-border);border-radius:6px;color:var(--s-text);cursor:pointer;font:500 12px/1 var(--font-ui);white-space:nowrap}
 .appearance-button:hover{border-color:var(--s-mint)}
 .appearance-button svg{display:block;flex-shrink:0}
 .language-flag{display:block;width:21px;height:14px;flex-shrink:0;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.25)}
 
 /* Zwei Fußleisten: weitere Apps, darunter Autor, Version und Links. */
-.app-footer{margin:24px 0 0;background:var(--s-panel);border-top:1px solid var(--s-border);font:11px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--s-muted)}
+.app-footer{margin:24px 0 0;background:var(--s-panel);border-top:1px solid var(--s-border);font:11px/1.5 var(--font-ui);color:var(--s-muted)}
 .related-apps,.footer-meta,.footer-links{display:flex;align-items:center;flex-wrap:wrap;gap:6px 7px}
 .related-apps{padding:8px 16px}
 .related-apps strong{color:var(--s-muted);font-weight:550;margin-right:2px}
@@ -22,7 +22,7 @@
 @media(max-width:700px){.survey-shell>.app-footer{margin:20px -10px 0}}
 
 /* Dialoge der Fußleiste (Hilfe/Kontakt, Lizenzen). */
-.footer-dialog{padding:0;border:1px solid var(--s-border);border-radius:12px;background:var(--s-panel);color:var(--s-text);width:min(640px,calc(100vw - 32px));max-height:calc(100vh - 48px);font:13px/1.55 system-ui,-apple-system,'Segoe UI',sans-serif}
+.footer-dialog{padding:0;border:1px solid var(--s-border);border-radius:12px;background:var(--s-panel);color:var(--s-text);width:min(640px,calc(100vw - 32px));max-height:calc(100vh - 48px);font:13px/1.55 var(--font-ui)}
 .footer-dialog::backdrop{background:rgba(0,0,0,.55)}
 .footer-dialog .dlg-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 18px;border-bottom:1px solid var(--s-border)}
 .footer-dialog .dlg-head h2{margin:0;font-size:17px;font-weight:600}
@@ -42,3 +42,110 @@
 .footer-dialog :focus-visible{outline:2px solid var(--s-mint);outline-offset:2px}
 @media(max-width:550px){.appearance-controls{gap:4px}.appearance-button{height:30px;min-width:30px;padding:0 7px;font-size:11px}.related-apps,.footer-meta{padding-left:10px;padding-right:10px}}
 .theme-root[data-theme=light] .survey-map{background:#e4e8ee}
+
+/* ===== Runde 3: Look wie Geodata Inspector & Cleaner (Kopfleiste, Typografie, Buttons, Panels, Eyebrows). ===== */
+:root{--font-ui:"Inter Variable","Inter",system-ui,-apple-system,"Segoe UI",sans-serif;--font-mono:ui-monospace,SFMono-Regular,Menlo,monospace}
+.theme-root{font-family:var(--font-ui);font-synthesis:none;--s-accent-soft:color-mix(in srgb,var(--s-mint) 12%,transparent)}
+.theme-root[data-theme=light]{--s-accent-soft:rgba(31,111,209,.1)}
+
+/* Kopfleiste */
+.app-topbar{height:72px;display:flex;align-items:center;gap:28px;padding:0 22px;border-bottom:1px solid var(--s-border);background:rgba(20,23,28,.9);backdrop-filter:blur(16px);color:var(--s-text);font-family:var(--font-ui);font-size:13px;position:relative;z-index:1100}
+.theme-root[data-theme=light] .app-topbar{background:rgba(255,255,255,.9)}
+.survey-shell>.app-topbar{margin:0 -26px}
+@media(min-width:1550px){.survey-shell>.app-topbar{margin:0 -40px}}
+@media(max-width:1150px){.survey-shell>.app-topbar{margin:0 -16px}}
+@media(max-width:700px){.survey-shell>.app-topbar{margin:0 -10px}}
+.app-brand{display:flex;align-items:center;gap:12px;color:var(--s-text);text-decoration:none;flex-shrink:0}
+.app-brand-copy{min-width:0}
+.app-brand-title-line{display:flex;align-items:baseline;gap:7px;white-space:nowrap}
+.app-brand strong{display:block;font-size:15px;font-weight:700;letter-spacing:.03em;text-transform:uppercase}
+.app-brand-version{color:var(--s-muted);font-size:9px;font-weight:450;letter-spacing:0;white-space:nowrap}
+.app-brand small{display:block;color:var(--s-mint);font-size:11px;letter-spacing:.16em;text-transform:uppercase;margin-top:2px}
+.app-brand-mark{position:relative;width:34px;height:34px;flex:0 0 34px;border:1px solid color-mix(in srgb,var(--s-mint) 50%,transparent);border-radius:9px;display:grid;place-items:center;transform:rotate(45deg);color:var(--s-mint)}
+.app-brand-mark svg{transform:rotate(-45deg)}
+.app-privacy-chip{margin-right:auto;display:flex;align-items:center;color:var(--s-muted);background:color-mix(in srgb,var(--s-mint) 6%,transparent);border:1px solid color-mix(in srgb,var(--s-mint) 14%,transparent);padding:8px 12px;border-radius:999px;font-size:11px;letter-spacing:.04em;white-space:nowrap}
+.app-privacy-chip>span:first-child{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--s-ok);margin-right:7px;box-shadow:0 0 10px var(--s-ok)}
+.theme-root[data-theme=light] .app-privacy-chip{color:#3d4b5c}
+.app-top-actions{display:flex;align-items:center;gap:8px}
+.app-top-actions .appearance-controls{gap:8px}
+
+/* Buttons wie .button / .button-quiet des Cleaners */
+.app-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--s-border);color:var(--s-text);background:transparent;border-radius:8px;padding:9px 13px;text-decoration:none;cursor:pointer;transition:.2s ease;font:400 12px/1.2 var(--font-ui);white-space:nowrap}
+.app-button:hover:not(:disabled){border-color:color-mix(in srgb,var(--s-mint) 45%,transparent);color:var(--s-mint)}
+.app-button:disabled{opacity:.35;cursor:not-allowed}
+.app-button:focus-visible{outline:2px solid var(--s-mint);outline-offset:2px}
+.app-button.appearance-button{height:auto;min-width:0;background:transparent;border-radius:8px;font:400 12px/1.2 var(--font-ui)}
+.app-button.theme-button{min-width:39px;padding-inline:10px}
+.app-button.language-button{min-width:67px;font-family:var(--font-mono)}
+.app-icon-button{min-width:39px;padding-inline:10px}
+.app-icon-button svg,.app-button.theme-button svg{display:block;width:16px;height:16px}
+.app-button-accent{color:var(--s-mint);border-color:color-mix(in srgb,var(--s-mint) 42%,transparent);min-width:90px}
+
+/* Menü „Über“ */
+.app-header-menu{position:relative}
+.app-header-menu summary{list-style:none;user-select:none}
+.app-header-menu summary::-webkit-details-marker{display:none}
+.app-header-menu[open] summary{color:var(--s-mint);border-color:color-mix(in srgb,var(--s-mint) 45%,transparent);background:var(--s-accent-soft)}
+.app-header-menu-panel{position:absolute;top:calc(100% + 7px);right:0;z-index:1200;min-width:150px;display:grid;gap:4px;padding:6px;border:1px solid var(--s-border);border-radius:9px;background:var(--s-panel);box-shadow:0 14px 35px rgba(0,0,0,.34)}
+.app-header-menu-panel button{width:100%;padding:9px 10px;border:0;border-radius:6px;color:var(--s-text);background:transparent;cursor:pointer;text-align:left;font:400 11px/1.3 var(--font-ui)}
+.app-header-menu-panel button:hover,.app-header-menu-panel button:focus-visible{color:var(--s-mint);background:var(--s-accent-soft);outline:none}
+
+/* Eyebrow wie beim Cleaner */
+.app-eyebrow,.survey-shell .eyebrow,.help-dialog .eyebrow{color:var(--s-mint);font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;margin:0 0 12px}
+
+/* Dialoge (Über mich, Copyright, Kontakt) wie .about-panel des Cleaners */
+.app-dialog{padding:0;width:min(760px,calc(100vw - 48px));max-height:calc(100vh - 48px);overflow:auto;border:1px solid var(--s-border);border-radius:16px;background:var(--s-panel);color:var(--s-text);box-shadow:0 30px 90px rgba(0,0,0,.45);font-family:var(--font-ui)}
+.app-dialog::backdrop{background:rgba(0,0,0,.6);backdrop-filter:blur(8px)}
+.theme-root[data-theme=light] .app-dialog::backdrop,:root[data-theme=light] .app-dialog::backdrop{background:rgba(20,30,45,.42)}
+.app-dialog-header{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;padding:25px 28px 20px;border-bottom:1px solid var(--s-border)}
+.app-dialog-header .app-eyebrow{margin-bottom:8px}
+.app-dialog-header h2{margin:0;font-size:25px;font-weight:600;line-height:1.2}
+.app-dialog-subtitle{margin:7px 0 0;color:var(--s-muted);font-size:11px}
+.app-dialog-header form,.app-dialog-footer form{margin:0}
+.app-dialog-close{width:35px;height:35px;padding:0;font-size:21px;line-height:1}
+.app-dialog-body{padding:22px 28px 15px}
+.app-dialog-body>p{margin:0 0 15px;color:var(--s-muted);font-size:12px;line-height:1.7}
+.app-dialog-body table{width:100%;border-collapse:collapse;font-size:12px;margin:6px 0 10px}
+.app-dialog-body th,.app-dialog-body td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--s-border);vertical-align:top}
+.app-dialog-body th{color:var(--s-muted);font-weight:500;width:38%}
+.app-dialog-body a{color:var(--s-mint)}
+.app-inline-link{color:var(--s-mint);font-weight:650;text-decoration-thickness:1px;text-underline-offset:3px}
+.app-inline-link:hover{color:var(--s-text)}
+.app-about-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:22px}
+.app-about-links a{overflow:hidden;padding:10px 12px;border:1px solid var(--s-border);border-radius:8px;color:var(--s-mint);background:var(--s-accent-soft);font-size:11px;text-align:center;text-decoration:none;text-overflow:ellipsis;white-space:nowrap}
+.app-about-links a:hover{border-color:var(--s-mint)}
+.app-dialog-actions{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 15px}
+.app-dialog-actions .app-button{color:var(--s-mint)}
+.app-dialog-address{color:var(--s-mint)!important;font-weight:600}
+.app-dialog-footer{display:flex;justify-content:flex-end;padding:12px 28px 22px}
+
+/* Inspektor: Kopfleiste über volle Breite */
+.inspector-topbar{position:sticky;top:0;z-index:1100}
+
+/* Typografie, Panels und Buttons der Fotokarte näher an den Cleaner */
+.survey-shell h1{font-size:27px;font-weight:600;letter-spacing:-.01em;line-height:1.08;margin:0 0 9px}
+.import-panel,.detail-panel,.map-panel,.gallery-panel{border-radius:12px}
+.panel-title{font-weight:600;letter-spacing:.01em}
+.survey-shell .secondary-button{background:transparent;border-radius:8px;font-size:12px!important;transition:.2s ease}
+.survey-shell .secondary-button:hover:not(:disabled){border-color:color-mix(in srgb,var(--s-mint) 45%,transparent);color:var(--s-mint)}
+.theme-root[data-theme=light] .survey-shell .secondary-button{background:transparent}
+.survey-shell .icon-button{background:transparent;color:var(--s-muted);transition:.2s ease}
+.theme-root[data-theme=light] .survey-shell .icon-button{background:transparent;color:var(--s-muted)}
+.survey-shell .icon-button:hover:not(:disabled){border-color:color-mix(in srgb,var(--s-mint) 45%,transparent);color:var(--s-mint)}
+.survey-shell .primary-button{border-radius:8px}
+.help-dialog{border-radius:16px;box-shadow:0 30px 90px rgba(0,0,0,.45)}
+.help-dialog h2{font-weight:600}
+.help-backdrop{backdrop-filter:blur(8px)}
+
+/* Schmale Fenster: Kopfleiste umbrechen statt überlaufen */
+@media(max-width:1000px){.app-privacy-chip{display:none}.app-topbar{gap:16px}.app-top-actions{margin-left:auto}}
+@media(max-width:760px){.app-topbar{height:auto;flex-wrap:wrap;padding:12px 16px;row-gap:10px}.app-top-actions{flex-wrap:wrap;width:100%;justify-content:flex-end}.app-action-button{margin-right:auto}}
+@media(max-width:440px){.app-brand small{font-size:9px;letter-spacing:.12em}.app-button{padding:8px 10px}}
+
+/* Runde 3b: untere Fußleiste ab normaler Breite einzeilig wie beim Cleaner – Autor links, Links rechts. */
+.footer-meta{gap:6px 16px}
+.footer-author{white-space:nowrap}
+.footer-links{gap:5px}
+.footer-links a,.footer-links button{padding:2px 7px}
+@media(min-width:1200px){.footer-meta{flex-wrap:nowrap}.footer-author{flex:0 0 auto}.footer-links{flex:1 1 auto;justify-content:flex-end}}
+@media(min-width:1200px) and (max-width:1499px){.footer-meta{font-size:10.5px;gap:6px 12px}.footer-links{gap:4px}.footer-links a,.footer-links button{font-size:10.5px;padding:2px 6px}}
