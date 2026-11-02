@@ -1,4 +1,4 @@
-# MeasureMap · v26.32.1
+# MeasureMap · v26.32.2
 
 [English](README.md) | **Deutsch**
 
@@ -84,7 +84,7 @@ npm run build
 
 Den gesamten Inhalt von `dist/` auf einen statischen Webserver kopieren. Unterverzeichnisse sind unterstützt (`base: './'`). Kein Backend und keine Foto-Uploads nötig. Nicht direkt über `file://` öffnen; zum lokalen Prüfen `npm run preview` verwenden.
 
-Die sichtbare Version folgt `Jahr.Push.Iteration`: zweistellige Jahreszahl · laufende Nummer des GitHub-Pushes auf `main` im Jahr · lokale Iteration (Anzeige `v26.32.1`, npm `26.32.1`). Vor jedem Push wird der Push-Zähler erhöht und die Iteration auf 1 gesetzt. Versionen bis v2026.10.1.31 folgten dem früheren Schema `vJahr.Monat.Version.Subversion`.
+Die sichtbare Version folgt `Jahr.Push.Iteration`: zweistellige Jahreszahl · laufende Nummer des GitHub-Pushes auf `main` im Jahr · lokale Iteration (Anzeige `v26.32.2`, npm `26.32.2`). Vor jedem Push wird der Push-Zähler erhöht und die Iteration auf 1 gesetzt. Versionen bis v2026.10.1.31 folgten dem früheren Schema `vJahr.Monat.Version.Subversion`.
 
 ## Arbeitsablauf
 
@@ -176,3 +176,7 @@ Neutrales Grau/Blau-Farbschema statt des bisherigen Mint-/Petrol-Schemas, hell u
 ## Look wie Geodata Inspector & Cleaner · 26.32.1 · 2026-11-02
 
 26.32.1 — Kopfleiste im Stil des Geodata Inspector & Cleaner: Markenzeichen, Titel in Großbuchstaben mit Version und Unterzeile, Datenschutz-Chip, dann **Metadaten-Inspektor** (bzw. **Zurück zur Fotokarte**), Menü **Über** (Über mich, Copyright), Hilfe **(i)**, Interface- und Sprachknopf in fester Reihenfolge – in der Fotokarte und im Metadaten-Inspektor. Buttons, Panels, Eyebrows und Dialoge folgen dem Cleaner. Inter selbst gehostet über `@fontsource-variable/inter` (SIL OFL 1.1) statt Google Fonts; Tailwind für den Metadaten-Inspektor lokal gebündelt statt vom CDN; ungenutzte esm.sh-Importmap entfernt. Neue Adresse: https://measuremap-viewer-editor.netlify.app/ (Canonical- und Open-Graph-Tags). Fußleiste: Geoid Forge heißt jetzt **Geoid-TIFF 2 PGM Converter** (https://geoid-tiff2pgm-converter.netlify.app/). Funktionen unverändert.
+
+## Favicon und einzeilige Fußleiste · 26.32.2 · 2026-11-02
+
+26.32.2 — Favicon jetzt wie das Markenzeichen der Kopfleiste (helles Interface): gedrehte, abgerundete Raute in Weiß mit blauem Rahmen und dem blauen Scan-Symbol statt des grünen Icons; zusätzlich `favicon-32.png` und `apple-touch-icon.png` (180 px, weißer Grund). Die untere Fußleiste steht ab 1200 px Breite in einer Zeile (Autor links, Links rechts), auf schmalen Bildschirmen bricht sie um. Dafür heißt der Link **Formate & Datenschutz** (voller Titel „Formate, Datenschutz & Google Fotos“ als Tooltip, Dialog unverändert) und die Datenlizenz steht als **dl-de/by-2-0** (voller Name als Tooltip). Funktionen unverändert.

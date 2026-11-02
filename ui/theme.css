@@ -141,3 +141,11 @@
 @media(max-width:1000px){.app-privacy-chip{display:none}.app-topbar{gap:16px}.app-top-actions{margin-left:auto}}
 @media(max-width:760px){.app-topbar{height:auto;flex-wrap:wrap;padding:12px 16px;row-gap:10px}.app-top-actions{flex-wrap:wrap;width:100%;justify-content:flex-end}.app-action-button{margin-right:auto}}
 @media(max-width:440px){.app-brand small{font-size:9px;letter-spacing:.12em}.app-button{padding:8px 10px}}
+
+/* Runde 3b: untere Fußleiste ab normaler Breite einzeilig wie beim Cleaner – Autor links, Links rechts. */
+.footer-meta{gap:6px 16px}
+.footer-author{white-space:nowrap}
+.footer-links{gap:5px}
+.footer-links a,.footer-links button{padding:2px 7px}
+@media(min-width:1200px){.footer-meta{flex-wrap:nowrap}.footer-author{flex:0 0 auto}.footer-links{flex:1 1 auto;justify-content:flex-end}}
+@media(min-width:1200px) and (max-width:1499px){.footer-meta{font-size:10.5px;gap:6px 12px}.footer-links{gap:4px}.footer-links a,.footer-links button{font-size:10.5px;padding:2px 6px}}

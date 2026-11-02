@@ -27,12 +27,12 @@ export default function Footer({onInfo}:{onInfo?:()=>void}){
       {RELATED_APPS.map(([label,url])=><a key={url} href={url} {...external}>{label} <span aria-hidden="true">↗</span></a>)}
     </nav>
     <div className="footer-meta">
-      <span>{t('Ein Werkzeug von Michael Radeck')} · © {year} · {t('Version')} {VERSION_NUMBER}</span>
+      <span className="footer-author">{t('Ein Werkzeug von Michael Radeck')} · © {year} · {t('Version')} {VERSION_NUMBER}</span>
       <nav className="footer-links" aria-label={t('Hilfe und rechtliche Hinweise')}>
         <a href="https://www.openstreetmap.org/copyright" {...external}>OpenStreetMap ↗</a>
         <a href="https://www.ldbv.bayern.de/produkte/weitere/opendata.html" {...external}>ALKIS · LDBV ↗</a>
-        <a href="https://www.govdata.de/dl-de/by-2-0" {...external}>{t('Datenlizenz Deutschland 2.0')} ↗</a>
-        {onInfo&&<button type="button" onClick={onInfo}>{t('Formate, Datenschutz & Google Fotos')}</button>}
+        <a href="https://www.govdata.de/dl-de/by-2-0" {...external} title={t('Datenlizenz Deutschland 2.0')} aria-label={`${t('Datenlizenz Deutschland 2.0')} (dl-de/by-2-0)`}>dl-de/by-2-0 ↗</a>
+        {onInfo&&<button type="button" onClick={onInfo} title={t('Formate, Datenschutz & Google Fotos')}>{t('Formate & Datenschutz')}</button>}
         <a href={REPO} {...external}>{t('Quellcode')} ↗</a>
         <button type="button" onClick={()=>open('support')}>{t('Hilfe / Bugreport / Kontakt')}</button>
         <button type="button" onClick={()=>open('licenses')}>{t('Lizenzen / Copyright')}</button>

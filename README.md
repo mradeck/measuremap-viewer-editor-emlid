@@ -1,4 +1,4 @@
-# MeasureMap · v26.32.1
+# MeasureMap · v26.32.2
 
 **English** | [Deutsch](README.de.md)
 
@@ -84,7 +84,7 @@ npm run build
 
 Copy the entire contents of `dist/` to a static web server. Subdirectory hosting is supported (`base: './'`). No backend or photo uploads are required. Do not open the app directly through `file://`; use `npm run preview` for local testing.
 
-The displayed version follows `Year.Push.Iteration`: two-digit year · running number of the GitHub push to `main` in that year · local iteration (shown as `v26.32.1`, npm `26.32.1`). Before each push the push counter is increased and the iteration reset to 1. Versions up to v2026.10.1.31 used the former scheme `vYear.Month.Version.Subversion`.
+The displayed version follows `Year.Push.Iteration`: two-digit year · running number of the GitHub push to `main` in that year · local iteration (shown as `v26.32.2`, npm `26.32.2`). Before each push the push counter is increased and the iteration reset to 1. Versions up to v2026.10.1.31 used the former scheme `vYear.Month.Version.Subversion`.
 
 ## Workflow
 
@@ -247,3 +247,7 @@ Neutral gray/blue color scheme replaces the previous mint/teal scheme, in light 
 ## Look like Geodata Inspector & Cleaner · 26.32.1 · 2026-11-02
 
 26.32.1 — Header in the style of Geodata Inspector & Cleaner: brand mark, uppercase title with version and subtitle, privacy chip, then **Metadata inspector** (or **Back to photo map**), **About** menu (About me, Copyright), help **(i)**, interface and language buttons in a fixed order — on the photo map and in the metadata inspector. Buttons, panels, eyebrows and dialogs follow the Cleaner. Inter is self-hosted via `@fontsource-variable/inter` (SIL OFL 1.1) instead of Google Fonts; Tailwind for the metadata inspector is bundled locally instead of loaded from the CDN; the unused esm.sh import map was removed. New address: https://measuremap-viewer-editor.netlify.app/ (canonical and Open Graph tags). Footer: Geoid Forge is now **Geoid-TIFF 2 PGM Converter** (https://geoid-tiff2pgm-converter.netlify.app/). Features unchanged.
+
+## Favicon and single-line footer · 26.32.2 · 2026-11-02
+
+26.32.2 — Favicon now matches the header brand mark (light interface): rotated rounded diamond in white with a blue border and the blue scan icon instead of the green icon; plus `favicon-32.png` and `apple-touch-icon.png` (180 px, white background). From 1200 px width the bottom footer is a single line (author left, links right); narrow screens still wrap. The link now reads **Formats & privacy** (full title “Formats, privacy & Google Photos” as tooltip, dialog unchanged) and the data licence is shown as **dl-de/by-2-0** (full name as tooltip). Features unchanged.
