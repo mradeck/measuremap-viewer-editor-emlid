@@ -1,5 +1,5 @@
 import React,{useRef} from 'react';
-import {VERSION} from '../survey/model';
+import {VERSION, VERSION_NUMBER} from '../survey/model';
 import {translate as t} from './translations';
 import {usePreferences} from './preferences';
 
@@ -33,7 +33,7 @@ export default function Footer({onInfo}:{onInfo?:()=>void}){
       {RELATED_APPS.map(([label,url])=><a key={url} href={url} {...external}>{label} <span aria-hidden="true">↗</span></a>)}
     </nav>
     <div className="footer-meta">
-      <span>{t('Ein Werkzeug von Michael Radeck')} · © {year} · {t('Version')} {VERSION}</span>
+      <span>{t('Ein Werkzeug von Michael Radeck')} · © {year} · {t('Version')} {VERSION_NUMBER}</span>
       <nav className="footer-links" aria-label={t('Hilfe und rechtliche Hinweise')}>
         <a href="https://www.openstreetmap.org/copyright" {...external}>OpenStreetMap ↗</a>
         <a href="https://www.ldbv.bayern.de/produkte/weitere/opendata.html" {...external}>ALKIS · LDBV ↗</a>

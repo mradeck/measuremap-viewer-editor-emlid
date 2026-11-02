@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.31
+# MeasureMap · v26.31.1
 
 **English** | [Deutsch](README.de.md)
 
@@ -84,7 +84,7 @@ npm run build
 
 Copy the entire contents of `dist/` to a static web server. Subdirectory hosting is supported (`base: './'`). No backend or photo uploads are required. Do not open the app directly through `file://`; use `npm run preview` for local testing.
 
-The displayed version follows `vYear.Month.Version.Subversion`; the npm version `2026.10.1-31` represents the same version as valid SemVer.
+The displayed version follows `Year.Push.Iteration`: two-digit year · running number of the GitHub push to `main` in that year · local iteration (shown as `v26.31.1`, npm `26.31.1`). Before each push the push counter is increased and the iteration reset to 1. Versions up to v2026.10.1.31 used the former scheme `vYear.Month.Version.Subversion`.
 
 ## Workflow
 
@@ -239,3 +239,7 @@ An **(i)** button beside **Open photo folder** explains that no photos or projec
 ## Shared appearance · v2026.10.1.31 · 2026-11-02
 
 Neutral gray/blue color scheme replaces the previous mint/teal scheme, in light and dark mode, including the metadata inspector. The interface button now cycles automatic → light → dark; without a saved choice, automatic mode (previously light) and the browser language (previously German) apply. The language button uses the shared vector flags. Footers follow the shared pattern with new **Help / bug report / contact** and **Licenses / copyright** dialogs; the duplicate imprint links inside the inspector were removed. Features are unchanged.
+
+## Version scheme · 26.31.1 · 2026-11-02
+
+26.31.1 — Switch from `vYear.Month.…` (last v2026.10.1.31) to `Year.Push.Iteration`; the push counter is derived from the number of `main` commits in 2026. Window title, header and email subject show `v26.31.1`, the footer shows `Version 26.31.1`. Features unchanged.

@@ -1,4 +1,4 @@
-# MeasureMap · v2026.10.1.31
+# MeasureMap · v26.31.1
 
 [English](README.md) | **Deutsch**
 
@@ -84,7 +84,7 @@ npm run build
 
 Den gesamten Inhalt von `dist/` auf einen statischen Webserver kopieren. Unterverzeichnisse sind unterstützt (`base: './'`). Kein Backend und keine Foto-Uploads nötig. Nicht direkt über `file://` öffnen; zum lokalen Prüfen `npm run preview` verwenden.
 
-Die sichtbare Version entspricht `vJahr.Monat.Version.Subversion`; die npm-Version `2026.10.1-31` bildet dieselbe Version als gültiges SemVer ab.
+Die sichtbare Version folgt `Jahr.Push.Iteration`: zweistellige Jahreszahl · laufende Nummer des GitHub-Pushes auf `main` im Jahr · lokale Iteration (Anzeige `v26.31.1`, npm `26.31.1`). Vor jedem Push wird der Push-Zähler erhöht und die Iteration auf 1 gesetzt. Versionen bis v2026.10.1.31 folgten dem früheren Schema `vJahr.Monat.Version.Subversion`.
 
 ## Arbeitsablauf
 
@@ -168,3 +168,7 @@ Neben **Fotoordner öffnen** erläutert ein **(i)**-Button, dass keine Bilder od
 ## Einheitliches Erscheinungsbild · v2026.10.1.31 · 2026-11-02
 
 Neutrales Grau/Blau-Farbschema statt des bisherigen Mint-/Petrol-Schemas, hell und dunkel, auch im Metadaten-Inspektor. Interface-Knopf jetzt mit drei Stufen automatisch → hell → dunkel; ohne gespeicherte Wahl gilt „automatisch“ (bisher hell) und die Browsersprache (bisher Deutsch). Sprachknopf mit den gemeinsamen Vektorfahnen. Fußleisten nach dem gemeinsamen Muster mit neuen Dialogen **Hilfe / Bugreport / Kontakt** und **Lizenzen / Copyright**; die doppelten Impressum-Links im Inspektor entfallen. Funktionen unverändert.
+
+## Versionsschema · 26.31.1 · 2026-11-02
+
+26.31.1 — Umstellung von `vJahr.Monat.…` (zuletzt v2026.10.1.31) auf `Jahr.Push.Iteration`; Push-Zähler aus der Zahl der `main`-Commits 2026 abgeleitet. Fenstertitel, Kopfzeile und Mail-Betreff zeigen `v26.31.1`, die Fußleiste `Version 26.31.1`. Funktionen unverändert.
