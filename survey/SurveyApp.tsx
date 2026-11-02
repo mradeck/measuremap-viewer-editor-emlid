@@ -1,11 +1,12 @@
 import {translate as t} from '../ui/translations';
 import React,{useState,useRef,useEffect,useMemo} from 'react';
-import {Camera,MapPin,Upload,Download,Layers,FileSpreadsheet,ScanLine,LocateFixed,CheckCircle2,AlertTriangle,X,ChevronRight,Image as ImageIcon,Trash2,Info,Eye,EyeOff,Maximize,Minimize} from 'lucide-react';
+import {Camera,MapPin,Upload,Download,Layers,FileSpreadsheet,LocateFixed,CheckCircle2,AlertTriangle,X,ChevronRight,Image as ImageIcon,Trash2,Info,Eye,EyeOff,Maximize,Minimize} from 'lucide-react';
 import JSZip from 'jszip';
 import Papa from 'papaparse';
 import SurveyMap,{ALKIS_STYLES} from './SurveyMap';
 import PhotoExperience from './PhotoExperience';
 import LocalImportInfo from './LocalImportInfo';
+import HelpDialog from './HelpDialog';
 import {useViewerFullscreen} from './useViewerFullscreen';
 import {chooseLocalFolder,type DirectoryPicker} from './localFolder';
 import {chronologicalPhotos} from './chronology';
@@ -14,7 +15,8 @@ import {parseDrawing,visibleDrawing,type DrawingDocument} from './dxf';
 import {geotagJpeg} from './jpeg';
 import {readOrtho,type Ortho} from './ortho';
 import './survey.css';
-import {AppearanceControls,usePreferences} from '../ui/preferences';
+import {usePreferences} from '../ui/preferences';
+import AppHeader from '../ui/AppHeader';
 import Footer from '../ui/Footer';
 import DjiPanel from '../dji/DjiPanel';
 import {readMission,editWaypoint,editAreaVertex,changeAreaTopology,type Mission} from '../dji/mission';
@@ -163,7 +165,7 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
     }catch(e){setError(e instanceof Error?e.message:String(e));}finally{setBusy('');}
   }
   return <div className="survey-shell" onDragOver={e=>{e.preventDefault();}} onDrop={e=>{e.preventDefault();if(!busy)void importFiles(Array.from(e.dataTransfer.files));}}>
-    <header className="survey-header"><div className="brand-mark"><ScanLine size={24}/></div><div className="brand-word">MeasureMap <span>VIEWER · EDITOR · EMLID</span></div><span className="version">{VERSION}</span><div className="header-spacer"/><AppearanceControls/><span className="local-badge"><span/> {t("Lokal im Browser")}</span><button className="quiet-button" onClick={openInspector}>{t("Metadaten-Inspektor ")}<ChevronRight size={15}/></button><button className="icon-button" aria-label={t("Hilfe")} onClick={()=>setHelp(true)}><Info size={20}/></button></header>
+    <AppHeader onHelp={()=>setHelp(true)} action={<button type="button" className="app-button app-button-quiet app-action-button" onClick={openInspector}>{t("Metadaten-Inspektor")}<ChevronRight size={14}/></button>}/>
     <div className="survey-titlebar"><div><div className="eyebrow">{t("VERMESSUNG & FOTODOKUMENTATION")}</div><h1>{t("Fotos. Präzise verortet.")}</h1><p>{t("Messpunkte zuordnen, auf der Karte prüfen und Positionsdaten ins Originalformat schreiben.")}</p></div><button className="primary-button" disabled={!!busy||!exportable.length} onClick={()=>void exportZip()}><Download size={17}/> {t("Fotos exportieren ")}<span>{exportable.length}</span></button></div>
     <main className="workspace-grid">
       <aside className="import-panel"><div className="panel-title"><span>{t("Projektdateien")}</span><span className="step">01</span></div>
@@ -218,6 +220,6 @@ export default function SurveyApp({openInspector}:{openInspector:()=>void}) {
     </main>
     <Footer onInfo={()=>setHelp(true)}/>
     {(busy||notice||error)&&<div className={`notice ${error?'error':''}`} role={error?'alert':'status'}>{busy?<span className="spinner"/>:error?<AlertTriangle size={17}/>:<CheckCircle2 size={17}/>}<span>{(busy||error||notice).split('\n').map(line=>line.split(' · ').map(part=>t(part)).join(' · ')).join('\n')}</span>{!busy&&<button aria-label={t("Meldung schließen")} onClick={()=>{setError('');setNotice('');}}><X size={17}/></button>}</div>}
-    {help&&<div className="help-backdrop" onClick={()=>setHelp(false)}><section className="help-dialog" role="dialog" aria-modal="true" aria-label={t("Import und Metadaten")} onClick={e=>e.stopPropagation()}><button className="icon-button help-close" aria-label={t("Hilfe schließen")} onClick={()=>setHelp(false)}><X/></button><div className="eyebrow">MEASUREMAP · EMLID</div><h2>{t("Vom Messpunkt zum Foto.")}</h2><ol><li>{t("CSV und Fotos gemeinsam laden – als Ordner, ZIP oder einzelne Dateien.")}</li><li>{t("Zuordnung über „Point photos“ prüfen. Alternativ einen Punkt manuell auswählen.")}</li><li>{t("DXF laden und das richtige Koordinatensystem einstellen; Standard: ETRS89 / UTM 32N.")}</li><li>{t("Fotos als ZIP mit eingebetteten EXIF-/XMP-Daten und Positionsprotokoll exportieren.")}</li></ol><h3>{t("Welche Metadaten werden geschrieben?")}</h3><p>{t("EXIF GPSLatitude/GPSLongitude mit hoher Speicherpräzision, GPSAltitude aus „Elevation“ (NHN) und vorhandene laterale RMS. XMP im MetaLens-Survey-Namensraum enthält originale UTM-Koordinaten, beide Höhenarten, RTK-Status und den vollständigen CSV-Datensatz. Eine manuelle Kartenposition trägt keine RTK-Qualitätsangabe.")}</p><p>{t("Eine Messpunktposition ist keine gemessene Kamerapose. Drohnen-XMP wird nicht erfunden. Im Pointcloudmanager sind die exportierten Fotos über den Handyfoto-/GPS-Import verwendbar; sein Drohnenimport benötigt separate Kameraposen.")}</p><h3>{t("Handyfotos & Google Fotos")}</h3><p>{t("Lokale JPEG-Originale mit GPS werden direkt erkannt. PNG, WebP und HEIC/HEIF können eingelesen werden; Vorschau hängt vom Browser ab. Das Schreiben von Metadaten unterstützt JPEG.")}</p><p>{t("Google Fotos kann mit der Picker API und Google-OAuth angebunden werden. Diese Version hat keine aktive Google-Verknüpfung: Dafür fehlen eine OAuth-Client-ID und eine freigegebene Webadresse. Ein beliebiges Album wird nicht dauerhaft synchronisiert. Google entfernt Standortmetadaten beim API-Download – CSV-Zuordnung oder manuelle Position bleibt daher erforderlich.")}</p><a href="https://developers.google.com/photos/picker/guides/media-items" target="_blank" rel="noreferrer">{t("Google Fotos: offizielle Schnittstellendokumentation ↗")}</a><h3>{t("Karte und Datenschutz")}</h3><p>{t("Fotos und CSV werden im Browser verarbeitet. OSM und ALKIS erhalten Kartenanfragen für den sichtbaren Ausschnitt. ALKIS liefert Daten nur in Bayern. DXF ohne Koordinatensystem kann nicht automatisch korrekt eingeordnet werden. Nicht unterstützte DXF-Elementtypen werden gemeldet.")}</p></section></div>}
+    {help&&<HelpDialog onClose={()=>setHelp(false)}/>}
   </div>;
 }

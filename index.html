@@ -5,7 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Emlid-Messfotos verorten, DXF und ALKIS prüfen und GPS-/RTK-Metadaten lokal exportieren." />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <title>MeasureMap · v26.31.1</title>
+    <link rel="canonical" href="https://measuremap-viewer-editor.netlify.app/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="MeasureMap" />
+    <meta property="og:description" content="Emlid-Messfotos verorten, DXF und ALKIS prüfen und GPS-/RTK-Metadaten lokal exportieren." />
+    <meta property="og:url" content="https://measuremap-viewer-editor.netlify.app/" />
+    <title>MeasureMap · v26.32.1</title>
     <script>
       // Interface und Sprache vor dem ersten Zeichnen setzen (kein Aufblitzen). "auto" folgt prefers-color-scheme.
       (function () {
@@ -18,66 +23,11 @@
         root.lang = saved.language === 'en' || saved.language === 'de' ? saved.language : (/^de\b/i.test(navigator.language || '') ? 'de' : 'en');
       })();
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            colors: {
-              /* Neutrales Grau/Blau wie in den übrigen öffentlichen Apps von Michael Radeck. */
-              gray: {
-                100: '#e6ebf1',
-                200: '#d5dce4',
-                300: '#b9c3cf',
-                400: '#93a0af',
-                500: '#6b7684',
-                600: '#4a5361',
-                700: '#333c48',
-                750: '#2a313b',
-                800: '#232a33',
-                850: '#1d2229',
-                900: '#1d2229',
-                950: '#14171c',
-              },
-              brand: {
-                300: '#8cc4ff',
-                400: '#6cb3ff',
-                500: '#4da3ff',
-                600: '#2f8be6',
-                900: '#0d2a4a',
-              },
-              green: {
-                400: '#46c07a',
-                500: '#3aa86a',
-              },
-              red: {
-                400: '#ec7a7a',
-                500: '#e05c5c',
-                900: '#3a1c1c',
-              },
-              yellow: {
-                500: '#e0a13c',
-                900: '#3a2a10',
-              },
-              orange: {
-                300: '#e0a13c',
-                500: '#d98a2b',
-                900: '#3a2610',
-              },
-              blue: {
-                400: '#4da3ff',
-              },
-              /* black stays default for overlays */
-            }
-          }
-        }
-      }
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
       :root {
         color-scheme: dark;
+        --font-ui: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+        --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
         --accent: #4da3ff;
         --accent-glow: rgba(77, 163, 255, 0.25);
         --bg: #14171c;
@@ -96,7 +46,7 @@
         --border: #d4dae2;
         --text: #1b2430;
       }
-      body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; }
+      body { font-family: var(--font-ui); background-color: var(--bg); color: var(--text); margin: 0; }
       /* Custom scrollbar for raw data views */
       ::-webkit-scrollbar { width: 8px; height: 8px; }
       ::-webkit-scrollbar-track { background: var(--surface); }
@@ -111,19 +61,6 @@
       input[type="range"]::-webkit-slider-thumb { background: var(--accent); }
       input[type="range"]::-moz-range-thumb { background: var(--accent); }
     </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "vite": "https://esm.sh/vite@^7.3.0",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
-    "piexifjs": "https://esm.sh/piexifjs@^1.0.6"
-  }
-}
-</script>
 </head>
   <body>
     <div id="root"></div>

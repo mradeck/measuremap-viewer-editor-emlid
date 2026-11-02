@@ -526,7 +526,8 @@ const App: React.FC = () => {
                         </div>
                     </div>
                     <div>
-                        <h1 className="text-4xl font-bold text-white mb-2">Measure<span className="text-brand-500">Map</span></h1>
+                        <p className="app-eyebrow">{t("Metadaten-Inspektor")}</p>
+                        <h1 className="text-4xl font-semibold tracking-tight text-white mb-2">Measure<span className="text-brand-500">Map</span></h1>
                         <div className="relative inline-block">
                             <p
                                 className="text-xl text-gray-300 font-medium cursor-help"

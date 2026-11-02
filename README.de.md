@@ -1,10 +1,10 @@
-# MeasureMap · v26.31.1
+# MeasureMap · v26.32.1
 
 [English](README.md) | **Deutsch**
 
 Eigenständige React/TypeScript-SPA zur lokalen Georeferenzierung von Emlid-Fotos. Repository und Netlify-Projekt: `measuremap-viewer-editor-emlid`. Die vorhandene MetaLens-Metadatenansicht bleibt unter „Metadaten-Inspektor“ erreichbar. Beim Wechsel bleibt das geladene Vermessungsprojekt erhalten.
 
-[MeasureMap öffnen](https://measuremap-viewer-editor-emlid.netlify.app/)
+[MeasureMap öffnen](https://measuremap-viewer-editor.netlify.app/)
 
 ## Dach-/Motivebene und GSD · v2026.10.1.24
 
@@ -46,7 +46,7 @@ Unterstützt werden ein `mapping2d`-Polygon mit optionalen Innenaussparungen, ko
 
 Grenzen: 150 Eingabeeckpunkte, 300 gepufferte Punkte, 600 Bahnen, 2.000 erzeugte Wegpunkte und 10 km Eingabeausdehnung; Bahnabstand 0,25–500 m. Dauer ist eine reine Streckenschätzung ohne Aktionswartezeiten, Start/Rückkehr und Kurvendynamik. Es gibt keine Gelände-, Hindernis- oder Luftraumprüfung; DJI-eigene Optimierung wird nicht identisch nachgebildet. Vor dem Flug das Ergebnis in Pilot 2 importieren und prüfen. Der tatsächliche Controller-Test steht weiterhin aus.
 
-Geometrie und Randberechnung nutzen [clipper-lib](https://github.com/junmer/clipper-lib), Boost Software License 1.0 mit JSBN (freizügige Tom-Wu-Lizenz). [Mitgelieferte Lizenzhinweise](public/third-party/clipper-notices.txt).
+Geometrie und Randberechnung nutzen [clipper-lib](https://github.com/junmer/clipper-lib), Boost Software License 1.0 mit JSBN (freizügige Tom-Wu-Lizenz). [Mitgelieferte Lizenzhinweise](public/third-party/clipper-notices.txt). Die Schrift Inter (SIL OFL 1.1, © The Inter Project Authors) wird über `@fontsource-variable/inter` selbst gehostet; Tailwind CSS (MIT) wird lokal gebündelt.
 
 ## DJI-Pilot-2-Flugpläne
 
@@ -84,7 +84,7 @@ npm run build
 
 Den gesamten Inhalt von `dist/` auf einen statischen Webserver kopieren. Unterverzeichnisse sind unterstützt (`base: './'`). Kein Backend und keine Foto-Uploads nötig. Nicht direkt über `file://` öffnen; zum lokalen Prüfen `npm run preview` verwenden.
 
-Die sichtbare Version folgt `Jahr.Push.Iteration`: zweistellige Jahreszahl · laufende Nummer des GitHub-Pushes auf `main` im Jahr · lokale Iteration (Anzeige `v26.31.1`, npm `26.31.1`). Vor jedem Push wird der Push-Zähler erhöht und die Iteration auf 1 gesetzt. Versionen bis v2026.10.1.31 folgten dem früheren Schema `vJahr.Monat.Version.Subversion`.
+Die sichtbare Version folgt `Jahr.Push.Iteration`: zweistellige Jahreszahl · laufende Nummer des GitHub-Pushes auf `main` im Jahr · lokale Iteration (Anzeige `v26.32.1`, npm `26.32.1`). Vor jedem Push wird der Push-Zähler erhöht und die Iteration auf 1 gesetzt. Versionen bis v2026.10.1.31 folgten dem früheren Schema `vJahr.Monat.Version.Subversion`.
 
 ## Arbeitsablauf
 
@@ -151,13 +151,13 @@ Die Vermessungsdaten und Fotos werden nicht ins Repository aufgenommen. Geprüft
 
 ## Bestehender Inspektor
 
-Die bisherigen Funktionen für Panorama-, HDR- und Copyright-Metadaten bleiben erhalten. Für den optionalen JXL-Decoder können `jxl.min.js` und `jxl.wasm` in `public/` abgelegt werden. Der Inspektor nutzt weiterhin das bestehende Tailwind-CDN; die neue Vermessungsansicht hat lokal gebündelte CSS-Dateien.
+Die bisherigen Funktionen für Panorama-, HDR- und Copyright-Metadaten bleiben erhalten. Für den optionalen JXL-Decoder können `jxl.min.js` und `jxl.wasm` in `public/` abgelegt werden. Tailwind CSS wird lokal über npm/Vite gebündelt (kein CDN); die Vermessungsansicht hat eigene lokale CSS-Dateien. Die Seite stellt keine Anfragen an Schrift- oder CSS-CDNs.
 
 ## Erscheinungsbild, Sprache und Footer
 
 Über die Kopfzeile lässt sich das Interface der Reihe nach auf **automatisch** (folgt der Systemeinstellung `prefers-color-scheme`, Halbkreis-Symbol), **hell** (Sonne) und **dunkel** (Mond) schalten; der Sprachknopf zeigt eine Vektorfahne mit dem Kürzel **DE** bzw. **EN**. Ohne gespeicherte Wahl gelten „automatisch“ und die Browsersprache. Interface und Sprache werden bereits vor dem ersten Zeichnen gesetzt, damit nichts aufblitzt. Das gilt auch für den Metadaten-Inspektor, Hilfe, Fotozuordnung, Zahlenformate und Statusmeldungen. Nur Sprache und Darstellungspräferenz werden in `localStorage` gespeichert; Fotos und Vermessungsdaten bleiben temporär im Arbeitsspeicher. Technische CSV-Spalten, EXIF-/XMP-Schlüssel und exportierte Zahlen werden nicht übersetzt.
 
-Das Farbschema ist neutral Grau/Blau wie in den übrigen öffentlichen Apps von Michael Radeck; Statusfarben (OK grün, Warnung bernstein, Fehler rot) bleiben semantisch. Zwei Fußleisten: oben **Weitere Apps** (Geodata Inspector & Cleaner, GeoTIFF Inspector, Geoid Forge, DXF Coordinate Forge, PointCloud Manager, GPS / UTM Converter, SkyCheck, michael-radeck.de), darunter „Ein Werkzeug von Michael Radeck · © Jahr · Version“ sowie OpenStreetMap, ALKIS/LDBV, Datenlizenz, Formate/Datenschutz, Quellcode, **Hilfe / Bugreport / Kontakt** (Dialog mit E-Mail-Links, Version im Betreff), **Lizenzen / Copyright** (Dialog), Impressum und Ko-fi.
+Das Farbschema ist neutral Grau/Blau wie in den übrigen öffentlichen Apps von Michael Radeck; Statusfarben (OK grün, Warnung bernstein, Fehler rot) bleiben semantisch. Zwei Fußleisten: oben **Weitere Apps** (Geodata Inspector & Cleaner, GeoTIFF Inspector, Geoid-TIFF 2 PGM Converter, DXF Coordinate Forge, PointCloud Manager, GPS / UTM Converter, SkyCheck, michael-radeck.de), darunter „Ein Werkzeug von Michael Radeck · © Jahr · Version“ sowie OpenStreetMap, ALKIS/LDBV, Datenlizenz, Formate/Datenschutz, Quellcode, **Hilfe / Bugreport / Kontakt** (Dialog mit E-Mail-Links, Version im Betreff), **Lizenzen / Copyright** (Dialog), Impressum und Ko-fi.
 
 **Fotoordner öffnen** verwendet in unterstützten Browsern (Chrome/Edge) `showDirectoryPicker` mit reinem Lesezugriff. Unterstützte Projektdateien werden einschließlich Unterordnern lokal eingelesen, versteckte Einträge und macOS-Metadaten ausgelassen. Kein Server-Upload, keine gespeicherten Ordnerhandles. Abbrechen verändert das Projekt nicht. Zugriffsbestätigungen bleiben unter Kontrolle des Browsers. Ohne diese API bleibt die bisherige Ordnerauswahl: „Upload files to this site?“ meint die Bereitstellung an die Webseite, keinen tatsächlichen Server-Upload durch MeasureMap. Ein Hinweis unter dem Button erläutert das. Alternativ **Dateien hinzufügen** verwenden. Lesefehler stoppen den Import; kein automatischer Wechsel zu einem anderen Picker.
 
@@ -172,3 +172,7 @@ Neutrales Grau/Blau-Farbschema statt des bisherigen Mint-/Petrol-Schemas, hell u
 ## Versionsschema · 26.31.1 · 2026-11-02
 
 26.31.1 — Umstellung von `vJahr.Monat.…` (zuletzt v2026.10.1.31) auf `Jahr.Push.Iteration`; Push-Zähler aus der Zahl der `main`-Commits 2026 abgeleitet. Fenstertitel, Kopfzeile und Mail-Betreff zeigen `v26.31.1`, die Fußleiste `Version 26.31.1`. Funktionen unverändert.
+
+## Look wie Geodata Inspector & Cleaner · 26.32.1 · 2026-11-02
+
+26.32.1 — Kopfleiste im Stil des Geodata Inspector & Cleaner: Markenzeichen, Titel in Großbuchstaben mit Version und Unterzeile, Datenschutz-Chip, dann **Metadaten-Inspektor** (bzw. **Zurück zur Fotokarte**), Menü **Über** (Über mich, Copyright), Hilfe **(i)**, Interface- und Sprachknopf in fester Reihenfolge – in der Fotokarte und im Metadaten-Inspektor. Buttons, Panels, Eyebrows und Dialoge folgen dem Cleaner. Inter selbst gehostet über `@fontsource-variable/inter` (SIL OFL 1.1) statt Google Fonts; Tailwind für den Metadaten-Inspektor lokal gebündelt statt vom CDN; ungenutzte esm.sh-Importmap entfernt. Neue Adresse: https://measuremap-viewer-editor.netlify.app/ (Canonical- und Open-Graph-Tags). Fußleiste: Geoid Forge heißt jetzt **Geoid-TIFF 2 PGM Converter** (https://geoid-tiff2pgm-converter.netlify.app/). Funktionen unverändert.

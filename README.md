@@ -1,10 +1,10 @@
-# MeasureMap · v26.31.1
+# MeasureMap · v26.32.1
 
 **English** | [Deutsch](README.de.md)
 
 A standalone React/TypeScript SPA for locally georeferencing Emlid survey photos. Repository and Netlify project: `measuremap-viewer-editor-emlid`. The existing MetaLens metadata inspector remains available through **Metadata inspector**. Switching views preserves the loaded survey project.
 
-[Open MeasureMap](https://measuremap-viewer-editor-emlid.netlify.app/)
+[Open MeasureMap](https://measuremap-viewer-editor.netlify.app/)
 
 ## Roof / subject surface and GSD · v2026.10.1.24
 
@@ -46,7 +46,7 @@ The planner supports a single `mapping2d` polygon, optional holes, concave bound
 
 Limits: 150 input boundary vertices, 300 buffered vertices, 600 lanes, 2,000 generated waypoints and a 10 km input extent; spacing 0.25–500 m. Duration is a travel estimate excluding action waits, takeoff, return and turn dynamics. The planner does not check obstacles, airspace or terrain, and does not reproduce DJI's proprietary optimizer. Import and review the result in Pilot 2 before flying; actual controller validation is still pending.
 
-Geometry and offsets use [clipper-lib](https://github.com/junmer/clipper-lib) under Boost Software License 1.0 with bundled JSBN (Tom Wu permissive license). [Distributed third-party notices](public/third-party/clipper-notices.txt).
+Geometry and offsets use [clipper-lib](https://github.com/junmer/clipper-lib) under Boost Software License 1.0 with bundled JSBN (Tom Wu permissive license). [Distributed third-party notices](public/third-party/clipper-notices.txt). The typeface Inter (SIL OFL 1.1, © The Inter Project Authors) is self-hosted via `@fontsource-variable/inter`; Tailwind CSS (MIT) is bundled locally.
 
 ## DJI Pilot 2 missions
 
@@ -84,7 +84,7 @@ npm run build
 
 Copy the entire contents of `dist/` to a static web server. Subdirectory hosting is supported (`base: './'`). No backend or photo uploads are required. Do not open the app directly through `file://`; use `npm run preview` for local testing.
 
-The displayed version follows `Year.Push.Iteration`: two-digit year · running number of the GitHub push to `main` in that year · local iteration (shown as `v26.31.1`, npm `26.31.1`). Before each push the push counter is increased and the iteration reset to 1. Versions up to v2026.10.1.31 used the former scheme `vYear.Month.Version.Subversion`.
+The displayed version follows `Year.Push.Iteration`: two-digit year · running number of the GitHub push to `main` in that year · local iteration (shown as `v26.32.1`, npm `26.32.1`). Before each push the push counter is increased and the iteration reset to 1. Versions up to v2026.10.1.31 used the former scheme `vYear.Month.Version.Subversion`.
 
 ## Workflow
 
@@ -151,13 +151,13 @@ Survey data and photos are not included in the repository. Verified: 107 points,
 
 ## Existing inspector
 
-The existing panorama, HDR and copyright metadata features remain available. For the optional JXL decoder, place `jxl.min.js` and `jxl.wasm` in `public/`. The inspector still uses the existing Tailwind CDN; the survey view uses locally bundled CSS.
+The existing panorama, HDR and copyright metadata features remain available. For the optional JXL decoder, place `jxl.min.js` and `jxl.wasm` in `public/`. Tailwind CSS is bundled locally via npm/Vite (no CDN); the survey view uses its own local CSS. The page makes no requests to font or CSS CDNs.
 
 ## Appearance, language and footer
 
 The header button cycles the interface through **automatic** (follows the system setting `prefers-color-scheme`, half-circle icon), **light** (sun) and **dark** (moon); the language button shows a vector flag with the code **DE** or **EN**. Without a saved choice, automatic mode and the browser language apply. Interface and language are set before the first paint, so nothing flashes. These settings also apply to the metadata inspector, help, photo assignments, number formatting and status messages. Only language and appearance preferences are stored in `localStorage`; photos and survey data remain temporarily in memory. Technical CSV column names, EXIF/XMP keys and exported numbers are not translated.
 
-The color scheme is neutral gray/blue, shared with Michael Radeck's other public apps; status colors (OK green, warning amber, error red) remain semantic. Two footer bars: **More apps** (Geodata Inspector & Cleaner, GeoTIFF Inspector, Geoid Forge, DXF Coordinate Forge, PointCloud Manager, GPS / UTM Converter, SkyCheck, michael-radeck.de), then “A tool by Michael Radeck · © year · version” with OpenStreetMap, ALKIS/LDBV, data license, formats/privacy, source code, **Help / bug report / contact** (dialog with email links, version in the subject), **Licenses / copyright** (dialog), imprint and Ko-fi.
+The color scheme is neutral gray/blue, shared with Michael Radeck's other public apps; status colors (OK green, warning amber, error red) remain semantic. Two footer bars: **More apps** (Geodata Inspector & Cleaner, GeoTIFF Inspector, Geoid-TIFF 2 PGM Converter, DXF Coordinate Forge, PointCloud Manager, GPS / UTM Converter, SkyCheck, michael-radeck.de), then “A tool by Michael Radeck · © year · version” with OpenStreetMap, ALKIS/LDBV, data license, formats/privacy, source code, **Help / bug report / contact** (dialog with email links, version in the subject), **Licenses / copyright** (dialog), imprint and Ko-fi.
 
 ## Photo navigation and map controls
 
@@ -183,7 +183,7 @@ Display and export use the same assignment resolution. `positions.json`/`positio
 
 ## Published project
 
-- Website: <https://measuremap-viewer-editor-emlid.netlify.app>
+- Website: <https://measuremap-viewer-editor.netlify.app/>
 - Repository: <https://github.com/mradeck/measuremap-viewer-editor-emlid>
 - Netlify build: `npm run typecheck && npm test && npm run build`, output `dist`, Node.js 22.
 - `netlify.toml` contains the SPA fallback and cache headers. No tokens or private photos are included in the repository.
@@ -214,7 +214,7 @@ The language button follows Geodata Inspector & Cleaner: the current German or B
 
 ## v2026.10.1.25 · 2026-10-04
 
-Shared footer links synchronized with Geodata Inspector & Cleaner: Geoid Forge, DXF Coordinate Forge and GPS / UTM Converter added. Rounded link buttons and English “Imprint” retained.
+Shared footer links synchronized with Geodata Inspector & Cleaner: Geoid-TIFF 2 PGM Converter, DXF Coordinate Forge and GPS / UTM Converter added. Rounded link buttons and English “Imprint” retained.
 
 ## v2026.10.1.26 · 2026-10-04
 
@@ -243,3 +243,7 @@ Neutral gray/blue color scheme replaces the previous mint/teal scheme, in light 
 ## Version scheme · 26.31.1 · 2026-11-02
 
 26.31.1 — Switch from `vYear.Month.…` (last v2026.10.1.31) to `Year.Push.Iteration`; the push counter is derived from the number of `main` commits in 2026. Window title, header and email subject show `v26.31.1`, the footer shows `Version 26.31.1`. Features unchanged.
+
+## Look like Geodata Inspector & Cleaner · 26.32.1 · 2026-11-02
+
+26.32.1 — Header in the style of Geodata Inspector & Cleaner: brand mark, uppercase title with version and subtitle, privacy chip, then **Metadata inspector** (or **Back to photo map**), **About** menu (About me, Copyright), help **(i)**, interface and language buttons in a fixed order — on the photo map and in the metadata inspector. Buttons, panels, eyebrows and dialogs follow the Cleaner. Inter is self-hosted via `@fontsource-variable/inter` (SIL OFL 1.1) instead of Google Fonts; Tailwind for the metadata inspector is bundled locally instead of loaded from the CDN; the unused esm.sh import map was removed. New address: https://measuremap-viewer-editor.netlify.app/ (canonical and Open Graph tags). Footer: Geoid Forge is now **Geoid-TIFF 2 PGM Converter** (https://geoid-tiff2pgm-converter.netlify.app/). Features unchanged.
